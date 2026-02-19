@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VINCI-ARENA PRO - System Architecture</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a0f; font-family: Arial, sans-serif; }
+    .module { transition: all 0.3s ease; cursor: pointer; }
+    .module:hover { transform: scale(1.05); box-shadow: 0 10px 40px rgba(220,20,60,0.4); }
+    .connector { position: absolute; background: linear-gradient(90deg, #DC143C, transparent); height: 2px; }
+  </style>
+</head>
+<body class="text-white p-8">
+
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-5xl font-black mb-3 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
+        VINCI-ARENA PRO
+      </h1>
+      <p class="text-xl text-gray-400">Complete System Architecture Mind Map</p>
+      <p class="text-sm text-gray-600 mt-2">Click any module to expand details</p>
+    </div>
+
+    <!-- Central Core -->
+    <div class="relative">
+      
+      <!-- CENTER: Main System -->
+      <div class="flex justify-center mb-16">
+        <div class="module bg-gradient-to-br from-red-600 to-purple-600 rounded-3xl p-8 border-4 border-white/30 shadow-2xl">
+          <div class="text-center">
+            <div class="text-6xl mb-3">🎮</div>
+            <h2 class="text-3xl font-black mb-2">VINCI-ARENA</h2>
+            <p class="text-sm text-gray-200">Esports Hub Platform</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP ROW: Core Features -->
+      <div class="grid grid-cols-4 gap-6 mb-12">
+        
+        <!-- Module 1: Authentication -->
+        <div class="module bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl p-6 border-2 border-blue-400/50">
+          <div class="text-4xl mb-3 text-center">🔐</div>
+          <h3 class="text-lg font-black mb-2 text-center">Authentication</h3>
+          <ul class="text-xs space-y-1 text-blue-100">
+            <li>✅ Register/Login</li>
+            <li>✅ JWT Tokens</li>
+            <li>✅ Profile Setup</li>
+          </ul>
+          <div class="mt-3 bg-green-500/20 border border-green-500 rounded px-2 py-1 text-xs text-center font-bold text-green-300">
+            BUILT ✓
+          </div>
+        </div>
+
+        <!-- Module 2: Tournament Calculator -->
+        <div class="module bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-6 border-2 border-purple-400/50">
+          <div class="text-4xl mb-3 text-center">🏆</div>
+          <h3 class="text-lg font-black mb-2 text-center">Tournaments</h3>
+          <ul class="text-xs space-y-1 text-purple-100">
+            <li>✅ Create Tournament</li>
+            <li>✅ Add Matches</li>
+            <li>✅ Auto-Calculate Points</li>
+            <li>✅ 3 Games Supported</li>
+          </ul>
+          <div class="mt-3 bg-green-500/20 border border-green-500 rounded px-2 py-1 text-xs text-center font-bold text-green-300">
+            BUILT ✓
+          </div>
+        </div>
+
+        <!-- Module 3: Export System -->
+        <div class="module bg-gradient-to-br from-yellow-600 to-orange-600 rounded-2xl p-6 border-2 border-yellow-400/50">
+          <div class="text-4xl mb-3 text-center">🎨</div>
+          <h3 class="text-lg font-black mb-2 text-center">Export</h3>
+          <ul class="text-xs space-y-1 text-yellow-100">
+            <li>✅ 40 Templates</li>
+            <li>✅ PNG Download</li>
+            <li>✅ Background Images</li>
+            <li>✅ Professional Design</li>
+          </ul>
+          <div class="mt-3 bg-green-500/20 border border-green-500 rounded px-2 py-1 text-xs text-center font-bold text-green-300">
+            BUILT ✓
+          </div>
+        </div>
+
+        <!-- Module 4: Points System -->
+        <div class="module bg-gradient-to-br from-green-600 to-teal-600 rounded-2xl p-6 border-2 border-green-400/50">
+          <div class="text-4xl mb-3 text-center">📊</div>
+          <h3 class="text-lg font-black mb-2 text-center">Scoring</h3>
+          <ul class="text-xs space-y-1 text-green-100">
+            <li>✅ Free Fire Rules</li>
+            <li>✅ BGMI Rules</li>
+            <li>✅ Valorant Rules</li>
+            <li>✅ Auto ELO Update</li>
+          </ul>
+          <div class="mt-3 bg-green-500/20 border border-green-500 rounded px-2 py-1 text-xs text-center font-bold text-green-300">
+            BUILT ✓
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE ROW: New Major Features -->
+      <div class="grid grid-cols-3 gap-8 mb-12">
+        
+        <!-- Squad System -->
+        <div class="module bg-gradient-to-br from-red-700 to-red-900 rounded-2xl p-6 border-2 border-red-500/50">
+          <div class="text-5xl mb-3 text-center">👥</div>
+          <h3 class="text-2xl font-black mb-3 text-center text-red-300">SQUAD SYSTEM</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-white/10 rounded-lg p-3">
+              <p class="font-bold text-sm mb-1">Squad Creation</p>
+              <ul class="text-xs space-y-1 text-gray-300">
+                <li>• Create/Join Squad</li>
+                <li>• 4 Members per Squad</li>
+                <li>• Leader + Players</li>
+                <li>• Squad Logo/Banner</li>
+              </ul>
+            </div>
+            
+            <div class="bg-white/10 rounded-lg p-3">
+              <p class="font-bold text-sm mb-1">Squad Rankings</p>
+              <ul class="text-xs space-y-1 text-gray-300">
+                <li>• 🌍 Global Leaderboard</li>
+                <li>• 🇮🇳 India Leaderboard</li>
+                <li>• ELO Rating System</li>
+                <li>• Prize Money Tracking</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-orange-500/20 border border-orange-500 rounded px-3 py-2 text-xs text-center font-bold text-orange-300">
+            TO BUILD 🚧
+          </div>
+        </div>
+
+        <!-- Player Profiles -->
+        <div class="module bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl p-6 border-2 border-blue-500/50">
+          <div class="text-5xl mb-3 text-center">👤</div>
+          <h3 class="text-2xl font-black mb-3 text-center text-blue-300">PLAYER PROFILES</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-white/10 rounded-lg p-3">
+              <p class="font-bold text-sm mb-1">Profile Info</p>
+              <ul class="text-xs space-y-1 text-gray-300">
+                <li>• Avatar & Banner</li>
+                <li>• Bio & Social Links</li>
+                <li>• Squad Affiliation</li>
+                <li>• Personal Stats</li>
+              </ul>
+            </div>
+            
+            <div class="bg-white/10 rounded-lg p-3">
+              <p class="font-bold text-sm mb-1">Showcase</p>
+              <ul class="text-xs space-y-1 text-gray-300">
+                <li>• Achievement Wall</li>
+                <li>• Certificates Upload</li>
+                <li>• Gameplay Clips</li>
+                <li>• Tournament History</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-orange-500/20 border border-orange-500 rounded px-3 py-2 text-xs text-center font-bold text-orange-300">
+            TO BUILD 🚧
+          </div>
+        </div>
+
+        <!-- Marketplace -->
+        <div class="module bg-gradient-to-br from-purple-700 to-purple-900 rounded-2xl p-6 border-2 border-purple-500/50">
+          <div class="text-5xl mb-3 text-center">💼</div>
+          <h3 class="text-2xl font-black mb-3 text-center text-purple-300">MARKETPLACE</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-white/10 rounded-lg p-3">
+              <p class="font-bold text-sm mb-1">Job Board</p>
+              <ul class="text-xs space-y-1 text-gray-300">
+                <li>• Organizers Hire Players</li>
+                <li>• YouTubers Find Talent</li>
+                <li>• Sponsor Opportunities</li>
+                <li>• Squad Recruitment</li>
+              </ul>
+            </div>
+            
+            <div class="bg-white/10 rounded-lg p-3">
+              <p class="font-bold text-sm mb-1">Applications</p>
+              <ul class="text-xs space-y-1 text-gray-300">
+                <li>• Apply as Individual</li>
+                <li>• Apply as Squad</li>
+                <li>• Messaging System</li>
+                <li>• Status Tracking</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-orange-500/20 border border-orange-500 rounded px-3 py-2 text-xs text-center font-bold text-orange-300">
+            TO BUILD 🚧
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW: Supporting Features -->
+      <div class="grid grid-cols-3 gap-6">
+        
+        <!-- Analytics -->
+        <div class="module bg-gradient-to-br from-cyan-600 to-blue-600 rounded-2xl p-5 border-2 border-cyan-400/50">
+          <div class="text-4xl mb-2 text-center">📈</div>
+          <h3 class="text-lg font-black mb-2 text-center">Analytics</h3>
+          <ul class="text-xs space-y-1 text-cyan-100">
+            <li>• Performance Graphs</li>
+            <li>• Win Rate Trends</li>
+            <li>• Squad Comparison</li>
+            <li>• Historical Data</li>
+          </ul>
+          <div class="mt-3 bg-orange-500/20 border border-orange-500 rounded px-2 py-1 text-xs text-center font-bold text-orange-300">
+            PHASE 2 🚧
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="module bg-gradient-to-br from-pink-600 to-red-600 rounded-2xl p-5 border-2 border-pink-400/50">
+          <div class="text-4xl mb-2 text-center">🔔</div>
+          <h3 class="text-lg font-black mb-2 text-center">Notifications</h3>
+          <ul class="text-xs space-y-1 text-pink-100">
+            <li>• Squad Invites</li>
+            <li>• Tournament Alerts</li>
+            <li>• Job Opportunities</li>
+            <li>• Achievement Unlocks</li>
+          </ul>
+          <div class="mt-3 bg-orange-500/20 border border-orange-500 rounded px-2 py-1 text-xs text-center font-bold text-orange-300">
+            PHASE 2 🚧
+          </div>
+        </div>
+
+        <!-- Social Features -->
+        <div class="module bg-gradient-to-br from-orange-600 to-yellow-600 rounded-2xl p-5 border-2 border-orange-400/50">
+          <div class="text-4xl mb-2 text-center">💬</div>
+          <h3 class="text-lg font-black mb-2 text-center">Social</h3>
+          <ul class="text-xs space-y-1 text-orange-100">
+            <li>• Follow Players/Squads</li>
+            <li>• Comments & Likes</li>
+            <li>• Share Achievements</li>
+            <li>• Chat System</li>
+          </ul>
+          <div class="mt-3 bg-orange-500/20 border border-orange-500 rounded px-2 py-1 text-xs text-center font-bold text-orange-300">
+            PHASE 3 🚧
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-16 flex justify-center gap-8">
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-green-500"></div>
+        <span class="text-sm text-gray-400">Built & Working</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-orange-500"></div>
+        <span class="text-sm text-gray-400">Next to Build</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded bg-blue-500"></div>
+        <span class="text-sm text-gray-400">Future Features</span>
+      </div>
+    </div>
+
+    <!-- Development Timeline -->
+    <div class="mt-16 bg-white/5 border border-white/10 rounded-2xl p-8">
+      <h2 class="text-2xl font-black mb-6 text-center">📅 Development Timeline</h2>
+      
+      <div class="space-y-4">
+        <div class="flex items-center gap-4">
+          <div class="w-32 flex-shrink-0 text-right">
+            <span class="bg-green-500/20 border border-green-500 px-3 py-1 rounded text-sm font-bold text-green-300">Phase 1 ✓</span>
+          </div>
+          <div class="flex-1 bg-green-500/10 border-l-4 border-green-500 rounded-r p-4">
+            <p class="font-bold mb-1">Foundation (DONE)</p>
+            <p class="text-sm text-gray-400">Auth, Tournaments, Calculator, Export Templates</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="w-32 flex-shrink-0 text-right">
+            <span class="bg-orange-500/20 border border-orange-500 px-3 py-1 rounded text-sm font-bold text-orange-300">Phase 2 🚧</span>
+          </div>
+          <div class="flex-1 bg-orange-500/10 border-l-4 border-orange-500 rounded-r p-4">
+            <p class="font-bold mb-1">Core Features (3-4 weeks)</p>
+            <p class="text-sm text-gray-400">Squad System, Player Profiles, Rankings</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="w-32 flex-shrink-0 text-right">
+            <span class="bg-blue-500/20 border border-blue-500 px-3 py-1 rounded text-sm font-bold text-blue-300">Phase 3</span>
+          </div>
+          <div class="flex-1 bg-blue-500/10 border-l-4 border-blue-500 rounded-r p-4">
+            <p class="font-bold mb-1">Marketplace (2-3 weeks)</p>
+            <p class="text-sm text-gray-400">Job Board, Applications, Hiring System</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="w-32 flex-shrink-0 text-right">
+            <span class="bg-purple-500/20 border border-purple-500 px-3 py-1 rounded text-sm font-bold text-purple-300">Phase 4</span>
+          </div>
+          <div class="flex-1 bg-purple-500/10 border-l-4 border-purple-500 rounded-r p-4">
+            <p class="font-bold mb-1">Advanced Features (Ongoing)</p>
+            <p class="text-sm text-gray-400">Analytics, Notifications, Social, Mobile App</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VINCI-ARENA PRO - Player Profile Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a0f; font-family: 'Arial', sans-serif; }
+    .gradient-text { 
+      background: linear-gradient(45deg, #DC143C, #FF4500, #FFFFFF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(220,20,60,0.4); }
+  </style>
+</head>
+<body class="text-white">
+
+  <!-- HEADER -->
+  <nav class="bg-black/80 backdrop-blur border-b border-red-500/30 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center font-black text-xl">V</div>
+        <span class="text-xl font-black gradient-text">VINCI-ARENA PRO</span>
+      </div>
+      <div class="flex gap-6 text-sm">
+        <a href="#" class="hover:text-red-400 transition">Home</a>
+        <a href="#" class="hover:text-red-400 transition">Rankings</a>
+        <a href="#" class="hover:text-red-400 transition">Marketplace</a>
+        <a href="#" class="text-red-400">My Profile</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PROFILE BANNER -->
+  <div class="relative h-64 bg-gradient-to-r from-red-900 via-purple-900 to-blue-900">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute bottom-0 left-0 right-0 p-8">
+      <div class="max-w-7xl mx-auto flex items-end gap-6">
+        <!-- Avatar -->
+        <div class="relative">
+          <div class="w-32 h-32 rounded-full border-4 border-white bg-gradient-to-br from-red-500 to-purple-600 flex items-center justify-center text-4xl font-black">
+            PX
+          </div>
+          <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center text-xl">
+            🏆
+          </div>
+        </div>
+        <!-- Info -->
+        <div class="flex-1 mb-4">
+          <h1 class="text-4xl font-black mb-2">ProXPlayer</h1>
+          <p class="text-gray-300 mb-2">🎮 Free Fire Champion • 🌍 Asia Region • ⭐ #42 Global Rank</p>
+          <div class="flex gap-3">
+            <span class="bg-yellow-500/20 border border-yellow-500/50 px-3 py-1 rounded-full text-yellow-300 text-xs font-bold">VERIFIED PRO</span>
+            <span class="bg-red-500/20 border border-red-500/50 px-3 py-1 rounded-full text-red-300 text-xs font-bold">ELITE TIER</span>
+          </div>
+        </div>
+        <!-- Action Buttons -->
+        <div class="flex gap-3 mb-4">
+          <button class="bg-red-600 hover:bg-red-500 px-6 py-2 rounded-lg font-bold transition">Hire Me</button>
+          <button class="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-lg font-bold border border-white/30 transition">Follow</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="grid grid-cols-3 gap-8">
+
+      <!-- LEFT: STATS -->
+      <div class="col-span-1 space-y-6">
+        <!-- Quick Stats -->
+        <div class="bg-white/5 backdrop-blur border border-red-500/30 rounded-2xl p-6">
+          <h3 class="text-lg font-black mb-4 text-red-400">⚡ Quick Stats</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Total Matches</span>
+              <span class="font-bold">342</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Win Rate</span>
+              <span class="font-bold text-green-400">68%</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">K/D Ratio</span>
+              <span class="font-bold text-yellow-400">4.2</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Booyahs</span>
+              <span class="font-bold text-purple-400">233</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">ELO Rating</span>
+              <span class="font-bold text-red-400">2450</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Achievements -->
+        <div class="bg-white/5 backdrop-blur border border-yellow-500/30 rounded-2xl p-6">
+          <h3 class="text-lg font-black mb-4 text-yellow-400">🏆 Recent Wins</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 p-3 bg-yellow-500/10 rounded-lg">
+              <div class="text-2xl">🥇</div>
+              <div>
+                <p class="font-bold text-sm">Regional Champion</p>
+                <p class="text-xs text-gray-400">2 days ago</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-purple-500/10 rounded-lg">
+              <div class="text-2xl">🏆</div>
+              <div>
+                <p class="font-bold text-sm">5K Tournament Winner</p>
+                <p class="text-xs text-gray-400">1 week ago</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: CONTENT -->
+      <div class="col-span-2 space-y-6">
+
+        <!-- Bio -->
+        <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+          <h3 class="text-lg font-black mb-3">📝 About Me</h3>
+          <p class="text-gray-300 leading-relaxed">
+            Professional Free Fire player with 3+ years experience. Specializing in aggressive playstyle and clutch moments. 
+            Available for tournaments, content creation, and coaching. Looking for sponsorship opportunities.
+          </p>
+          <div class="flex gap-3 mt-4">
+            <a href="#" class="text-blue-400 hover:text-blue-300">🔗 YouTube</a>
+            <a href="#" class="text-pink-400 hover:text-pink-300">📷 Instagram</a>
+            <a href="#" class="text-purple-400 hover:text-purple-300">🎮 Twitch</a>
+          </div>
+        </div>
+
+        <!-- Achievement Wall -->
+        <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-black">🏆 Achievement Wall</h3>
+            <button class="text-red-400 hover:text-red-300 text-sm font-bold">+ Add New</button>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Achievement Card -->
+            <div class="card-hover bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/50 rounded-xl p-4">
+              <div class="text-3xl mb-2">🥇</div>
+              <h4 class="font-bold mb-1">Regional Champion 2025</h4>
+              <p class="text-xs text-gray-400 mb-2">Asia Finals • Jan 2025</p>
+              <div class="flex gap-2">
+                <span class="bg-yellow-500/30 px-2 py-1 rounded text-xs">Verified</span>
+                <span class="bg-white/10 px-2 py-1 rounded text-xs">Certificate ✓</span>
+              </div>
+            </div>
+
+            <div class="card-hover bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/50 rounded-xl p-4">
+              <div class="text-3xl mb-2">🏆</div>
+              <h4 class="font-bold mb-1">Tournament MVP</h4>
+              <p class="text-xs text-gray-400 mb-2">50K Prize Pool • Dec 2024</p>
+              <div class="flex gap-2">
+                <span class="bg-purple-500/30 px-2 py-1 rounded text-xs">Verified</span>
+              </div>
+            </div>
+
+            <div class="card-hover bg-gradient-to-br from-red-500/20 to-pink-500/20 border border-red-500/50 rounded-xl p-4">
+              <div class="text-3xl mb-2">⚡</div>
+              <h4 class="font-bold mb-1">Fastest Victory</h4>
+              <p class="text-xs text-gray-400 mb-2">8min 34sec • World Record</p>
+              <div class="flex gap-2">
+                <span class="bg-red-500/30 px-2 py-1 rounded text-xs">Record</span>
+              </div>
+            </div>
+
+            <div class="card-hover bg-gradient-to-br from-green-500/20 to-teal-500/20 border border-green-500/50 rounded-xl p-4">
+              <div class="text-3xl mb-2">📊</div>
+              <h4 class="font-bold mb-1">100 Booyahs</h4>
+              <p class="text-xs text-gray-400 mb-2">Career Milestone</p>
+              <div class="flex gap-2">
+                <span class="bg-green-500/30 px-2 py-1 rounded text-xs">Unlocked</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gameplay Clips -->
+        <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-black">🎬 Highlight Clips</h3>
+            <button class="text-red-400 hover:text-red-300 text-sm font-bold">+ Upload Clip</button>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <!-- Clip Card -->
+            <div class="card-hover group cursor-pointer">
+              <div class="relative rounded-xl overflow-hidden mb-2 bg-gradient-to-br from-red-900 to-purple-900 h-32 flex items-center justify-center">
+                <div class="text-white text-4xl group-hover:scale-110 transition">▶️</div>
+                <div class="absolute top-2 right-2 bg-black/70 px-2 py-1 rounded text-xs">4:23</div>
+              </div>
+              <h4 class="font-bold text-sm mb-1">Insane 1v4 Clutch</h4>
+              <p class="text-xs text-gray-400">1.2M views • 2 days ago</p>
+            </div>
+
+            <div class="card-hover group cursor-pointer">
+              <div class="relative rounded-xl overflow-hidden mb-2 bg-gradient-to-br from-blue-900 to-cyan-900 h-32 flex items-center justify-center">
+                <div class="text-white text-4xl group-hover:scale-110 transition">▶️</div>
+                <div class="absolute top-2 right-2 bg-black/70 px-2 py-1 rounded text-xs">2:15</div>
+              </div>
+              <h4 class="font-bold text-sm mb-1">Epic Booyah Moment</h4>
+              <p class="text-xs text-gray-400">845K views • 1 week ago</p>
+            </div>
+
+            <div class="card-hover group cursor-pointer">
+              <div class="relative rounded-xl overflow-hidden mb-2 bg-gradient-to-br from-purple-900 to-pink-900 h-32 flex items-center justify-center">
+                <div class="text-white text-4xl group-hover:scale-110 transition">▶️</div>
+                <div class="absolute top-2 right-2 bg-black/70 px-2 py-1 rounded text-xs">5:48</div>
+              </div>
+              <h4 class="font-bold text-sm mb-1">Championship Finals</h4>
+              <p class="text-xs text-gray-400">2.3M views • 3 weeks ago</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tournament History -->
+        <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
+          <h3 class="text-lg font-black mb-4">📈 Tournament History</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+              <div>
+                <h4 class="font-bold">Asia Regional Finals</h4>
+                <p class="text-sm text-gray-400">Free Fire • Jan 2025</p>
+              </div>
+              <div class="text-right">
+                <p class="text-yellow-400 font-black text-xl">1st Place</p>
+                <p class="text-sm text-gray-400">Prize: $5,000</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+              <div>
+                <h4 class="font-bold">Winter Championship</h4>
+                <p class="text-sm text-gray-400">Free Fire • Dec 2024</p>
+              </div>
+              <div class="text-right">
+                <p class="text-gray-300 font-black text-xl">3rd Place</p>
+                <p class="text-sm text-gray-400">Prize: $1,500</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER NOTE -->
+  <div class="text-center py-8 text-gray-500 text-sm">
+    <p>🎨 This is a DEMO - Not connected to real data</p>
+    <p class="mt-1">Built with VINCI-ARENA PRO Architecture</p>
+  </div>
+
+</body>
+</html>
