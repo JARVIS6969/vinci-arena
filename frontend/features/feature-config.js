@@ -7,7 +7,7 @@
 
 export const FEATURES = {
   // Phase 2: Core Features
-  SQUADS: false,           // Squad creation, management, rankings
+  SQUADS: true,           // Squad creation, management, rankings
   PROFILES: false,         // Enhanced player profiles with achievements
   RANKINGS: false,         // Global/India leaderboards
   

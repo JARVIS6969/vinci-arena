@@ -184,6 +184,11 @@ export default function Dashboard() {
                   ➕ Create Tournament
                 </button>
               </Link>
+              <Link href="/squads">
+                <button className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg shadow-purple-500/50 hover:shadow-purple-400/70 active:scale-95 drop-shadow-xl">
+                  👥 View Squads
+                </button>
+              </Link>
             </div>
           </div>
 
