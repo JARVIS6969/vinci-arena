@@ -96,7 +96,7 @@ export default function DashboardPage() {
           {/* CARD 1: CREATE POINT TABLE */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition"></div>
-            <div className="relative backdrop-blur-xl bg-gradient-to-br from-blue-950/90 to-cyan-950/90 border border-blue-500/30 rounded-3xl p-8 shadow-2xl">
+            <div className="relative backdrop-blur-xl bg-gradient-to-br from-blue-950/90 to-cyan-950/90 border border-blue-500/30 rounded-3xl p-8 shadow-2xl min-h-[800px] flex flex-col">
               
               {/* Card Header */}
               <div className="text-center mb-6">
@@ -172,96 +172,137 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* CARD 2: ESPORTS HUB */}
+          {/* CARD 2: ESPORTS HUB - NETFLIX STYLE */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-purple-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition"></div>
-            <div className="relative backdrop-blur-xl bg-gradient-to-br from-red-950/90 to-purple-950/90 border border-red-500/30 rounded-3xl p-8 shadow-2xl">
+            {/* Netflix-style red glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-red-700 to-red-900 rounded-3xl blur-2xl opacity-30 group-hover:opacity-50 transition-all duration-500"></div>
+            
+            {/* Main card with deep black background */}
+            <div className="relative backdrop-blur-2xl bg-gradient-to-br from-black/95 via-red-950/40 to-black/95 border-2 border-red-600/60 rounded-3xl p-8 shadow-2xl overflow-hidden min-h-[800px] flex flex-col">
               
-              {/* Card Header */}
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-purple-500 rounded-2xl mb-4 shadow-lg shadow-red-500/50">
-                  <span className="text-4xl">🎮</span>
+              {/* Subtle animated gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-red-900/20 opacity-50"></div>
+              
+              {/* Content */}
+              <div className="relative z-10">
+                
+                {/* Card Header */}
+                <div className="text-center mb-8">
+                  {/* Logo with dramatic 3D glow */}
+                  {/* Premium Logo with Depth */}
+                  <div className="relative inline-flex items-center justify-center mb-6">
+                    {/* Layered glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 blur-3xl opacity-50 scale-125"></div>
+                    <div className="absolute inset-0 bg-red-600 blur-2xl opacity-30 scale-110"></div>
+                    
+                    {/* Logo with subtle card */}
+                    <div className="relative bg-black/60 backdrop-blur-md p-5 rounded-2xl border border-red-500/30 shadow-2xl transform transition-all duration-500 group-hover:scale-105 group-hover:shadow-red-500/60">
+                      <img 
+                        src="/vinci-logo.jpg" 
+                        alt="Vinci Logo" 
+                        className="w-28 h-28 object-contain drop-shadow-2xl" 
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Netflix-style title */}
+                  <h2 className="text-4xl font-black mb-3 bg-gradient-to-r from-red-500 via-red-600 to-orange-500 bg-clip-text text-transparent drop-shadow-2xl tracking-tight">
+                    ESPORTS HUB
+                  </h2>
+                  <p className="text-gray-300 text-sm font-medium tracking-wide">Squads • Rankings • Profiles • Marketplace</p>
                 </div>
-                <h2 className="text-3xl font-black mb-2 bg-gradient-to-r from-red-400 to-purple-400 bg-clip-text text-transparent">
-                  ESPORTS HUB
-                </h2>
-                <p className="text-purple-300/80 text-sm">Squads • Rankings • Profiles • Marketplace</p>
-              </div>
 
-              {/* Menu Items */}
-              <div className="space-y-3 mb-6">
-                <Link href="/squads">
-                  <div className="group/menu bg-gradient-to-r from-purple-900/50 to-pink-900/50 hover:from-purple-800/60 hover:to-pink-800/60 border border-purple-500/30 hover:border-purple-400/50 rounded-2xl p-4 cursor-pointer transition-all hover:scale-105">
+                {/* Menu Items - Netflix card style */}
+                <div className="space-y-3 mb-8">
+                  
+                  {/* Squads - LIVE & Clickable */}
+                  <Link href="/squads">
+                    <div className="group/menu relative bg-gradient-to-r from-red-600/20 via-red-700/20 to-red-600/20 hover:from-red-600/40 hover:via-red-700/40 hover:to-red-600/40 border border-red-500/40 hover:border-red-400/80 rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-red-500/40 overflow-hidden">
+                      
+                      {/* Animated shine effect on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/menu:translate-x-full transition-transform duration-700 ease-out"></div>
+                      
+                      <div className="relative flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/60 transform transition-all duration-300 group-hover/menu:rotate-6 group-hover/menu:scale-110">
+                            <span className="text-3xl">👥</span>
+                          </div>
+                          <div>
+                            <h3 className="font-black text-lg text-white mb-1 group-hover/menu:text-red-300 transition">Squads</h3>
+                            <p className="text-xs text-gray-400">Create & manage teams</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="bg-green-500/30 border border-green-500 text-green-400 text-xs px-3 py-1.5 rounded-full font-black shadow-lg shadow-green-500/30 animate-pulse">LIVE</span>
+                          <span className="text-red-400 group-hover/menu:text-white group-hover/menu:translate-x-1 transition-all text-xl">→</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* Rankings - Coming Soon */}
+                  <div className="relative bg-gradient-to-r from-gray-900/60 to-gray-800/60 border border-gray-700/40 rounded-2xl p-5 opacity-70">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <span className="text-2xl">👥</span>
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-yellow-600/40 to-orange-600/40 rounded-xl flex items-center justify-center">
+                          <span className="text-3xl opacity-50">🏆</span>
                         </div>
                         <div>
-                          <h3 className="font-bold">Squads</h3>
-                          <p className="text-xs text-gray-400">Create & manage teams</p>
+                          <h3 className="font-black text-lg text-gray-300">Rankings</h3>
+                          <p className="text-xs text-gray-500">Global & India leaderboards</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="bg-green-500/20 border border-green-500/50 text-green-400 text-xs px-2 py-1 rounded-full font-bold">LIVE</span>
-                        <span className="text-gray-400 group-hover/menu:text-white transition">→</span>
-                      </div>
+                      <span className="bg-orange-500/20 border border-orange-500/60 text-orange-400 text-xs px-3 py-1.5 rounded-full font-black">SOON</span>
                     </div>
                   </div>
+
+                  {/* Player Profiles - Coming Soon */}
+                  <div className="relative bg-gradient-to-r from-gray-900/60 to-gray-800/60 border border-gray-700/40 rounded-2xl p-5 opacity-70">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-blue-600/40 to-cyan-600/40 rounded-xl flex items-center justify-center">
+                          <span className="text-3xl opacity-50">👤</span>
+                        </div>
+                        <div>
+                          <h3 className="font-black text-lg text-gray-300">Player Profiles</h3>
+                          <p className="text-xs text-gray-500">Achievements & highlights</p>
+                        </div>
+                      </div>
+                      <span className="bg-orange-500/20 border border-orange-500/60 text-orange-400 text-xs px-3 py-1.5 rounded-full font-black">SOON</span>
+                    </div>
+                  </div>
+
+                  {/* Marketplace - Planned */}
+                  <div className="relative bg-gradient-to-r from-gray-900/60 to-gray-800/60 border border-gray-700/40 rounded-2xl p-5 opacity-70">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-green-600/40 to-emerald-600/40 rounded-xl flex items-center justify-center">
+                          <span className="text-3xl opacity-50">💼</span>
+                        </div>
+                        <div>
+                          <h3 className="font-black text-lg text-gray-300">Marketplace</h3>
+                          <p className="text-xs text-gray-500">Hire players & find jobs</p>
+                        </div>
+                      </div>
+                      <span className="bg-blue-500/20 border border-blue-500/60 text-blue-400 text-xs px-3 py-1.5 rounded-full font-black">PLANNED</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Explore Button - Netflix CTA style */}
+                <Link href="/esports">
+                  <button className="relative w-full bg-gradient-to-r from-red-600 via-red-700 to-red-600 hover:from-red-500 hover:via-red-600 hover:to-red-500 text-white py-5 rounded-2xl font-black text-xl shadow-2xl shadow-red-600/60 transition-all duration-300 hover:shadow-red-500/80 hover:scale-[1.02] active:scale-95 overflow-hidden group/btn">
+                    {/* Animated shine */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-out"></div>
+                    <span className="relative flex items-center justify-center gap-2">
+                      Explore Esports Hub 
+                      <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
+                    </span>
+                  </button>
                 </Link>
 
-                <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-600/20 rounded-2xl p-4 opacity-60 cursor-not-allowed">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-600/50 to-orange-600/50 rounded-xl flex items-center justify-center">
-                        <span className="text-2xl">🏆</span>
-                      </div>
-                      <div>
-                        <h3 className="font-bold">Rankings</h3>
-                        <p className="text-xs text-gray-500">Global & India leaderboards</p>
-                      </div>
-                    </div>
-                    <span className="bg-orange-500/20 border border-orange-500/50 text-orange-400 text-xs px-2 py-1 rounded-full font-bold">SOON</span>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 border border-blue-600/20 rounded-2xl p-4 opacity-60 cursor-not-allowed">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-600/50 to-cyan-600/50 rounded-xl flex items-center justify-center">
-                        <span className="text-2xl">👤</span>
-                      </div>
-                      <div>
-                        <h3 className="font-bold">Player Profiles</h3>
-                        <p className="text-xs text-gray-500">Achievements & highlights</p>
-                      </div>
-                    </div>
-                    <span className="bg-orange-500/20 border border-orange-500/50 text-orange-400 text-xs px-2 py-1 rounded-full font-bold">SOON</span>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-600/20 rounded-2xl p-4 opacity-60 cursor-not-allowed">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-600/50 to-emerald-600/50 rounded-xl flex items-center justify-center">
-                        <span className="text-2xl">💼</span>
-                      </div>
-                      <div>
-                        <h3 className="font-bold">Marketplace</h3>
-                        <p className="text-xs text-gray-500">Hire players & find jobs</p>
-                      </div>
-                    </div>
-                    <span className="bg-blue-500/20 border border-blue-500/50 text-blue-400 text-xs px-2 py-1 rounded-full font-bold">PLANNED</span>
-                  </div>
-                </div>
               </div>
-
-              {/* Explore Button */}
-              <Link href="/esports">
-                <button className="w-full bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-500 hover:to-purple-500 text-white py-4 rounded-xl font-black text-lg shadow-lg shadow-red-500/30 transition-all hover:shadow-red-500/50 hover:scale-105 active:scale-95">
-                  Explore Esports Hub →
-                </button>
-              </Link>
             </div>
           </div>
 
