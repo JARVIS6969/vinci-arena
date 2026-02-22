@@ -317,6 +317,377 @@ app.post('/api/profiles', authenticateToken, async (req, res) => {
   }
 });
 
+// ============================
+// MARKETPLACE ROUTES
+// ============================
+
+// GET all job postings
+app.get('/api/marketplace/jobs', async (req, res) => {
+  try {
+    const { game, job_type, status = 'open' } = req.query;
+    let query = supabase
+      .from('job_postings')
+      .select('*, users(name)')
+      .eq('status', status)
+      .order('created_at', { ascending: false });
+    
+    if (game) query = query.eq('game', game);
+    if (job_type) query = query.eq('job_type', job_type);
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Get jobs error:', err);
+    res.status(500).json({ error: 'Failed to fetch jobs' });
+  }
+});
+
+// GET single job
+app.get('/api/marketplace/jobs/:id', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('job_postings')
+      .select('*, users(name, email), job_applications(id, status, applied_at, applicant_id, users(name))')
+      .eq('id', req.params.id)
+      .single();
+    
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('Get job error:', err);
+    res.status(500).json({ error: 'Failed to fetch job' });
+  }
+});
+
+// POST create job
+app.post('/api/marketplace/jobs', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { title, description, job_type, game, role_needed, experience_level, budget_type, budget_amount, requirements, expires_at } = req.body;
+    
+    if (!title || !description || !job_type || !game) {
+      return res.status(400).json({ error: 'Title, description, job_type, and game are required' });
+    }
+    
+    const { data, error } = await supabase
+      .from('job_postings')
+      .insert({
+        posted_by: userId,
+        title, description, job_type, game, role_needed, experience_level,
+        budget_type, budget_amount, requirements, expires_at
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Create job error:', err);
+    res.status(500).json({ error: 'Failed to create job' });
+  }
+});
+
+// POST apply to job
+app.post('/api/marketplace/jobs/:id/apply', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const jobId = req.params.id;
+    const { message, resume_url } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ error: 'Application message is required' });
+    }
+    
+    // Check if already applied
+    const { data: existing } = await supabase
+      .from('job_applications')
+      .select('id')
+      .eq('job_id', jobId)
+      .eq('applicant_id', userId)
+      .single();
+    
+    if (existing) {
+      return res.status(400).json({ error: 'Already applied to this job' });
+    }
+    
+    const { data, error } = await supabase
+      .from('job_applications')
+      .insert({
+        job_id: jobId,
+        applicant_id: userId,
+        message,
+        resume_url
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Increment applications count
+    await supabase
+      .from('job_postings')
+      .update({ applications_count: supabase.raw('applications_count + 1') })
+      .eq('id', jobId);
+    
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Apply to job error:', err);
+    res.status(500).json({ error: 'Failed to apply' });
+  }
+});
+
+// GET my applications
+app.get('/api/marketplace/my-applications', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    
+    const { data, error } = await supabase
+      .from('job_applications')
+      .select('*, job_postings(*, users(name))')
+      .eq('applicant_id', userId)
+      .order('applied_at', { ascending: false });
+    
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Get my applications error:', err);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
+
+// GET my job postings
+app.get('/api/marketplace/my-jobs', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    
+    const { data, error } = await supabase
+      .from('job_postings')
+      .select('*, job_applications(id, status, users(name))')
+      .eq('posted_by', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Get my jobs error:', err);
+    res.status(500).json({ error: 'Failed to fetch jobs' });
+  }
+});
+
+// ============================
+// CHAT SYSTEM ROUTES
+// ============================
+
+// GET all my conversations (DMs + Groups)
+app.get('/api/chat/conversations', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    
+    // Get DM conversations
+    const { data: dms, error: dmError } = await supabase
+      .from('dm_conversations')
+      .select('*, user1:user1_id(name), user2:user2_id(name)')
+      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+      .order('last_message_at', { ascending: false });
+    
+    if (dmError) throw dmError;
+    
+    // Get group chats
+    const { data: groups, error: groupError } = await supabase
+      .from('group_chat_members')
+      .select('group_chats(*, created_by, group_chat_members(count))')
+      .eq('user_id', userId);
+    
+    if (groupError) throw groupError;
+    
+    res.json({ dms: dms || [], groups: groups?.map(g => g.group_chats) || [] });
+  } catch (err) {
+    console.error('Get conversations error:', err);
+    res.status(500).json({ error: 'Failed to fetch conversations' });
+  }
+});
+
+// GET messages from DM or Group
+app.get('/api/chat/messages', authenticateToken, async (req, res) => {
+  try {
+    const { receiver_id, group_id, limit = 50 } = req.query;
+    
+    let query = supabase
+      .from('chat_messages')
+      .select('*, sender:sender_id(name), reply_to_message:reply_to(message, sender:sender_id(name))')
+      .order('created_at', { ascending: false })
+      .limit(parseInt(limit));
+    
+    if (receiver_id) {
+      const userId = String(req.user.userId);
+      query = query.or(`and(sender_id.eq.${userId},receiver_id.eq.${receiver_id}),and(sender_id.eq.${receiver_id},receiver_id.eq.${userId})`);
+    } else if (group_id) {
+      query = query.eq('group_id', group_id);
+    } else {
+      return res.status(400).json({ error: 'receiver_id or group_id required' });
+    }
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    res.json(data || []);
+  } catch (err) {
+    console.error('Get messages error:', err);
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
+// POST send message (DM or Group)
+app.post('/api/chat/messages', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { message, receiver_id, group_id, message_type = 'text', attachment_url, attachment_name, reply_to } = req.body;
+    
+    if (!message && !attachment_url) {
+      return res.status(400).json({ error: 'Message or attachment required' });
+    }
+    
+    if (!receiver_id && !group_id) {
+      return res.status(400).json({ error: 'receiver_id or group_id required' });
+    }
+    
+    // Insert message
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .insert({
+        sender_id: userId,
+        receiver_id: receiver_id || null,
+        group_id: group_id || null,
+        message,
+        message_type,
+        attachment_url,
+        attachment_name,
+        reply_to
+      })
+      .select('*, sender:sender_id(name)')
+      .single();
+    
+    if (error) throw error;
+    
+    // Update DM conversation
+    if (receiver_id) {
+      const [smaller, larger] = [userId, receiver_id].sort();
+      await supabase
+        .from('dm_conversations')
+        .upsert({
+          user1_id: smaller,
+          user2_id: larger,
+          last_message: message,
+          last_message_at: new Date().toISOString()
+        }, { onConflict: 'user1_id,user2_id' });
+    }
+    
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Send message error:', err);
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
+// POST create group chat
+app.post('/api/chat/groups', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { name, description, icon_url, chat_type = 'public' } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Group name required' });
+    }
+    
+    // Create group
+    const { data: group, error: groupError } = await supabase
+      .from('group_chats')
+      .insert({
+        name,
+        description,
+        icon_url,
+        chat_type,
+        created_by: userId
+      })
+      .select()
+      .single();
+    
+    if (groupError) throw groupError;
+    
+    // Add creator as admin
+    const { error: memberError } = await supabase
+      .from('group_chat_members')
+      .insert({
+        group_id: group.id,
+        user_id: userId,
+        role: 'admin'
+      });
+    
+    if (memberError) throw memberError;
+    
+    res.status(201).json(group);
+  } catch (err) {
+    console.error('Create group error:', err);
+    res.status(500).json({ error: 'Failed to create group' });
+  }
+});
+
+// POST add member to group
+app.post('/api/chat/groups/:id/members', authenticateToken, async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = String(req.user.userId);
+    const { user_id_to_add } = req.body;
+    
+    // Check if requester is admin
+    const { data: member } = await supabase
+      .from('group_chat_members')
+      .select('role')
+      .eq('group_id', groupId)
+      .eq('user_id', userId)
+      .single();
+    
+    if (!member || member.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can add members' });
+    }
+    
+    // Add member
+    const { data, error } = await supabase
+      .from('group_chat_members')
+      .insert({
+        group_id: groupId,
+        user_id: user_id_to_add
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Add member error:', err);
+    res.status(500).json({ error: 'Failed to add member' });
+  }
+});
+
+// GET group members
+app.get('/api/chat/groups/:id/members', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('group_chat_members')
+      .select('*, users(id, name, email)')
+      .eq('group_id', req.params.id);
+    
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Get group members error:', err);
+    res.status(500).json({ error: 'Failed to fetch members' });
+  }
+});
+
+
+
 app.use((req, res) => {
   console.log('❌ 404 Route not found:', req.method, req.url);
   res.status(404).json({ error: `Route ${req.method} ${req.url} not found` });

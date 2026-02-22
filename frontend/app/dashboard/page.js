@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ChatButton from '@/components/chat/ChatButton';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -95,18 +96,18 @@ export default function DashboardPage() {
           
           {/* CARD 1: CREATE POINT TABLE */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition"></div>
-            <div className="relative backdrop-blur-xl bg-gradient-to-br from-blue-950/90 to-cyan-950/90 border border-blue-500/30 rounded-3xl p-8 shadow-2xl min-h-[800px] flex flex-col">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-800 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition"></div>
+            <div className="relative backdrop-blur-xl bg-gradient-to-br from-gray-900/95 to-red-950/90 border border-red-600/40 rounded-3xl p-8 shadow-2xl min-h-[800px] flex flex-col">
               
               {/* Card Header */}
               <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl mb-4 shadow-lg shadow-blue-500/50">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl mb-4 shadow-lg shadow-red-600/50">
                   <span className="text-4xl">📊</span>
                 </div>
-                <h2 className="text-3xl font-black mb-2 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                <h2 className="text-3xl font-black mb-2 bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
                   CREATE POINT TABLE
                 </h2>
-                <p className="text-blue-300/80 text-sm">Tournament Calculator & Points System</p>
+                <p className="text-red-300/80 text-sm">Tournament Calculator & Points System</p>
               </div>
 
               {/* Features */}
@@ -119,11 +120,16 @@ export default function DashboardPage() {
               </div>
 
               {/* Create Button */}
-              <Link href="/tournaments/create">
-                <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white py-4 rounded-xl font-black text-lg shadow-lg shadow-blue-500/30 transition-all hover:shadow-blue-500/50 hover:scale-105 active:scale-95">
-                  + Create New Tournament
-                </button>
-              </Link>
+          <Link href="/tournaments/create">
+                  <button className="relative w-full bg-gradient-to-r from-red-600 via-red-700 to-red-600 hover:from-red-500 hover:via-red-600 hover:to-red-500 text-white py-5 rounded-2xl font-black text-xl shadow-2xl shadow-red-600/60 transition-all duration-300 hover:shadow-red-500/80 hover:scale-[1.02] active:scale-95 overflow-hidden group/btn">
+                    {/* Animated shine */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-out"></div>
+                    <span className="relative flex items-center justify-center gap-2">
+                      Create point table
+                      <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
+                    </span>
+                  </button>
+                </Link>
 
               {/* Recent Tournaments */}
               <div className="mt-8">
@@ -307,6 +313,7 @@ export default function DashboardPage() {
           </div>
 
         </div>
+        <ChatButton />
 
       </div>
     </div>
