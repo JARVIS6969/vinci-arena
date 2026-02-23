@@ -72,7 +72,7 @@ app.post('/api/auth/register', async (req, res) => {
       .select('id, name, email').single();
     if (error) throw error;
 
-    const token = jwt.sign({ userId: String(data.id) }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ userId: String(data.id) }, JWT_SECRET, { expiresIn: '30d' });
     res.status(201).json({ token, user: { id: data.id, name: data.name, email: data.email } });
   } catch (error) {
     console.error('Register error:', error);
@@ -92,7 +92,7 @@ app.post('/api/auth/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
 
-    const token = jwt.sign({ userId: String(user.id) }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ userId: String(user.id) }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (error) {
     console.error('Login error:', error);
