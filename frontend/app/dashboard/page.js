@@ -262,37 +262,42 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Player Profiles - Coming Soon */}
-                  <div className="relative bg-gradient-to-r from-gray-900/60 to-gray-800/60 border border-gray-700/40 rounded-2xl p-5 opacity-70">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-blue-600/40 to-cyan-600/40 rounded-xl flex items-center justify-center">
-                          <span className="text-3xl opacity-50">👤</span>
-                        </div>
-                        <div>
-                          <h3 className="font-black text-lg text-gray-300">Player Profiles</h3>
-                          <p className="text-xs text-gray-500">Achievements & highlights</p>
-                        </div>
-                      </div>
-                      <span className="bg-orange-500/20 border border-orange-500/60 text-orange-400 text-xs px-3 py-1.5 rounded-full font-black">SOON</span>
-                    </div>
-                  </div>
 
-                  {/* Marketplace - Planned */}
-                  <div className="relative bg-gradient-to-r from-gray-900/60 to-gray-800/60 border border-gray-700/40 rounded-2xl p-5 opacity-70">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-green-600/40 to-emerald-600/40 rounded-xl flex items-center justify-center">
-                          <span className="text-3xl opacity-50">💼</span>
+                  {/* Player Profiles - ACTIVE */}
+                  <Link href="/profile">
+                    <div className="relative bg-gradient-to-r from-blue-900/40 to-cyan-900/40 border border-blue-500/40 hover:border-blue-400/60 rounded-2xl p-5 cursor-pointer transition-all hover:scale-105">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/50">
+                            <span className="text-3xl">👤</span>
+                          </div>
+                          <div>
+                            <h3 className="font-black text-lg text-white">Player Profiles</h3>
+                            <p className="text-xs text-gray-400">Achievements & highlights</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-black text-lg text-gray-300">Marketplace</h3>
-                          <p className="text-xs text-gray-500">Hire players & find jobs</p>
-                        </div>
+                        <span className="bg-green-500/30 border border-green-500 text-green-400 text-xs px-3 py-1.5 rounded-full font-black animate-pulse">LIVE</span>
                       </div>
-                      <span className="bg-blue-500/20 border border-blue-500/60 text-blue-400 text-xs px-3 py-1.5 rounded-full font-black">PLANNED</span>
                     </div>
-                  </div>
+                  </Link>
+
+                  {/* Marketplace - ACTIVE */}
+                  <Link href="/marketplace">
+                    <div className="relative bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-500/40 hover:border-green-400/60 rounded-2xl p-5 cursor-pointer transition-all hover:scale-105">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/50">
+                            <span className="text-3xl">💼</span>
+                          </div>
+                          <div>
+                            <h3 className="font-black text-lg text-white">Marketplace</h3>
+                            <p className="text-xs text-gray-400">Find jobs & opportunities</p>
+                          </div>
+                        </div>
+                        <span className="bg-green-500/30 border border-green-500 text-green-400 text-xs px-3 py-1.5 rounded-full font-black animate-pulse">LIVE</span>
+                      </div>
+                    </div>
+                  </Link>
 
                 </div>
 

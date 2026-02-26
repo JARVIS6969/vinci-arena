@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -116,7 +117,6 @@ export default function MyProfilePage() {
             <h2 className="text-2xl font-black mb-6">Edit Profile</h2>
 
             <div className="space-y-6">
-              {/* Display Name */}
               <div>
                 <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Display Name</label>
                 <input
@@ -128,7 +128,6 @@ export default function MyProfilePage() {
                 />
               </div>
 
-              {/* Bio */}
               <div>
                 <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Bio</label>
                 <textarea
@@ -140,7 +139,6 @@ export default function MyProfilePage() {
                 />
               </div>
 
-              {/* Primary Game */}
               <div>
                 <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Primary Game</label>
                 <select
@@ -154,7 +152,6 @@ export default function MyProfilePage() {
                 </select>
               </div>
 
-              {/* Buttons */}
               <div className="flex gap-4 pt-4">
                 <button onClick={handleSave} className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-3 rounded-xl font-black transition-all hover:scale-105 active:scale-95">
                   Save Profile
@@ -192,7 +189,7 @@ export default function MyProfilePage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-6 mb-8">
               <div className="bg-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 text-center">
                 <p className="text-3xl font-black text-red-400">{profile.total_tournaments || 0}</p>
                 <p className="text-gray-500 text-sm uppercase">Tournaments</p>
@@ -205,6 +202,20 @@ export default function MyProfilePage() {
                 <p className="text-3xl font-black text-yellow-400">{profile.total_kills || 0}</p>
                 <p className="text-gray-500 text-sm uppercase">Kills</p>
               </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="grid grid-cols-2 gap-6">
+              <Link href="/profile/achievements">
+                <button className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white py-6 rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-yellow-500/30">
+                  🏆 Achievements ({profile.achievements?.length || 0})
+                </button>
+              </Link>
+              <Link href="/profile/clips">
+                <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-6 rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/30">
+                  🎥 Clips ({profile.gameplay_clips?.length || 0})
+                </button>
+              </Link>
             </div>
           </div>
         )}
