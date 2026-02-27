@@ -60,62 +60,7 @@ export default function HomePage() {
       {/* CONTENT */}
       <div className="relative z-10">
         {/* HEADER - NOW WITH HOVER EFFECT */}
-        <nav className="bg-black/40 backdrop-blur-md border-b border-[#DC143C]/30 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-20">
-              {/* LOGO WITH HOVER EFFECT */}
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center overflow-hidden shadow-lg shadow-red-500/30">
-                  <img src="/vinci-symbol.jpg" alt="Vinci-Arena" className="w-10 h-10 object-contain" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white tracking-tight group-hover:text-[#DC143C] transition">
-                    VINCI-ARENA
-                  </h1>
-                  <p className="text-xs text-[#DC143C] font-medium">Track. Calculate. Win.</p>
-                </div>
-              </Link>
-
-              <div className="flex items-center gap-4">
-                {userName ? (
-                  <>
-                    <div className="flex items-center gap-3 bg-gradient-to-r from-[#DC143C]/20 to-[#A52A2A]/20 px-4 py-2 rounded-full border border-[#DC143C]/50">
-                      <div className="w-8 h-8 bg-gradient-to-br from-[#DC143C] to-[#A52A2A] rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">{userName[0].toUpperCase()}</span>
-                      </div>
-                      <span className="text-white font-medium">{userName}</span>
-                    </div>
-                    <button
-                      onClick={(e) => { createRipple(e); router.push('/dashboard'); }}
-                      className="professional-button ripple-container"
-                    >
-                      Dashboard
-                    </button>
-                    <button
-                      onClick={(e) => { createRipple(e); handleLogout(); }}
-                      className="professional-button-outline ripple-container"
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/login">
-                      <button onClick={createRipple} className="professional-button-outline ripple-container">
-                        Login
-                      </button>
-                    </Link>
-                    <Link href="/register">
-                      <button onClick={createRipple} className="professional-button ripple-container">
-                        Sign Up
-                      </button>
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </nav>
+        
 
         {/* HERO SECTION */}
         <div className="relative">

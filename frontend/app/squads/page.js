@@ -48,21 +48,7 @@ export default function SquadsPage() {
     <div className="min-h-screen bg-gray-950 text-white">
       
       {/* Header */}
-      <nav className="bg-gray-900 border-b border-gray-800 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.push('/dashboard')} className="text-gray-400 hover:text-white transition">
-              ← Back
-            </button>
-            <h1 className="text-2xl font-black">🏆 Squads</h1>
-          </div>
-          <Link href="/squads/create">
-            <button className="bg-red-600 hover:bg-red-500 text-white px-6 py-2 rounded-lg font-bold transition">
-              + Create Squad
-            </button>
-          </Link>
-        </div>
-      </nav>
+      
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         

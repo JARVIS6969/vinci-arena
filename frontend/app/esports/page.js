@@ -10,26 +10,7 @@ export default function EsportsHubPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
       
       {/* HEADER */}
-      <nav className="backdrop-blur-xl bg-black/40 border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <button 
-            onClick={() => router.push('/dashboard')} 
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition"
-          >
-            <span className="text-xl">←</span> Back to Dashboard
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-purple-600 rounded-lg flex items-center justify-center font-black shadow-lg">
-              V
-            </div>
-            <div>
-              <h1 className="text-xl font-black">ESPORTS HUB</h1>
-              <p className="text-xs text-gray-400">Explore Features</p>
-            </div>
-          </div>
-          <div className="w-32"></div>
-        </div>
-      </nav>
+      
 
       {/* HERO SECTION */}
       <div className="relative overflow-hidden py-20">

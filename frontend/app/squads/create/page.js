@@ -54,14 +54,7 @@ export default function CreateSquadPage() {
     <div className="min-h-screen bg-gray-950 text-white">
       
       {/* Header */}
-      <nav className="bg-gray-900 border-b border-gray-800 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <button onClick={() => router.push('/squads')} className="text-gray-400 hover:text-white transition">
-            ← Back
-          </button>
-          <h1 className="text-2xl font-black">Create New Squad</h1>
-        </div>
-      </nav>
+      
 
       <div className="max-w-4xl mx-auto px-6 py-12">
         

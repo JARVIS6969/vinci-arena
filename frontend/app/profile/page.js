@@ -86,15 +86,7 @@ export default function MyProfilePage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
       
       {/* HEADER */}
-      <nav className="backdrop-blur-xl bg-black/40 border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <button onClick={() => router.push('/dashboard')} className="text-gray-400 hover:text-white transition">
-            ← Back to Dashboard
-          </button>
-          <h1 className="text-xl font-black">MY PROFILE</h1>
-          <div className="w-32"></div>
-        </div>
-      </nav>
+      
 
       {/* CONTENT */}
       <div className="max-w-4xl mx-auto px-6 py-12">

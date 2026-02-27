@@ -54,30 +54,7 @@ export default function CreateTournament() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <nav className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/dashboard" className="text-2xl font-bold text-white">
-              Tournament Calculator
-            </Link>
-            
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-gray-300 hover:text-white font-semibold">
-                🏠 Home
-              </Link>
-              <Link href="/profile" className="text-gray-300 hover:text-white font-semibold">
-                👤 Profile
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-8">

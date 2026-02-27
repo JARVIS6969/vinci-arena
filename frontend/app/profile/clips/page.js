@@ -91,17 +91,7 @@ export default function ClipsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
       
       {/* HEADER */}
-      <nav className="backdrop-blur-xl bg-black/40 border-b border-white/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <button onClick={() => router.push('/profile')} className="text-gray-400 hover:text-white transition">
-            ← Back to Profile
-          </button>
-          <h1 className="text-xl font-black">🎥 GAMEPLAY CLIPS</h1>
-          <button onClick={() => setShowAddForm(true)} className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition">
-            + Add Clip
-          </button>
-        </div>
-      </nav>
+      
 
       <div className="max-w-7xl mx-auto px-6 py-12">
         

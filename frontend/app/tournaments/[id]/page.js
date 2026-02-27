@@ -296,14 +296,7 @@ export default function TournamentPage() {
       )}
 
       {/* NAVBAR */}
-      <nav className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
-        <span className="text-white font-bold text-lg">Tournament Calculator</span>
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/dashboard')} className="text-gray-400 hover:text-white text-sm transition">Home</button>
-          <button onClick={() => router.push('/profile')} className="text-gray-400 hover:text-white text-sm transition">Profile</button>
-          <button onClick={() => { localStorage.clear(); router.push('/'); }} className="bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition">Logout</button>
-        </div>
-      </nav>
+      
 
       <div className="max-w-6xl mx-auto px-4 py-6">
 
