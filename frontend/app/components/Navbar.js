@@ -82,6 +82,11 @@ export default function Navbar() {
                 PROFILE
               </span>
             </Link>
+            <Link href="/chat">
+              <span className="nav-link text-gray-400 text-xs font-black tracking-widest cursor-pointer" style={{fontFamily: "'Rajdhani', sans-serif"}}>
+                CHAT
+              </span>
+            </Link>
           </div>
 
           {/* RIGHT SIDE */}
