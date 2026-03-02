@@ -255,7 +255,9 @@ export default function MarketplacePage() {
                           {job.budget_type && <span className="bg-green-500/10 text-green-400 text-xs px-2 py-0.5 rounded border border-green-500/20 font-bold tracking-wider">{job.budget_type.toUpperCase()}</span>}
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-600">BY <span className="text-gray-400 font-bold">{job.users?.name?.toUpperCase() || 'ANONYMOUS'}</span></span>
+                          <Link href={`/profile/${job.posted_by}`} onClick={e => e.stopPropagation()}>
+  <span className="text-xs text-gray-600 hover:text-red-400 transition cursor-pointer">BY <span className="text-red-400 font-bold hover:underline">{job.users?.name?.toUpperCase() || 'ANONYMOUS'}</span></span>
+</Link>
                           <span className="text-xs text-gray-600 font-bold">{job.applications_count || 0} APPLICANTS</span>
                         </div>
                       </div>

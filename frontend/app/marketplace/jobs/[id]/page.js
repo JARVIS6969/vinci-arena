@@ -124,7 +124,9 @@ export default function JobDetailPage() {
               </div>
               <div className="flex-1">
                 <h1 className="font-black text-2xl text-white mb-1 tracking-wide">{job.title}</h1>
-                <p className="text-gray-500 text-sm font-bold mb-3">BY {job.users?.name?.toUpperCase() || 'ANONYMOUS'} · {timeAgo(job.created_at)}</p>
+                <Link href={`/profile/${job.posted_by}`}>
+  <p className="text-gray-500 text-sm font-bold mb-3 hover:text-red-400 transition cursor-pointer">BY {job.users?.name?.toUpperCase() || 'ANONYMOUS'} · {timeAgo(job.created_at)} <span className="text-red-500">↗</span></p>
+</Link>
                 <div className="flex flex-wrap gap-2">
                   <span className="bg-red-500/10 text-red-400 text-xs px-2 py-1 rounded border border-red-500/20 font-black tracking-wider">{job.game}</span>
                   <span className="bg-purple-500/10 text-purple-400 text-xs px-2 py-1 rounded border border-purple-500/20 font-black tracking-wider">{job.job_type.replace('_', ' ').toUpperCase()}</span>

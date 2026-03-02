@@ -284,6 +284,31 @@ app.delete('/api/matches/:id', authenticateToken, async (req, res) => {
 // ============================
 
 // GET my profile
+// GET public profile by user ID
+app.get('/api/profiles/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { data, error } = await supabase
+      .from('player_profiles')
+      .select('*, achievements(*), gameplay_clips(*), player_stats(*)')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) throw error;
+
+    // Also get user name
+    const { data: user } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', userId)
+      .single();
+
+    res.json({ ...data, userName: user?.name });
+  } catch (err) {
+    console.error('Get public profile error:', err);
+    res.status(404).json({ error: 'Profile not found' });
+  }
+});
 app.get('/api/profiles/me', authenticateToken, async (req, res) => {
   try {
     const userId = String(req.user.userId);
