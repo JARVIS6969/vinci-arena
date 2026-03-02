@@ -26,8 +26,10 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userName', data.user.name);
+       localStorage.setItem('token', data.token);
+       localStorage.setItem('userName', data.user.name);
+       localStorage.setItem('userId', data.user.id);
+router.push('/dashboard');
         router.push('/dashboard');
       } else {
         setError(data.error || 'Invalid credentials');

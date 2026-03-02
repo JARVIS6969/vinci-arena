@@ -10,8 +10,10 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
 
   useEffect(() => {
+    setCurrentUserId(localStorage.getItem('userId') || '');
     fetchProfile();
   }, [params.userId]);
 
@@ -33,6 +35,31 @@ export default function PublicProfilePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSendMessage = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/api/chat/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message: '👋 Hey!', receiver_id: params.userId }),
+      });
+      if (res.ok) {
+        const convRes = await fetch('http://localhost:3001/api/chat/conversations', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (convRes.ok) {
+          const data = await convRes.json();
+          const userId = localStorage.getItem('userId');
+          const dm = data.dms.find(d =>
+            (d.user1_id === userId && d.user2_id === params.userId) ||
+            (d.user2_id === userId && d.user1_id === params.userId)
+          );
+          if (dm) router.push(`/chat/dm/${dm.id}`);
+        }
+      }
+    } catch (err) { console.error(err); }
   };
 
   const gameIcon = { 'Free Fire': '🔥', 'BGMI': '🎯', 'Valorant': '⚡' };
@@ -75,8 +102,6 @@ export default function PublicProfilePage() {
           <div className="absolute inset-0 grid-bg opacity-50" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-
-        {/* Back button */}
         <button onClick={() => router.back()} className="absolute top-4 left-4 text-red-400 hover:text-red-300 font-bold text-sm flex items-center gap-1 bg-black/50 px-3 py-1.5 rounded-lg backdrop-blur-sm transition">
           ← BACK
         </button>
@@ -85,6 +110,7 @@ export default function PublicProfilePage() {
       {/* PROFILE HEADER */}
       <div className="max-w-4xl mx-auto px-6">
         <div className="relative -mt-16 mb-6 flex items-end gap-5">
+
           {/* Avatar */}
           <div className="w-28 h-28 rounded-xl border-4 border-black overflow-hidden flex-shrink-0" style={{boxShadow: '0 0 30px rgba(239,68,68,0.4)'}}>
             {profile?.avatar_url ? (
@@ -98,7 +124,7 @@ export default function PublicProfilePage() {
 
           {/* Name & Info */}
           <div className="flex-1 pb-2">
-            <div className="flex items-center gap-3 mb-1">
+            <div className="flex items-center gap-3 mb-2">
               <h1 className="font-black text-2xl tracking-wide" style={{fontFamily: "'Orbitron', sans-serif"}}>
                 {profile?.display_name || profile?.userName || 'UNKNOWN PLAYER'}
               </h1>
@@ -106,11 +132,25 @@ export default function PublicProfilePage() {
                 <span className="text-lg">{gameIcon[profile.primary_game]}</span>
               )}
             </div>
-            {profile?.primary_game && (
-              <span className="bg-red-500/10 text-red-400 text-xs px-2 py-1 rounded border border-red-500/20 font-black tracking-wider">
-                {profile.primary_game.toUpperCase()}
-              </span>
-            )}
+
+            <div className="flex items-center gap-3 flex-wrap">
+              {profile?.primary_game && (
+                <span className="bg-red-500/10 text-red-400 text-xs px-2 py-1 rounded border border-red-500/20 font-black tracking-wider">
+                  {profile.primary_game.toUpperCase()}
+                </span>
+              )}
+
+              {/* SEND MESSAGE BUTTON */}
+              {currentUserId && String(currentUserId) !== String(params.userId) && (
+                <button
+                  onClick={handleSendMessage}
+                  className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded-lg font-black text-xs tracking-widest transition"
+                  style={{boxShadow: '0 0 15px rgba(239,68,68,0.4)'}}
+                >
+                  💬 SEND MESSAGE
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
