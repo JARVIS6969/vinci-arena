@@ -712,7 +712,54 @@ app.get('/api/chat/groups/:id/members', authenticateToken, async (req, res) => {
 });
 
 
+// POST add achievement
+app.post('/api/profiles/achievements', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { title, description, game, achieved_at, date_achieved, achievement_type, image_url, certificate_url } = req.body;
 
+    if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    const { data, error } = await supabase
+      .from('achievements')
+      .insert({
+  user_id: userId,
+  title,
+  description,
+  game,
+  achievement_type,
+  image_url,
+  certificate_url,
+  achieved_at: achieved_at || date_achieved || new Date().toISOString()
+})
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Add achievement error:', err);
+    res.status(500).json({ error: 'Failed to add achievement' });
+  }
+});
+
+// DELETE achievement
+app.delete('/api/profiles/achievements/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { error } = await supabase
+      .from('achievements')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete achievement error:', err);
+    res.status(500).json({ error: 'Failed to delete achievement' });
+  }
+});
 app.use((req, res) => {
   console.log('❌ 404 Route not found:', req.method, req.url);
   res.status(404).json({ error: `Route ${req.method} ${req.url} not found` });
