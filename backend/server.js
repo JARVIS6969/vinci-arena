@@ -285,7 +285,7 @@ app.delete('/api/matches/:id', authenticateToken, async (req, res) => {
 
 // GET my profile
 // GET public profile by user ID
-app.get('/api/profiles/:userId', async (req, res) => {
+app.get('/api/profiles/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const { data, error } = await supabase
@@ -716,22 +716,30 @@ app.get('/api/chat/groups/:id/members', authenticateToken, async (req, res) => {
 app.post('/api/profiles/achievements', authenticateToken, async (req, res) => {
   try {
     const userId = String(req.user.userId);
-    const { title, description, game, achieved_at, date_achieved, achievement_type, image_url, certificate_url } = req.body;
+    const { title, description, game, date_achieved, achievement_type, image_url, certificate_url } = req.body;
 
     if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    const { data: profile } = await supabase
+      .from('player_profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    if (!profile) return res.status(404).json({ error: 'Profile not found. Please set up your profile first.' });
 
     const { data, error } = await supabase
       .from('achievements')
       .insert({
-  user_id: userId,
-  title,
-  description,
-  game,
-  achievement_type,
-  image_url,
-  certificate_url,
-  achieved_at: achieved_at || date_achieved || new Date().toISOString()
-})
+        profile_id: profile.id,
+        title,
+        description,
+        game,
+        achievement_type,
+        image_url,
+        certificate_url,
+        date_achieved: date_achieved || new Date().toISOString()
+      })
       .select()
       .single();
 

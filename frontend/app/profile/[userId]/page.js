@@ -20,7 +20,7 @@ export default function PublicProfilePage() {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/profiles/${params.userId}`, {
+      const res = await fetch(`http://localhost:3001/api/profiles/user/${params.userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
