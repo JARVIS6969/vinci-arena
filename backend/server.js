@@ -575,7 +575,7 @@ app.get('/api/chat/conversations', authenticateToken, async (req, res) => {
     // Get group chats
     const { data: groups, error: groupError } = await supabase
       .from('group_chat_members')
-      .select('group_chats(*, created_by, group_chat_members(count))')
+      .select('group_chats(*, group_code, created_by, group_chat_members(count))')
       .eq('user_id', userId);
     
     if (groupError) throw groupError;
@@ -915,6 +915,22 @@ app.post('/api/chat/groups/join', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Join group error:', err);
     res.status(500).json({ error: 'Failed to join group' });
+  }
+});
+
+// GET group info
+app.get('/api/chat/groups/:id/info', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('group_chats')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('Get group info error:', err);
+    res.status(500).json({ error: 'Failed to fetch group info' });
   }
 });
 app.use((req, res) => {
