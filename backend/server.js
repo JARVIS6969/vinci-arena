@@ -687,7 +687,8 @@ app.post('/api/chat/groups', authenticateToken, async (req, res) => {
         description,
         icon_url,
         chat_type,
-        created_by: userId
+        created_by: userId,
+group_code: Math.random().toString(36).substring(2, 8).toUpperCase()
       })
       .select()
       .single();
@@ -857,6 +858,63 @@ app.patch('/api/marketplace/applications/:id/status', authenticateToken, async (
   } catch (err) {
     console.error('Update application status error:', err);
     res.status(500).json({ error: 'Failed to update status' });
+  }
+});
+// GET search groups by name or code
+app.get('/api/chat/groups/search', authenticateToken, async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.json([]);
+
+    const { data, error } = await supabase
+      .from('group_chats')
+      .select('id, name, description, group_code, created_at')
+      .or(`name.ilike.%${query}%,group_code.ilike.%${query}%`)
+      .limit(10);
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Search groups error:', err);
+    res.status(500).json({ error: 'Failed to search groups' });
+  }
+});
+
+// POST join group by code
+app.post('/api/chat/groups/join', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { group_code } = req.body;
+
+    // Find group by code
+    const { data: group, error: groupError } = await supabase
+      .from('group_chats')
+      .select('id, name, group_code')
+      .eq('group_code', group_code.toUpperCase())
+      .single();
+
+    if (groupError || !group) return res.status(404).json({ error: 'Group not found' });
+
+    // Check if already member
+    const { data: existing } = await supabase
+      .from('group_chat_members')
+      .select('id')
+      .eq('group_id', group.id)
+      .eq('user_id', userId)
+      .single();
+
+    if (existing) return res.status(400).json({ error: 'Already a member' });
+
+    // Add member
+    const { error: joinError } = await supabase
+      .from('group_chat_members')
+      .insert({ group_id: group.id, user_id: userId, role: 'member' });
+
+    if (joinError) throw joinError;
+    res.json({ success: true, group });
+  } catch (err) {
+    console.error('Join group error:', err);
+    res.status(500).json({ error: 'Failed to join group' });
   }
 });
 app.use((req, res) => {
