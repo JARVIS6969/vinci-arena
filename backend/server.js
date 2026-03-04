@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
@@ -8,6 +10,35 @@ import bcrypt from 'bcryptjs';
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
+  }
+});
+
+// WebSocket connection
+const onlineUsers = new Map();
+
+io.on('connection', (socket) => {
+  console.log('🔌 User connected:', socket.id);
+
+  socket.on('join', (userId) => {
+    onlineUsers.set(userId, socket.id);
+    socket.userId = userId;
+    console.log('👤 User joined:', userId);
+  });
+
+  socket.on('join_room', (roomId) => {
+    socket.join(roomId);
+  });
+
+  socket.on('disconnect', () => {
+    if (socket.userId) onlineUsers.delete(socket.userId);
+    console.log('❌ User disconnected:', socket.id);
+  });
+});
 const PORT = process.env.PORT || 3001;
 
 const supabase = createClient(
@@ -20,7 +51,7 @@ console.log('✅ Supabase client initialized');
 app.use(cors({
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -148,6 +179,13 @@ app.post('/api/tournaments', authenticateToken, async (req, res) => {
       .insert({ name: name.trim(), game, user_id: userId })
       .select().single();
     if (error) throw error;
+    // Emit to room
+if (receiver_id) {
+  const roomId = [userId, receiver_id].sort().join('_');
+  io.to(roomId).emit('new_message', data);
+} else if (group_id) {
+  io.to(`group_${group_id}`).emit('new_message', data);
+}
     res.status(201).json(data);
   } catch (error) {
     console.error('Create tournament error:', error);
@@ -419,9 +457,19 @@ app.post('/api/marketplace/jobs/:id/apply', authenticateToken, async (req, res) 
     const userId = String(req.user.userId);
     const jobId = req.params.id;
     const { message, resume_url } = req.body;
-    
     if (!message) {
       return res.status(400).json({ error: 'Application message is required' });
+    }
+
+    // Check if user is job poster
+    const { data: job } = await supabase
+      .from('job_postings')
+      .select('posted_by, applications_count')
+      .eq('id', jobId)
+      .single();
+
+    if (String(job?.posted_by) === userId) {
+      return res.status(400).json({ error: 'You cannot apply to your own job' });
     }
     
     // Check if already applied
@@ -450,10 +498,16 @@ app.post('/api/marketplace/jobs/:id/apply', authenticateToken, async (req, res) 
     if (error) throw error;
     
     // Increment applications count
-    await supabase
-      .from('job_postings')
-      .update({ applications_count: supabase.raw('applications_count + 1') })
-      .eq('id', jobId);
+   const { data: jobData } = await supabase
+  .from('job_postings')
+  .select('applications_count')
+  .eq('id', jobId)
+  .single();
+
+await supabase
+  .from('job_postings')
+  .update({ applications_count: (jobData?.applications_count || 0) + 1 })
+  .eq('id', jobId);
     
     res.status(201).json(data);
   } catch (err) {
@@ -768,6 +822,43 @@ app.delete('/api/profiles/achievements/:id', authenticateToken, async (req, res)
     res.status(500).json({ error: 'Failed to delete achievement' });
   }
 });
+// PATCH update application status (accept/reject)
+app.patch('/api/marketplace/applications/:id/status', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { status } = req.body;
+    const applicationId = req.params.id;
+
+    if (!['pending', 'reviewed', 'accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    // Check if user owns the job
+    const { data: application } = await supabase
+      .from('job_applications')
+      .select('*, job_postings(posted_by)')
+      .eq('id', applicationId)
+      .single();
+
+    if (!application) return res.status(404).json({ error: 'Application not found' });
+    if (String(application.job_postings.posted_by) !== userId) {
+      return res.status(403).json({ error: 'Only job poster can update status' });
+    }
+
+    const { data, error } = await supabase
+      .from('job_applications')
+      .update({ status })
+      .eq('id', applicationId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('Update application status error:', err);
+    res.status(500).json({ error: 'Failed to update status' });
+  }
+});
 app.use((req, res) => {
   console.log('❌ 404 Route not found:', req.method, req.url);
   res.status(404).json({ error: `Route ${req.method} ${req.url} not found` });
@@ -781,7 +872,7 @@ app.use((err, req, res, next) => {
 // ============================
 // START SERVER
 // ============================
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log('');
   console.log('🚀 ========================');
   console.log('  VINCI-ARENA API STARTED');

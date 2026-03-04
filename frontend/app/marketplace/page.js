@@ -136,7 +136,7 @@ export default function MarketplacePage() {
         <div className="flex items-center gap-2">
           <Link href="/marketplace/my-applications">
             <button className="bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-red-500/50 text-gray-300 hover:text-white px-3 py-1.5 rounded font-bold text-xs tracking-wider transition">
-              📋 MY APPS
+              📋 MY ACTIVITY
             </button>
           </Link>
           <Link href="/marketplace/post">
