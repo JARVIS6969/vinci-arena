@@ -206,7 +206,10 @@ export default function GroupChatPage() {
               {group?.name?.[0]?.toUpperCase() || '?'}
             </div>
             <div>
-              <p className="font-black text-sm tracking-wider">{group?.name?.toUpperCase() || 'LOADING...'}</p>
+              <p className="font-black text-sm tracking-wider cursor-pointer hover:text-red-400 transition"
+  onClick={() => router.push(`/chat/group/${params.id}/info`)}>
+  {group?.name?.toUpperCase() || 'LOADING...'}
+</p>
               <p className="text-xs text-gray-600 font-bold">{members.length} MEMBERS</p>
             </div>
           </div>
