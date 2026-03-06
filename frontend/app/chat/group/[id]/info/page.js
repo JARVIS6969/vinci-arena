@@ -190,4 +190,4 @@ export default function GroupInfoPage() {
       </div>
     </div>
   );
-}
+} 

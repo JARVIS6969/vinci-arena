@@ -180,12 +180,7 @@ app.post('/api/tournaments', authenticateToken, async (req, res) => {
       .select().single();
     if (error) throw error;
     // Emit to room
-if (receiver_id) {
-  const roomId = [userId, receiver_id].sort().join('_');
-  io.to(roomId).emit('new_message', data);
-} else if (group_id) {
-  io.to(`group_${group_id}`).emit('new_message', data);
-}
+
     res.status(201).json(data);
   } catch (error) {
     console.error('Create tournament error:', error);

@@ -46,9 +46,10 @@ export default function HomePage() {
     <div className="min-h-screen bg-black relative">
       {/* EPIC BACKGROUND IMAGE */}
       <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ 
-          backgroundImage: 'url(/dashboard-bg.png)',
+      className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+style={{
+  backgroundImage: 'url(/dashboard-bg.png)',
+  backgroundColor: '#1a0000',
           opacity: 0.8,
           filter: 'brightness(0.7)'
         }}

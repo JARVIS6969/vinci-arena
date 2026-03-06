@@ -64,7 +64,7 @@ export default function Navbar() {
             </Link>
             <Link href="/tournaments/create">
               <span className="nav-link text-gray-400 text-xs font-black tracking-widest cursor-pointer" style={{fontFamily: "'Rajdhani', sans-serif"}}>
-                CREATE POINT TABLE
+                VINCI-STUDIO
               </span>
             </Link>
             <Link href="/marketplace">
