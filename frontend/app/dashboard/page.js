@@ -1,23 +1,18 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ChatButton from '@/components/chat/ChatButton';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [userName, setUserName] = useState(null);
   const [tournaments, setTournaments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const name = localStorage.getItem('userName');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
+    if (!token) { router.push('/login'); return; }
     setUserName(name);
     fetchTournaments();
   }, [router]);
@@ -25,281 +20,198 @@ export default function DashboardPage() {
   const fetchTournaments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/tournaments', {
-        headers: { 'Authorization': `Bearer ${token}` },
+      const res = await fetch('http://localhost:3001/api/tournaments', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.ok) {
-        const data = await response.json();
-        setTournaments(data);
-      }
-    } catch (error) {
-      console.error('Error fetching tournaments:', error);
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) setTournaments(await res.json());
+    } catch (err) { console.error(err); }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this tournament?')) return;
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3001/api/tournaments/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (response.ok) {
-        setTournaments(tournaments.filter(t => t.id !== id));
-      }
-    } catch (error) {
-      console.error('Error deleting tournament:', error);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userId');
-    router.push('/');
-  };
+  const features = [
+    { icon: '🎨', label: 'Vinci Studio', sub: 'Create graphics', href: '/studio', color: '#ef4444', live: true },
+    { icon: '🏆', label: 'Tournaments', sub: tournaments.length + ' created', href: '/tournaments/create', color: '#eab308', live: true },
+    { icon: '💼', label: 'Marketplace', sub: 'Jobs & opportunities', href: '/marketplace', color: '#8b5cf6', live: true },
+    { icon: '👥', label: 'Squads', sub: 'Create & manage teams', href: '/squads', color: '#06b6d4', live: true },
+    { icon: '👤', label: 'My Profile', sub: 'Achievements & clips', href: '/profile', color: '#10b981', live: true },
+    { icon: '💬', label: 'Chat', sub: 'DMs & Groups', href: '/chat', color: '#f97316', live: true },
+    { icon: '📊', label: 'Rankings', sub: 'Global leaderboards', href: '/rankings', color: '#6366f1', live: false },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
-      
-      {/* HEADER */}
-      
+    <div className="min-h-screen bg-black text-white" style={{fontFamily: "'Rajdhani', sans-serif"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
+        .grid-bg { background-image: linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px); background-size: 40px 40px; }
+        @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+        .shimmer { background: linear-gradient(90deg, #ef4444, #f97316, #ef4444); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; }
+        .feature-row { transition: all 0.2s ease; border-left: 2px solid transparent; }
+        .feature-row:hover { background: rgba(239,68,68,0.05); border-left-color: #ef4444; }
+        .main-card { transition: all 0.3s ease; }
+        .main-card:hover { transform: translateY(-3px); }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 2px; }
+        .search-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 50px; color: white; font-family: 'Rajdhani'; font-weight: 600; font-size: 13px; padding: 8px 20px; outline: none; transition: all 0.2s; width: 400px; }
+        .search-input:focus { border-color: rgba(239,68,68,0.5); box-shadow: 0 0 15px rgba(239,68,68,0.1); }
+        .search-input::placeholder { color: #4b5563; }
+      `}</style>
 
-      {/* MAIN CONTENT */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        
-        {/* TWO ELITE CARDS */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          
-          {/* CARD 1: CREATE POINT TABLE */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-800 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition"></div>
-            <div className="relative backdrop-blur-xl bg-gradient-to-br from-gray-900/95 to-red-950/90 border border-red-600/40 rounded-3xl p-8 shadow-2xl min-h-[800px] flex flex-col">
-              
-              {/* Card Header */}
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl mb-4 shadow-lg shadow-red-600/50">
-                  <span className="text-4xl">📊</span>
-                </div>
-                <h2 className="text-3xl font-black mb-2 bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
-                  CREATE POINT TABLE
-                </h2>
-                <p className="text-red-300/80 text-sm">Tournament Calculator & Points System</p>
+      <div className="border-b border-red-500/10 bg-black/80 backdrop-blur-sm sticky top-16 z-40 px-6 py-3 flex items-center justify-center">
+        <div className="relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-sm"></span>
+          <input className="search-input pl-10" placeholder="Search tournaments, players, jobs..."
+            value={search} onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && search.trim()) {
+                const q = search.toLowerCase();
+                if (q.includes('job') || q.includes('market')) router.push('/marketplace');
+                else if (q.includes('squad')) router.push('/squads');
+                else if (q.includes('chat')) router.push('/chat');
+                else if (q.includes('studio')) router.push('/studio');
+                else if (q.includes('profile')) router.push('/profile');
+                else router.push('/tournaments/create');
+              }
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="grid-bg min-h-screen">
+        <div className="flex">
+
+          <div className="w-64 min-h-screen border-r border-red-500/10 bg-black/40 flex flex-col sticky top-28 h-screen overflow-y-auto flex-shrink-0">
+            <div className="p-4 border-b border-red-500/10">
+              <p className="text-xs text-gray-600 font-black tracking-widest mb-1">WELCOME BACK</p>
+              <p className="font-black text-white text-sm tracking-wider" style={{fontFamily: "'Orbitron', sans-serif"}}>
+                {userName?.toUpperCase() || 'PLAYER'}
+              </p>
+              <div className="flex items-center gap-1 mt-1">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-xs text-green-400 font-bold">ONLINE</span>
               </div>
+            </div>
 
-              {/* Features */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {['Auto Calculate Points', '3 Games Supported', 'Bulk 12-Team Entry', '40 Export Templates'].map((feature, i) => (
-                  <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-3 text-center">
-                    <p className="text-xs text-gray-300">✨ {feature}</p>
+            <div className="p-3 flex-1">
+              <p className="text-xs font-black tracking-widest text-gray-700 mb-3 px-2" style={{fontFamily: "'Orbitron', sans-serif"}}>//  FEATURES</p>
+              {features.map((f, i) => (
+                <Link href={f.href} key={i}>
+                  <div className="feature-row flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer mb-1">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
+                      style={{background: f.color + '15', border: '1px solid ' + f.color + '30'}}>
+                      {f.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-xs text-white">{f.label}</p>
+                      <p className="text-xs text-gray-600 truncate">{f.sub}</p>
+                    </div>
+                    <span className={'text-xs px-1.5 py-0.5 rounded font-black ' + (f.live ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-500')}
+                      style={{fontSize: '9px'}}>
+                      {f.live ? 'LIVE' : 'SOON'}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="p-4 border-t border-red-500/10">
+              <p className="text-xs font-black tracking-widest text-gray-700 mb-3" style={{fontFamily: "'Orbitron', sans-serif"}}>//  MY STATS</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[['🏆', tournaments.length, 'Tournaments'], ['🎮', '—', 'Matches']].map(([icon, val, label]) => (
+                  <div key={label} className="bg-gray-950 border border-gray-800 rounded-lg p-2 text-center">
+                    <div className="text-lg">{icon}</div>
+                    <div className="font-black text-red-400 text-sm">{val}</div>
+                    <div className="text-xs text-gray-600 font-bold">{label}</div>
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
 
-              {/* Create Button */}
-          <Link href="/tournaments/create">
-                  <button className="relative w-full bg-gradient-to-r from-red-600 via-red-700 to-red-600 hover:from-red-500 hover:via-red-600 hover:to-red-500 text-white py-5 rounded-2xl font-black text-xl shadow-2xl shadow-red-600/60 transition-all duration-300 hover:shadow-red-500/80 hover:scale-[1.02] active:scale-95 overflow-hidden group/btn">
-                    {/* Animated shine */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-out"></div>
-                    <span className="relative flex items-center justify-center gap-2">
-                      Create point table
-                      <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
-                    </span>
-                  </button>
-                </Link>
+          <div className="flex-1 p-6 overflow-y-auto">
 
-              {/* Recent Tournaments */}
-              <div className="mt-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-sm text-blue-300">📋 Your Tournaments</h3>
-                  <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">{tournaments.length}</span>
-                </div>
-
-                {loading ? (
-                  <div className="flex justify-center py-8">
-                    <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+            <div className="main-card relative overflow-hidden rounded-2xl p-6 mb-4 cursor-pointer"
+              style={{background: 'linear-gradient(135deg, #1a0000, #0a0010, #00050d)', border: '1px solid rgba(239,68,68,0.3)', boxShadow: '0 0 40px rgba(239,68,68,0.1)'}}
+              onClick={() => router.push('/studio')}>
+              <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'linear-gradient(rgba(239,68,68,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.05) 1px, transparent 1px)', backgroundSize: '30px 30px'}} />
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-15" style={{background: 'radial-gradient(circle, #ef4444, transparent)', filter: 'blur(30px)'}} />
+              <div className="relative flex items-center justify-between gap-6">
+                <div className="flex-1">
+                  <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-3 py-1 mb-3">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-red-400 text-xs font-black tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>CREATIVE SUITE</span>
                   </div>
-                ) : tournaments.length === 0 ? (
-                  <div className="text-center py-8 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-                    <p className="text-gray-400 text-sm">No tournaments yet</p>
-                    <p className="text-gray-600 text-xs mt-1">Create your first one above</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {tournaments.map((tournament) => (
-                      <div key={tournament.id} className="bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 rounded-xl p-4 transition group/item">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-bold text-sm mb-1">{tournament.name}</h4>
-                            <div className="flex gap-2">
-                              <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">{tournament.game}</span>
-                              <span className="text-xs text-gray-500">{new Date(tournament.created_at).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                          <div className="flex gap-2 opacity-0 group-hover/item:opacity-100 transition">
-                            <Link href={`/tournaments/${tournament.id}`}>
-                              <button className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                                View
-                              </button>
-                            </Link>
-                            <button onClick={() => handleDelete(tournament.id)} className="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                              🗑️
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                  <h2 className="font-black text-2xl text-white mb-2" style={{fontFamily: "'Orbitron', sans-serif"}}>
+                    <span className="shimmer">VINCI STUDIO</span>
+                  </h2>
+                  <p className="text-gray-400 text-sm font-bold mb-3 max-w-md">Create point tables, winner certificates, tournament banners and MVP cards. Professional esports graphics in seconds.</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {['📊 Point Tables', '🏆 Certificates', '🎨 Banners', '⚡ MVP Cards'].map(f => (
+                      <span key={f} className="text-xs bg-white/5 border border-white/10 text-gray-400 px-2 py-0.5 rounded-full font-bold">{f}</span>
                     ))}
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* CARD 2: ESPORTS HUB - NETFLIX STYLE */}
-          <div className="relative group">
-            {/* Netflix-style red glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-red-700 to-red-900 rounded-3xl blur-2xl opacity-30 group-hover:opacity-50 transition-all duration-500"></div>
-            
-            {/* Main card with deep black background */}
-            <div className="relative backdrop-blur-2xl bg-gradient-to-br from-black/95 via-red-950/40 to-black/95 border-2 border-red-600/60 rounded-3xl p-8 shadow-2xl overflow-hidden min-h-[800px] flex flex-col">
-              
-              {/* Subtle animated gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-red-900/20 opacity-50"></div>
-              
-              {/* Content */}
-              <div className="relative z-10">
-                
-                {/* Card Header */}
-                <div className="text-center mb-8">
-                  {/* Logo with dramatic 3D glow */}
-                  {/* Premium Logo with Depth */}
-                  <div className="relative inline-flex items-center justify-center mb-6">
-                    {/* Layered glow effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 blur-3xl opacity-50 scale-125"></div>
-                    <div className="absolute inset-0 bg-red-600 blur-2xl opacity-30 scale-110"></div>
-                    
-                    {/* Logo with subtle card */}
-                    <div className="relative bg-black/60 backdrop-blur-md p-5 rounded-2xl border border-red-500/30 shadow-2xl transform transition-all duration-500 group-hover:scale-105 group-hover:shadow-red-500/60">
-                      <img 
-                        src="/vinci-logo.jpg" 
-                        alt="Vinci Logo" 
-                        className="w-28 h-28 object-contain drop-shadow-2xl" 
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Netflix-style title */}
-                  <h2 className="text-4xl font-black mb-3 bg-gradient-to-r from-red-500 via-red-600 to-orange-500 bg-clip-text text-transparent drop-shadow-2xl tracking-tight">
-                    ESPORTS HUB
-                  </h2>
-                  <p className="text-gray-300 text-sm font-medium tracking-wide">Squads • Rankings • Profiles • Marketplace</p>
-                </div>
-
-                {/* Menu Items - Netflix card style */}
-                <div className="space-y-3 mb-8">
-                  
-                  {/* Squads - LIVE & Clickable */}
-                  <Link href="/squads">
-                    <div className="group/menu relative bg-gradient-to-r from-red-600/20 via-red-700/20 to-red-600/20 hover:from-red-600/40 hover:via-red-700/40 hover:to-red-600/40 border border-red-500/40 hover:border-red-400/80 rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-red-500/40 overflow-hidden">
-                      
-                      {/* Animated shine effect on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/menu:translate-x-full transition-transform duration-700 ease-out"></div>
-                      
-                      <div className="relative flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/60 transform transition-all duration-300 group-hover/menu:rotate-6 group-hover/menu:scale-110">
-                            <span className="text-3xl">👥</span>
-                          </div>
-                          <div>
-                            <h3 className="font-black text-lg text-white mb-1 group-hover/menu:text-red-300 transition">Squads</h3>
-                            <p className="text-xs text-gray-400">Create & manage teams</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="bg-green-500/30 border border-green-500 text-green-400 text-xs px-3 py-1.5 rounded-full font-black shadow-lg shadow-green-500/30 animate-pulse">LIVE</span>
-                          <span className="text-red-400 group-hover/menu:text-white group-hover/menu:translate-x-1 transition-all text-xl">→</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-
-                  {/* Rankings - Coming Soon */}
-                  <div className="relative bg-gradient-to-r from-gray-900/60 to-gray-800/60 border border-gray-700/40 rounded-2xl p-5 opacity-70">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-yellow-600/40 to-orange-600/40 rounded-xl flex items-center justify-center">
-                          <span className="text-3xl opacity-50">🏆</span>
-                        </div>
-                        <div>
-                          <h3 className="font-black text-lg text-gray-300">Rankings</h3>
-                          <p className="text-xs text-gray-500">Global & India leaderboards</p>
-                        </div>
-                      </div>
-                      <span className="bg-orange-500/20 border border-orange-500/60 text-orange-400 text-xs px-3 py-1.5 rounded-full font-black">SOON</span>
-                    </div>
-                  </div>
-
-
-                  {/* Player Profiles - ACTIVE */}
-                  <Link href="/profile">
-                    <div className="relative bg-gradient-to-r from-blue-900/40 to-cyan-900/40 border border-blue-500/40 hover:border-blue-400/60 rounded-2xl p-5 cursor-pointer transition-all hover:scale-105">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/50">
-                            <span className="text-3xl">👤</span>
-                          </div>
-                          <div>
-                            <h3 className="font-black text-lg text-white">Player Profiles</h3>
-                            <p className="text-xs text-gray-400">Achievements & highlights</p>
-                          </div>
-                        </div>
-                        <span className="bg-green-500/30 border border-green-500 text-green-400 text-xs px-3 py-1.5 rounded-full font-black animate-pulse">LIVE</span>
-                      </div>
-                    </div>
-                  </Link>
-
-                  {/* Marketplace - ACTIVE */}
-                  <Link href="/marketplace">
-                    <div className="relative bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-500/40 hover:border-green-400/60 rounded-2xl p-5 cursor-pointer transition-all hover:scale-105">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/50">
-                            <span className="text-3xl">💼</span>
-                          </div>
-                          <div>
-                            <h3 className="font-black text-lg text-white">Marketplace</h3>
-                            <p className="text-xs text-gray-400">Find jobs & opportunities</p>
-                          </div>
-                        </div>
-                        <span className="bg-green-500/30 border border-green-500 text-green-400 text-xs px-3 py-1.5 rounded-full font-black animate-pulse">LIVE</span>
-                      </div>
-                    </div>
-                  </Link>
-
-                </div>
-
-                {/* Explore Button - Netflix CTA style */}
-                <Link href="/esports">
-                  <button className="relative w-full bg-gradient-to-r from-red-600 via-red-700 to-red-600 hover:from-red-500 hover:via-red-600 hover:to-red-500 text-white py-5 rounded-2xl font-black text-xl shadow-2xl shadow-red-600/60 transition-all duration-300 hover:shadow-red-500/80 hover:scale-[1.02] active:scale-95 overflow-hidden group/btn">
-                    {/* Animated shine */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-out"></div>
-                    <span className="relative flex items-center justify-center gap-2">
-                      Explore Esports Hub 
-                      <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
-                    </span>
+                  <button className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-6 py-2.5 rounded-xl font-black text-xs tracking-widest transition"
+                    style={{boxShadow: '0 0 20px rgba(239,68,68,0.4)'}}>
+                    🎨 OPEN VINCI STUDIO →
                   </button>
-                </Link>
-
+                </div>
+                <div className="grid grid-cols-2 gap-2 flex-shrink-0">
+                  {[
+                    {icon: '📊', label: 'POINT TABLE', color: '#ef4444'},
+                    {icon: '🏆', label: 'CERTIFICATE', color: '#eab308'},
+                    {icon: '🎨', label: 'BANNER', color: '#8b5cf6'},
+                    {icon: '⚡', label: 'MVP CARD', color: '#06b6d4'},
+                  ].map(tool => (
+                    <div key={tool.label} className="w-20 h-20 rounded-xl flex flex-col items-center justify-center gap-1"
+                      style={{background: '#0a0a0a', border: '1px solid ' + tool.color + '30'}}>
+                      <span className="text-2xl">{tool.icon}</span>
+                      <span className="font-black" style={{color: tool.color, fontFamily: "'Orbitron', sans-serif", fontSize: '7px'}}>{tool.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+
+            <div className="main-card relative overflow-hidden rounded-2xl p-6 cursor-pointer"
+              style={{background: 'linear-gradient(135deg, #00001a, #000a10, #0a0005)', border: '1px solid rgba(99,102,241,0.3)', boxShadow: '0 0 40px rgba(99,102,241,0.08)'}}
+              onClick={() => router.push('/marketplace')}>
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10" style={{background: 'radial-gradient(circle, #6366f1, transparent)', filter: 'blur(30px)'}} />
+              <div className="relative flex items-center justify-between gap-6">
+                <div className="flex-1">
+                  <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1 mb-3">
+                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                    <span className="text-indigo-400 text-xs font-black tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>ESPORTS ECOSYSTEM</span>
+                  </div>
+                  <h2 className="font-black text-2xl text-white mb-2" style={{fontFamily: "'Orbitron', sans-serif"}}>ESPORTS HUB</h2>
+                  <p className="text-gray-400 text-sm font-bold mb-3 max-w-md">Find teams, hire coaches, join squads and build your esports career. India's first grassroots esports platform.</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {['💼 Marketplace', '👥 Squads', '👤 Profiles', '📊 Rankings (Soon)'].map(f => (
+                      <span key={f} className="text-xs bg-white/5 border border-white/10 text-gray-400 px-2 py-0.5 rounded-full font-bold">{f}</span>
+                    ))}
+                  </div>
+                  <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-black text-xs tracking-widest transition"
+                    style={{boxShadow: '0 0 20px rgba(99,102,241,0.4)'}}>
+                    🚀 EXPLORE ESPORTS HUB →
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 flex-shrink-0">
+                  {[
+                    {icon: '💼', label: 'MARKETPLACE', color: '#8b5cf6', live: true},
+                    {icon: '👥', label: 'SQUADS', color: '#06b6d4', live: true},
+                    {icon: '👤', label: 'PROFILES', color: '#10b981', live: true},
+                    {icon: '📊', label: 'RANKINGS', color: '#6366f1', live: false},
+                  ].map(tool => (
+                    <div key={tool.label} className="w-20 h-20 rounded-xl flex flex-col items-center justify-center gap-1"
+                      style={{background: '#0a0a0a', border: '1px solid ' + tool.color + '30'}}>
+                      <span className="text-2xl">{tool.icon}</span>
+                      <span className="font-black" style={{color: tool.color, fontFamily: "'Orbitron', sans-serif", fontSize: '7px'}}>{tool.label}</span>
+                      <span className="font-black" style={{fontSize: '7px', color: tool.live ? '#10b981' : '#eab308'}}>{tool.live ? '● LIVE' : '● SOON'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
           </div>
-
         </div>
-        <ChatButton />
-
       </div>
     </div>
   );
