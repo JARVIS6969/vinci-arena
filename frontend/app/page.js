@@ -242,6 +242,73 @@ style={{
             </div>
           </div>
         </div>
+        {/* VINCI STUDIO BANNER */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="relative overflow-hidden rounded-3xl p-8 md:p-12"
+            style={{background: 'linear-gradient(135deg, #1a0000 0%, #0a0010 50%, #000a1a 100%)', border: '1px solid rgba(239,68,68,0.3)', boxShadow: '0 0 60px rgba(239,68,68,0.1)'}}>
+
+            {/* Grid bg */}
+            <div className="absolute inset-0 opacity-30 rounded-3xl" style={{backgroundImage: 'linear-gradient(rgba(239,68,68,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px'}} />
+
+            {/* Glow blobs */}
+            <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-10" style={{background: 'radial-gradient(circle, #ef4444, transparent)', filter: 'blur(40px)'}} />
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full opacity-10" style={{background: 'radial-gradient(circle, #8b5cf6, transparent)', filter: 'blur(40px)'}} />
+
+            <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
+              {/* Left Content */}
+              <div className="flex-1 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-full px-4 py-1.5 mb-4">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                  <span className="text-red-400 text-xs font-black tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>NEW FEATURE</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-3 leading-tight" style={{fontFamily: "'Orbitron', sans-serif"}}>
+                  INTRODUCING<br />
+                  <span style={{background: 'linear-gradient(90deg, #ef4444, #f97316)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>VINCI STUDIO</span>
+                </h2>
+                <p className="text-gray-400 font-bold mb-4 max-w-lg">
+                  Create professional esports graphics in seconds. Point tables, winner certificates, tournament banners, MVP cards — all in one place.
+                </p>
+                <div className="flex flex-wrap gap-3 mb-6 justify-center md:justify-start">
+                  {['📊 Point Tables', '🏆 Certificates', '🎨 Banners', '⚡ MVP Cards'].map(f => (
+                    <span key={f} className="text-xs bg-white/5 border border-white/10 text-gray-300 px-3 py-1 rounded-full font-bold">{f}</span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4 justify-center md:justify-start flex-wrap">
+                  <button onClick={() => router.push('/studio')}
+                    className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-8 py-3 rounded-xl font-black text-sm tracking-widest transition"
+                    style={{boxShadow: '0 0 25px rgba(239,68,68,0.5)'}}>
+                    🎨 OPEN VINCI STUDIO →
+                  </button>
+                  <div className="flex items-center gap-4">
+                    {[['FREE', 'TO USE'], ['5K+', 'CREATIONS']].map(([val, label]) => (
+                      <div key={label} className="text-center">
+                        <div className="font-black text-red-400 text-sm" style={{fontFamily: "'Orbitron', sans-serif"}}>{val}</div>
+                        <div className="text-xs text-gray-600 font-black tracking-wider">{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right - Tool Icons */}
+              <div className="grid grid-cols-2 gap-3 flex-shrink-0">
+                {[
+                  {icon: '📊', label: 'POINT TABLE', color: '#ef4444'},
+                  {icon: '🏆', label: 'CERTIFICATE', color: '#eab308'},
+                  {icon: '🎨', label: 'BANNER', color: '#8b5cf6'},
+                  {icon: '⚡', label: 'MVP CARD', color: '#06b6d4'},
+                ].map((tool) => (
+                  <div key={tool.label} className="w-28 h-28 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition hover:scale-105"
+                    style={{background: '#0a0a0a', border: `1px solid ${tool.color}30`, boxShadow: `0 0 15px ${tool.color}15`}}
+                    onClick={() => router.push('/studio')}>
+                    <span className="text-3xl">{tool.icon}</span>
+                    <span className="text-xs font-black tracking-wider" style={{color: tool.color, fontFamily: "'Orbitron', sans-serif", fontSize: '9px'}}>{tool.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* FINAL CTA */}
         {!userName && (
