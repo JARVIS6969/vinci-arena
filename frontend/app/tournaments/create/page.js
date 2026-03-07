@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -8,6 +8,23 @@ export default function CreateTournament() {
   const [name, setName] = useState('');
   const [game, setGame] = useState('Free Fire');
   const [loading, setLoading] = useState(false);
+  const [tournaments, setTournaments] = useState([]);
+  const [loadingTournaments, setLoadingTournaments] = useState(true);
+
+  useEffect(() => {
+    fetchTournaments();
+  }, []);
+
+  const fetchTournaments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3001/api/tournaments', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) setTournaments(await res.json());
+    } catch (err) { console.error(err); }
+    finally { setLoadingTournaments(false); }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +51,25 @@ export default function CreateTournament() {
     }
   };
 
+  const handleDelete = async (id, e) => {
+    e.stopPropagation();
+    if (!confirm('Delete this tournament?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3001/api/tournaments/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) setTournaments(prev => prev.filter(t => t.id !== id));
+    } catch (err) { console.error(err); }
+  };
+
+  const gameColors = {
+    'Free Fire': '#ef4444',
+    'BGMI': '#f97316',
+    'Valorant': '#a855f7'
+  };
+
   return (
     <div className="min-h-screen bg-black text-white" style={{fontFamily: "'Rajdhani', sans-serif"}}>
       <style>{`
@@ -43,95 +79,42 @@ export default function CreateTournament() {
         .neon-input:focus { border-color: rgba(239,68,68,0.7); box-shadow: 0 0 15px rgba(239,68,68,0.2); }
         .neon-select { background: #0a0a0a; border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; color: white; font-family: 'Rajdhani'; font-weight: 700; font-size: 14px; padding: 12px 16px; width: 100%; outline: none; transition: all 0.2s; }
         .neon-select:focus { border-color: rgba(239,68,68,0.7); box-shadow: 0 0 15px rgba(239,68,68,0.2); }
-        @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-        .shimmer { background: linear-gradient(90deg, #ef4444, #f97316, #ef4444); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; }
+        .tournament-row { transition: all 0.2s ease; }
+        .tournament-row:hover { border-color: rgba(239,68,68,0.4) !important; transform: translateX(4px); }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 2px; }
       `}</style>
 
       <div className="grid-bg min-h-screen">
         <div className="max-w-3xl mx-auto px-6 py-10">
 
-          {/* VINCI STUDIO BANNER */}
-          <div className="relative overflow-hidden rounded-2xl p-6 mb-8"
-            style={{background: 'linear-gradient(135deg, #0d0000, #0a0010, #00050d)', border: '1px solid rgba(239,68,68,0.25)', boxShadow: '0 0 40px rgba(239,68,68,0.08)'}}>
-
-            {/* Grid overlay */}
-            <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'linear-gradient(rgba(239,68,68,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.05) 1px, transparent 1px)', backgroundSize: '30px 30px'}} />
-
-            {/* Glow */}
-            <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10" style={{background: 'radial-gradient(circle, #ef4444, transparent)', filter: 'blur(30px)'}} />
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full opacity-10" style={{background: 'radial-gradient(circle, #8b5cf6, transparent)', filter: 'blur(30px)'}} />
-
-            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
-              {/* Left */}
-              <div className="flex-1">
-                <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-3 py-1 mb-3">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                  <span className="text-red-400 text-xs font-black tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>VINCI STUDIO</span>
-                </div>
-                <h2 className="font-black text-xl text-white mb-2 leading-tight" style={{fontFamily: "'Orbitron', sans-serif"}}>
-                  MORE THAN JUST<br />
-                  <span className="shimmer">POINT TABLES</span>
-                </h2>
-                <p className="text-gray-400 text-sm font-bold mb-3">
-                  Vinci Studio is your complete esports creative suite. Create certificates, banners, MVP cards and more — all in one place.
-                </p>
-                {/* Features */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {['📊 Point Tables', '🏆 Certificates', '🎨 Banners', '⚡ MVP Cards', '🎭 Designer Store'].map(f => (
-                    <span key={f} className="text-xs bg-white/5 border border-white/10 text-gray-400 px-2 py-0.5 rounded-full font-bold">{f}</span>
-                  ))}
-                </div>
-                <Link href="/studio">
-                  <button className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-6 py-2.5 rounded-xl font-black text-xs tracking-widest transition"
-                    style={{boxShadow: '0 0 20px rgba(239,68,68,0.4)'}}>
-                    🎨 OPEN VINCI STUDIO →
-                  </button>
-                </Link>
-              </div>
-
-              {/* Right - mini tool grid */}
-              <div className="grid grid-cols-2 gap-2 flex-shrink-0">
-                {[
-                  {icon: '📊', label: 'POINT TABLE', color: '#ef4444', active: true},
-                  {icon: '🏆', label: 'CERTIFICATE', color: '#eab308'},
-                  {icon: '🎨', label: 'BANNER', color: '#8b5cf6'},
-                  {icon: '⚡', label: 'MVP CARD', color: '#06b6d4'},
-                ].map(tool => (
-                  <div key={tool.label} className="w-20 h-20 rounded-xl flex flex-col items-center justify-center gap-1"
-                    style={{background: tool.active ? `rgba(239,68,68,0.1)` : '#0a0a0a', border: `1px solid ${tool.color}${tool.active ? '60' : '20'}`, boxShadow: tool.active ? `0 0 10px ${tool.color}30` : 'none'}}>
-                    <span className="text-2xl">{tool.icon}</span>
-                    <span className="font-black tracking-wider" style={{color: tool.color, fontFamily: "'Orbitron', sans-serif", fontSize: '7px'}}>{tool.label}</span>
-                    {tool.active && <span className="text-green-400 font-black" style={{fontSize: '7px'}}>● ACTIVE</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
           {/* CREATE POINT TABLE FORM */}
-          <div className="rounded-2xl p-6" style={{background: '#050505', border: '1px solid rgba(239,68,68,0.2)', boxShadow: '0 0 30px rgba(239,68,68,0.05)'}}>
+          <div className="rounded-2xl p-6 mb-6" style={{background: '#050505', border: '1px solid rgba(239,68,68,0.2)', boxShadow: '0 0 30px rgba(239,68,68,0.05)'}}>
 
             {/* Header */}
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-xl"
-                style={{boxShadow: '0 0 15px rgba(239,68,68,0.4)'}}>
+              <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-2xl"
+                style={{boxShadow: '0 0 20px rgba(239,68,68,0.5)'}}>
                 📊
               </div>
               <div>
-                <h1 className="font-black text-lg text-white tracking-wide" style={{fontFamily: "'Orbitron', sans-serif"}}>POINT TABLE</h1>
-                <p className="text-xs text-gray-600 font-bold tracking-wider">TOURNAMENT CALCULATOR</p>
+                <h1 className="font-black text-xl text-white tracking-wide" style={{fontFamily: "'Orbitron', sans-serif"}}>CREATE POINT TABLE</h1>
+                <p className="text-xs text-gray-600 font-bold tracking-wider">TOURNAMENT CALCULATOR & POINTS SYSTEM</p>
               </div>
             </div>
 
             {/* Features row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
-              {[['⚡', 'Auto Calculate'], ['🎮', '3 Games'], ['👥', '12 Teams'], ['📤', '40 Templates']].map(([icon, label]) => (
-                <div key={label} className="flex items-center gap-2 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2">
+              {[['⚡', 'Auto Calculate Points'], ['🎮', '3 Games Supported'], ['👥', 'Bulk 12-Team Entry'], ['📤', '40 Export Templates']].map(([icon, label]) => (
+                <div key={label} className="flex items-center gap-2 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2.5 hover:border-red-500/30 transition">
                   <span className="text-sm">{icon}</span>
                   <span className="text-xs text-gray-400 font-bold">{label}</span>
                 </div>
               ))}
             </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-800 mb-6" />
 
             {/* Form */}
             <div className="space-y-4">
@@ -145,7 +128,7 @@ export default function CreateTournament() {
                   onChange={(e) => setName(e.target.value)}
                   className="neon-input"
                   placeholder="e.g. VINCI CUP SEASON 1"
-                  required
+                  onKeyDown={e => e.key === 'Enter' && handleSubmit(e)}
                 />
               </div>
 
@@ -164,17 +147,77 @@ export default function CreateTournament() {
                 <button
                   onClick={handleSubmit}
                   disabled={loading || !name.trim()}
-                  className={`flex-1 py-3 rounded-xl font-black text-sm tracking-widest transition ${name.trim() && !loading ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-gray-900 text-gray-700 border border-gray-800 cursor-not-allowed'}`}
-                  style={name.trim() && !loading ? {boxShadow: '0 0 20px rgba(239,68,68,0.4)'} : {}}>
-                  {loading ? '⟳ CREATING...' : '⚡ CREATE POINT TABLE'}
+                  className={`flex-1 py-3.5 rounded-xl font-black text-sm tracking-widest transition ${name.trim() && !loading ? 'text-white' : 'bg-gray-900 text-gray-700 border border-gray-800 cursor-not-allowed'}`}
+                  style={name.trim() && !loading ? {background: 'linear-gradient(135deg, #FF3B3B, #FF7A18)', boxShadow: '0 0 25px rgba(255,59,59,0.5)'} : {}}>
+                  {loading ? '⟳ CREATING...' : '⚡ CREATE POINT TABLE →'}
                 </button>
                 <Link href="/dashboard">
-                  <button className="px-6 py-3 rounded-xl font-black text-xs tracking-widest border border-gray-800 text-gray-500 hover:border-red-500/40 hover:text-gray-300 transition">
+                  <button className="px-6 py-3.5 rounded-xl font-black text-xs tracking-widest border border-gray-800 text-gray-500 hover:border-red-500/40 hover:text-gray-300 transition">
                     CANCEL
                   </button>
                 </Link>
               </div>
             </div>
+          </div>
+
+          {/* YOUR TOURNAMENTS */}
+          <div className="rounded-2xl p-6" style={{background: '#050505', border: '1px solid rgba(239,68,68,0.15)'}}>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🏆</span>
+                <h2 className="font-black text-sm text-white tracking-wide" style={{fontFamily: "'Orbitron', sans-serif"}}>YOUR TOURNAMENTS</h2>
+                <span className="bg-red-500/10 text-red-400 border border-red-500/20 text-xs px-2 py-0.5 rounded font-black">{tournaments.length}</span>
+              </div>
+            </div>
+
+            {loadingTournaments ? (
+              <div className="flex justify-center py-8">
+                <div className="w-8 h-8 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+              </div>
+            ) : tournaments.length === 0 ? (
+              <div className="text-center py-10">
+                <div className="text-4xl mb-3">🏆</div>
+                <p className="text-gray-600 font-bold text-sm">No tournaments yet</p>
+                <p className="text-gray-700 text-xs mt-1">Create your first tournament above!</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {tournaments.map(t => (
+                  <div key={t.id}
+                    className="tournament-row flex items-center gap-3 p-3.5 bg-gray-950 border border-gray-800 rounded-xl cursor-pointer"
+                    onClick={() => router.push(`/tournaments/${t.id}`)}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                      style={{background: (gameColors[t.game] || '#ef4444') + '20', border: `1px solid ${gameColors[t.game] || '#ef4444'}40`}}>
+                      {t.game === 'Free Fire' ? '🔥' : t.game === 'BGMI' ? '🎯' : '⚡'}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-black text-sm text-white">{t.name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs font-black px-2 py-0.5 rounded"
+                          style={{background: (gameColors[t.game] || '#ef4444') + '15', color: gameColors[t.game] || '#ef4444', border: `1px solid ${gameColors[t.game] || '#ef4444'}30`}}>
+                          {t.game}
+                        </span>
+                        <span className="text-xs text-gray-600 font-bold">
+                          {new Date(t.created_at).toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year: 'numeric'})}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); router.push(`/tournaments/${t.id}`); }}
+                        className="text-xs text-red-400 hover:text-red-300 font-black tracking-wider transition px-2 py-1 border border-red-500/20 hover:border-red-500/50 rounded-lg">
+                        OPEN →
+                      </button>
+                      <button
+                        onClick={(e) => handleDelete(t.id, e)}
+                        className="text-gray-700 hover:text-red-400 font-bold text-sm transition px-2">
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>

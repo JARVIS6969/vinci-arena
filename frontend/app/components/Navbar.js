@@ -1,11 +1,43 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+
+  const pageInfo = {
+    '/dashboard':          { icon: '🏠', title: 'COMMAND CENTER',  desc: 'Your esports journey starts here' },
+    '/studio':             { icon: '🎨', title: 'VINCI STUDIO',    desc: 'Create professional esports graphics' },
+    '/marketplace':        { icon: '💼', title: 'VINCI MARKET',    desc: 'Find jobs & opportunities' },
+    '/marketplace/post':   { icon: '📝', title: 'POST A JOB',      desc: 'Find the right player for your team' },
+    '/marketplace/my-applications': { icon: '📋', title: 'MY ACTIVITY', desc: 'Track your applications & requests' },
+    '/squads':             { icon: '👥', title: 'SQUADS',           desc: 'Build & manage your team' },
+    '/profile':            { icon: '👤', title: 'MY PROFILE',       desc: 'Your gaming portfolio' },
+    '/chat':               { icon: '💬', title: 'MESSAGES',         desc: 'Connect with players & squads' },
+    '/esports':            { icon: '🏆', title: 'ESPORTS HUB',      desc: "India's grassroots esports platform" },
+    '/tournaments/create': { icon: '📊', title: 'POINT TABLE',      desc: 'Tournament calculator & standings' },
+    '/login':              null,
+    '/signup':             null,
+    '/':                   null,
+  };
+
+  const getPageInfo = () => {
+    if (pageInfo[pathname] !== undefined) return pageInfo[pathname];
+    
+    if (pathname?.startsWith('/chat/dm')) return { icon: '💬', title: 'DIRECT MESSAGE', desc: 'Private conversation' };
+    if (pathname?.startsWith('/chat/group')) return { icon: '👥', title: 'GROUP CHAT', desc: 'Team conversation' };
+    if (pathname?.startsWith('/chat/new')) return { icon: '✉️', title: 'NEW CHAT', desc: 'Start a conversation' };
+    if (pathname?.startsWith('/profile')) return { icon: '👤', title: 'PLAYER PROFILE', desc: 'Gaming portfolio & achievements' };
+    if (pathname?.startsWith('/tournaments')) return { icon: '📊', title: 'TOURNAMENT', desc: 'Match results & standings' };
+    if (pathname?.startsWith('/squads')) return { icon: '👥', title: 'SQUAD', desc: 'Team details & members' };
+    if (pathname?.startsWith('/studio')) return { icon: '🎨', title: 'VINCI STUDIO', desc: 'Create professional esports graphics' };
+    return null;
+  };
+
+  const currentPage = getPageInfo();
   const [userName, setUserName] = useState('');
   const [scrolled, setScrolled] = useState(false);
 
@@ -127,6 +159,57 @@ export default function Navbar() {
 
         </div>
       </nav>
+      {currentPage && (
+        <>
+          <style>{`
+            .page-title-glitch { animation: pageGlitch 4s infinite; }
+            @keyframes pageGlitch {
+              0%, 88%, 100% { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
+              90% { text-shadow: -2px 0 #00ffff, 2px 0 #ef4444; transform: translateX(-1px); }
+              92% { text-shadow: 2px 0 #00ffff, -2px 0 #ef4444; transform: translateX(1px); }
+              94% { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; transform: translateX(0); }
+            }
+            .page-pulse-dot { animation: pagePulseDot 2s infinite; }
+            @keyframes pagePulseDot {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.4; transform: scale(1.4); }
+            }
+            .page-bar-scan { background: repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(239,68,68,0.03) 100px, rgba(239,68,68,0.03) 101px); }
+            @keyframes scanMove { 0% { background-position: 0 0; } 100% { background-position: 200px 0; } }
+            .page-bar-glow { box-shadow: 0 0 25px rgba(239,68,68,0.15), inset 0 -1px 0 rgba(239,68,68,0.2); }
+          `}</style>
+          <div className="fixed left-0 right-0 z-40 flex items-center justify-between px-6 page-bar-glow page-bar-scan"
+            style={{top: '60px', height: '44px', background: '#000', borderBottom: '1px solid rgba(239,68,68,0.2)'}}>
+
+            {/* Left — Icon + Title + Desc */}
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-red-600/20 border border-red-500/40 rounded flex items-center justify-center"
+                style={{boxShadow: '0 0 8px rgba(239,68,68,0.4)'}}>
+                <span style={{fontSize: '12px'}}>{currentPage.icon}</span>
+              </div>
+              <span className="font-black text-xs tracking-widest page-title-glitch"
+                style={{fontFamily: "'Orbitron', sans-serif", color: '#ef4444'}}>
+                {currentPage.title}
+              </span>
+              <span className="text-gray-800 text-xs font-black">//</span>
+              <span className="text-xs text-gray-600 font-bold tracking-wide hidden sm:block">{currentPage.desc}</span>
+            </div>
+
+            {/* Right — Online status */}
+            {userName && (
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 rounded-full px-2.5 py-0.5">
+                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full page-pulse-dot" />
+                  <span className="text-xs text-green-400 font-black tracking-wider">ONLINE</span>
+                </div>
+                <div className="text-xs text-gray-700 font-black tracking-widest hidden md:block" style={{fontFamily: "'Orbitron', sans-serif"}}>
+                  {userName?.toUpperCase()}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* SPACER so content doesn't hide behind fixed navbar */}
       <div className="h-16" />

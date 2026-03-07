@@ -38,7 +38,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white" style={{fontFamily: "'Rajdhani', sans-serif"}}>
+    <div className="min-h-screen bg-black text-white" style={{fontFamily: "'Rajdhani', sans-serif", paddingTop: '44px'}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
         .grid-bg { background-image: linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px); background-size: 40px 40px; }
@@ -55,7 +55,7 @@ export default function DashboardPage() {
         .search-input::placeholder { color: #4b5563; }
       `}</style>
 
-      <div className="border-b border-red-500/10 bg-black/80 backdrop-blur-sm sticky top-16 z-40 px-6 py-3 flex items-center justify-center">
+      <div className="border-b border-red-500/10 bg-black sticky top-[104px] z-40 px-6 py-2 flex items-center justify-center">
         <div className="relative">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-sm"></span>
           <input className="search-input pl-10" placeholder="Search tournaments, players, jobs..."
@@ -78,7 +78,7 @@ export default function DashboardPage() {
       <div className="grid-bg min-h-screen">
         <div className="flex">
 
-          <div className="w-64 min-h-screen border-r border-red-500/10 bg-black/40 flex flex-col sticky top-28 h-screen overflow-y-auto flex-shrink-0">
+          <div className="w-64 min-h-screen border-r border-red-500/10 bg-black/40 flex flex-col sticky top-[104px] h-screen overflow-y-auto flex-shrink-0">
             <div className="p-4 border-b border-red-500/10">
               <p className="text-xs text-gray-600 font-black tracking-widest mb-1">WELCOME BACK</p>
               <p className="font-black text-white text-sm tracking-wider" style={{fontFamily: "'Orbitron', sans-serif"}}>
@@ -171,14 +171,14 @@ export default function DashboardPage() {
             </div>
 
             <div className="main-card relative overflow-hidden rounded-2xl p-6 cursor-pointer"
-              style={{background: 'linear-gradient(135deg, #00001a, #000a10, #0a0005)', border: '1px solid rgba(99,102,241,0.3)', boxShadow: '0 0 40px rgba(99,102,241,0.08)'}}
-              onClick={() => router.push('/marketplace')}>
-              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10" style={{background: 'radial-gradient(circle, #6366f1, transparent)', filter: 'blur(30px)'}} />
+              style={{background: 'linear-gradient(135deg, #0d0005, #0a0000, #050010)', border: '1px solid rgba(239,68,68,0.25)', boxShadow: '0 0 40px rgba(239,68,68,0.08)'}}
+              onClick={() => router.push('/esports')}>
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10" style={{background: 'radial-gradient(circle, #ef4444, transparent)', filter: 'blur(30px)'}} />
               <div className="relative flex items-center justify-between gap-6">
                 <div className="flex-1">
-                  <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1 mb-3">
-                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
-                    <span className="text-indigo-400 text-xs font-black tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>ESPORTS ECOSYSTEM</span>
+                  <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-3 py-1 mb-3">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                    <span className="text-red-400 text-xs font-black tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>ESPORTS ECOSYSTEM</span>
                   </div>
                   <h2 className="font-black text-2xl text-white mb-2" style={{fontFamily: "'Orbitron', sans-serif"}}>ESPORTS HUB</h2>
                   <p className="text-gray-400 text-sm font-bold mb-3 max-w-md">Find teams, hire coaches, join squads and build your esports career. India's first grassroots esports platform.</p>
@@ -187,8 +187,8 @@ export default function DashboardPage() {
                       <span key={f} className="text-xs bg-white/5 border border-white/10 text-gray-400 px-2 py-0.5 rounded-full font-bold">{f}</span>
                     ))}
                   </div>
-                  <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-black text-xs tracking-widest transition"
-                    style={{boxShadow: '0 0 20px rgba(99,102,241,0.4)'}}>
+                  <button className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-6 py-2.5 rounded-xl font-black text-xs tracking-widest transition"
+                    style={{boxShadow: '0 0 20px rgba(239,68,68,0.4)'}}>
                     🚀 EXPLORE ESPORTS HUB →
                   </button>
                 </div>

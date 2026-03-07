@@ -139,7 +139,7 @@ export default function GroupChatPage() {
   const avatarColors = ['from-red-600 to-purple-600', 'from-blue-600 to-purple-600', 'from-green-600 to-blue-600', 'from-yellow-600 to-orange-600', 'from-pink-600 to-red-600'];
 
   return (
-    <div className="h-screen bg-black text-white flex overflow-hidden" style={{fontFamily: "'Rajdhani', sans-serif"}}>
+    <div className="bg-black text-white flex overflow-hidden" style={{fontFamily: "'Rajdhani', sans-serif", height: '100vh', paddingTop: '104px', background: '#000'}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
         .grid-bg { background-image: linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px); background-size: 40px 40px; }
@@ -202,15 +202,19 @@ export default function GroupChatPage() {
       <div className="flex-1 flex flex-col grid-bg">
         <div className="h-14 bg-black border-b border-red-500/20 flex items-center justify-between px-4" style={{boxShadow: '0 0 20px rgba(239,68,68,0.1)'}}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center font-black text-sm">
+            <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center font-black text-sm cursor-pointer"
+              onClick={() => router.push(`/chat/group/${params.id}/info`)}
+              style={{boxShadow: '0 0 15px rgba(239,68,68,0.4)'}}>
               {group?.name?.[0]?.toUpperCase() || '?'}
             </div>
-            <div>
-              <p className="font-black text-sm tracking-wider cursor-pointer hover:text-red-400 transition"
-  onClick={() => router.push(`/chat/group/${params.id}/info`)}>
-  {group?.name?.toUpperCase() || 'LOADING...'}
-</p>
-              <p className="text-xs text-gray-600 font-bold">{members.length} MEMBERS</p>
+            <div className="cursor-pointer group" onClick={() => router.push(`/chat/group/${params.id}/info`)}>
+              <p className="font-black tracking-wider text-white group-hover:text-red-400 transition"
+                style={{fontFamily: "'Orbitron', sans-serif", fontSize: '15px'}}>
+                {group?.name?.toUpperCase() || 'LOADING...'}
+              </p>
+              <p className="text-xs text-gray-600 font-bold group-hover:text-gray-400 transition">
+                {members.length} MEMBERS · <span className="text-red-500/50">TAP FOR INFO →</span>
+              </p>
             </div>
           </div>
           <button onClick={() => setShowMembers(!showMembers)}

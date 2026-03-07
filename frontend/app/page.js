@@ -159,7 +159,7 @@ style={{
                 <div className="w-16 h-16 bg-gradient-to-br from-[#A52A2A] to-[#8B0000] rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-[#A52A2A]/50">
                   <span className="text-4xl">🎨</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4 drop-shadow-lg">23 Templates</h3>
+                <h3 className="text-2xl font-bold text-white mb-4 drop-shadow-lg">40 Templates</h3>
                 <p className="text-gray-200 font-light drop-shadow-md">
                   Professional designs to export standings 
                   as beautiful PNG images.
@@ -225,7 +225,7 @@ style={{
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div className="bg-black/30 backdrop-blur-lg border border-[#DC143C]/30 rounded-2xl p-6 hover:border-[#DC143C]/50 transition shadow-lg shadow-[#DC143C]/10">
-              <div className="text-5xl font-black bg-gradient-to-r from-[#DC143C] to-[#A52A2A] text-transparent bg-clip-text mb-2 drop-shadow-lg">23</div>
+              <div className="text-5xl font-black bg-gradient-to-r from-[#DC143C] to-[#A52A2A] text-transparent bg-clip-text mb-2 drop-shadow-lg">40</div>
               <div className="text-gray-200 font-light drop-shadow-md">Export Templates</div>
             </div>
             <div className="bg-black/30 backdrop-blur-lg border border-[#A52A2A]/30 rounded-2xl p-6 hover:border-[#A52A2A]/50 transition shadow-lg shadow-[#A52A2A]/10">
