@@ -31,7 +31,13 @@ export default function EditProfilePage() {
   const [gameData, setGameData] = useState({});
   const [statsData, setStatsData] = useState({});
 
-  useEffect(() => { fetchExisting(); }, []);
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (userId && window.location.pathname === '/profile') {
+      window.location.href = `/profile/${userId}`;
+    }
+    fetchExisting();
+  }, []);
 
   const fetchExisting = async () => {
     try {
@@ -41,7 +47,7 @@ export default function EditProfilePage() {
 
       const [profileRes, gamesRes] = await Promise.all([
         fetch('http://localhost:3001/api/profiles/me', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`http://localhost:3001/api/profiles/${userId}/games`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`http://localhost:3001/api/profiles/user/${userId}/games`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       if (profileRes.ok) {

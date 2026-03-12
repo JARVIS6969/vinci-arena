@@ -358,14 +358,14 @@ app.get('/api/profiles/me', authenticateToken, async (req, res) => {
 app.post('/api/profiles', authenticateToken, async (req, res) => {
   try {
     const userId = String(req.user.userId);
-    const { display_name, bio, avatar_url, banner_url, primary_game } = req.body;
+    const { display_name, bio, avatar_url, banner_url, primary_game, tagline, country, looking_for, youtube_url, instagram_url, discord_tag, twitter_url } = req.body;
     const { data: existing } = await supabase.from('player_profiles').select('id').eq('user_id', userId).single();
     if (existing) {
-      const { data, error } = await supabase.from('player_profiles').update({ display_name, bio, avatar_url, banner_url, primary_game, updated_at: new Date().toISOString() }).eq('user_id', userId).select().single();
+      const { data, error } = await supabase.from('player_profiles').update({ display_name, bio, avatar_url, banner_url, primary_game, tagline, country, looking_for, youtube_url, instagram_url, discord_tag, twitter_url, updated_at: new Date().toISOString() }).eq('user_id', userId).select().single();
       if (error) throw error;
       res.json(data);
     } else {
-      const { data, error } = await supabase.from('player_profiles').insert({ user_id: userId, display_name, bio, avatar_url, banner_url, primary_game }).select().single();
+      const { data, error } = await supabase.from('player_profiles').insert({ user_id: userId, display_name, bio, avatar_url, banner_url, primary_game, tagline, country, looking_for, youtube_url, instagram_url, discord_tag, twitter_url }).select().single();
       if (error) throw error;
       res.status(201).json(data);
     }
@@ -928,6 +928,90 @@ app.get('/api/chat/groups/:id/info', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch group info' });
   }
 });
+// PLAYER GAMES ROUTES
+app.get('/api/profiles/user/:userId/games', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('player_games').select('*').eq('user_id', req.params.userId);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch games' }); }
+});
+app.post('/api/profiles/games', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { game, role, rank } = req.body;
+    const { data, error } = await supabase.from('player_games').upsert({ user_id: userId, game, role, rank }, { onConflict: 'user_id,game' }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) { res.status(500).json({ error: 'Failed to save game' }); }
+});
+app.delete('/api/profiles/games/:game', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { error } = await supabase.from('player_games').delete().eq('user_id', userId).eq('game', req.params.game);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to delete game' }); }
+});
+app.get('/api/profiles/user/:userId/stats', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('game_stats').select('*').eq('user_id', req.params.userId);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch stats' }); }
+});
+app.post('/api/profiles/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { game, stats, screenshot_url } = req.body;
+    const { data, error } = await supabase.from('game_stats').upsert({ user_id: userId, game, stats, screenshot_url, updated_at: new Date().toISOString() }, { onConflict: 'user_id,game' }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) { res.status(500).json({ error: 'Failed to save stats' }); }
+});
+
+// PLAYER GAMES ROUTES
+app.get('/api/profiles/user/:userId/games', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('player_games').select('*').eq('user_id', req.params.userId);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch games' }); }
+});
+app.post('/api/profiles/games', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { game, role, rank } = req.body;
+    const { data, error } = await supabase.from('player_games').upsert({ user_id: userId, game, role, rank }, { onConflict: 'user_id,game' }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) { res.status(500).json({ error: 'Failed to save game' }); }
+});
+app.delete('/api/profiles/games/:game', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { error } = await supabase.from('player_games').delete().eq('user_id', userId).eq('game', req.params.game);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'Failed to delete game' }); }
+});
+app.get('/api/profiles/user/:userId/stats', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('game_stats').select('*').eq('user_id', req.params.userId);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) { res.status(500).json({ error: 'Failed to fetch stats' }); }
+});
+app.post('/api/profiles/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { game, stats, screenshot_url } = req.body;
+    const { data, error } = await supabase.from('game_stats').upsert({ user_id: userId, game, stats, screenshot_url, updated_at: new Date().toISOString() }, { onConflict: 'user_id,game' }).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) { res.status(500).json({ error: 'Failed to save stats' }); }
+});
+
 app.use((req, res) => {
   console.log('❌ 404 Route not found:', req.method, req.url);
   res.status(404).json({ error: `Route ${req.method} ${req.url} not found` });
@@ -1089,4 +1173,81 @@ app.delete('/api/squads/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete squad' });
   }
 });
+
+// PLAYER GAMES ROUTES
+app.get('/api/profiles/user/:userId/games', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('player_games')
+      .select('*')
+      .eq('user_id', req.params.userId);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch games' });
+  }
+});
+
+app.post('/api/profiles/games', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { game, role, rank } = req.body;
+    const { data, error } = await supabase
+      .from('player_games')
+      .upsert({ user_id: userId, game, role, rank }, { onConflict: 'user_id,game' })
+      .select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save game' });
+  }
+});
+
+app.delete('/api/profiles/games/:game', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { error } = await supabase
+      .from('player_games')
+      .delete()
+      .eq('user_id', userId)
+      .eq('game', req.params.game);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete game' });
+  }
+});
+
+// GAME STATS ROUTES
+app.get('/api/profiles/user/:userId/stats', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('game_stats')
+      .select('*')
+      .eq('user_id', req.params.userId);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+app.post('/api/profiles/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = String(req.user.userId);
+    const { game, stats, screenshot_url } = req.body;
+    const { data, error } = await supabase
+      .from('game_stats')
+      .upsert(
+        { user_id: userId, game, stats, screenshot_url, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id,game' }
+      )
+      .select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save stats' });
+  }
+});
+
 

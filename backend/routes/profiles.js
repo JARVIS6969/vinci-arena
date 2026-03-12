@@ -21,7 +21,7 @@ const authenticateToken = (req, res, next) => {
 export default (supabase) => {
   
   // GET /api/profiles/:userId
-  router.get('/:userId', async (req, res) => {
+  router.get('/user/:userId', async (req, res) => {
     try {
       const { data, error } = await supabase
         .from('player_profiles')
@@ -182,7 +182,7 @@ export default (supabase) => {
   });
 
   // GET /api/profiles/:userId/games
-  router.get('/:userId/games', async (req, res) => {
+  router.get('/user/:userId/games', async (req, res) => {
     try {
       const { data, error } = await supabase
         .from('player_games')
@@ -228,7 +228,7 @@ export default (supabase) => {
   });
 
   // GET /api/profiles/:userId/stats
-  router.get('/:userId/stats', async (req, res) => {
+  router.get('/user/:userId/stats', async (req, res) => {
     try {
       const { data, error } = await supabase
         .from('game_stats')
