@@ -1011,7 +1011,20 @@ app.post('/api/profiles/stats', authenticateToken, async (req, res) => {
     res.json(data);
   } catch (err) { res.status(500).json({ error: 'Failed to save stats' }); }
 });
-
+// FREE FIRE UID STATS
+app.get('/api/freefire/stats/:uid', async (req, res) => {
+  try {
+    const BASE = 'https://freefire-api-six.vercel.app/get_player_stats';
+    const [br, cs] = await Promise.all([
+      fetch(`${BASE}?server=ind&uid=${req.params.uid}&matchmode=RANKED&gamemode=br`).then(r => r.json()),
+      fetch(`${BASE}?server=ind&uid=${req.params.uid}&matchmode=RANKED&gamemode=cs`).then(r => r.json()),
+    ]);
+    if (!br.success) return res.status(404).json({ error: 'Player not found' });
+    res.json({ br: br.data, cs: cs.data, uid: req.params.uid });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.use((req, res) => {
   console.log('❌ 404 Route not found:', req.method, req.url);
   res.status(404).json({ error: `Route ${req.method} ${req.url} not found` });

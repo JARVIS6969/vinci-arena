@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
+
 import { useRouter, useParams } from 'next/navigation';
+import GameStatsDisplay from '../../components/GameStatsDisplay';
 
 const GAME_CONFIG = {
   'Free Fire': { icon: '🔥', color: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)' },
@@ -34,6 +36,11 @@ export default function PublicProfilePage() {
   const [notFound, setNotFound] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
   const [messaging, setMessaging] = useState(false);
+  const [ffUid, setFfUid] = useState('');
+  const [ffStats, setFfStats] = useState(null);
+  const [ffLoading, setFfLoading] = useState(false);
+  const [ffError, setFfError] = useState('');
+  const [ffMode, setFfMode] = useState('br');
 
   useEffect(() => {
     setCurrentUserId(localStorage.getItem('userId') || '');
@@ -77,7 +84,19 @@ export default function PublicProfilePage() {
     finally { setMessaging(false); }
   };
 
-  const activeStats = allStats.find(s => s.game === activeGame)?.stats || {};
+ const activeStats = allStats.find(s => s.game === activeGame)?.stats || {};
+
+  const fetchFFStats = async () => {
+    if (!ffUid.trim()) return;
+    setFfLoading(true); setFfError('');
+    try {
+      const res = await fetch(`http://localhost:3001/api/freefire/stats/${ffUid.trim()}`);
+      const data = await res.json();
+      if (data.error) { setFfError('Player not found!'); setFfStats(null); }
+      else setFfStats(data);
+    } catch { setFfError('Failed to fetch stats'); }
+    finally { setFfLoading(false); }
+  };
   const activeGameConfig = GAME_CONFIG[activeGame] || GAME_CONFIG['Free Fire'];
   const activeGameData = games.find(g => g.game === activeGame);
 
@@ -289,28 +308,14 @@ export default function PublicProfilePage() {
                         </button>
                       </div>
                     )}
-                    {Object.keys(activeStats).length > 0 ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {Object.entries(activeStats).map(([key, value]) => {
-                          const statInfo = STAT_LABELS[key];
-                          if (!value || !statInfo) return null;
-                          return (
-                            <div key={key} className="stat-card rounded-xl p-4 text-center"
-                              style={{background: '#080808', border: `1px solid ${activeGameConfig.color}15`, boxShadow: `0 0 15px ${activeGameConfig.color}05`}}>
-                              <div className="text-xl mb-1">{statInfo.icon}</div>
-                              <div className="font-black text-xl text-white mb-0.5" style={{textShadow: `0 0 15px ${activeGameConfig.color}60`}}>{value}</div>
-                              <div className="text-xs font-black tracking-widest" style={{color: activeGameConfig.color, fontSize: '9px', fontFamily: "'Orbitron', sans-serif"}}>{statInfo.label}</div>
-                              <div className="w-full h-0.5 mt-2 rounded" style={{background: `linear-gradient(90deg, transparent, ${activeGameConfig.color}60, transparent)`}} />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
+                    
+                      <GameStatsDisplay stats={activeStats} accentColor={activeGameConfig.color} gameName={activeGame} />
+                    : (
                       <div className="text-center py-8">
                         <p className="text-gray-600 font-black text-xs tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>NO STATS ADDED YET</p>
                         {isOwner && <button onClick={() => router.push('/profile')} className="mt-3 text-xs font-black px-4 py-2 rounded-lg transition" style={{background: activeGameConfig.bg, color: activeGameConfig.color, border: `1px solid ${activeGameConfig.border}`}}>+ ADD STATS</button>}
                       </div>
-                    )}
+                    )
                   </div>
                 )}
               </>
