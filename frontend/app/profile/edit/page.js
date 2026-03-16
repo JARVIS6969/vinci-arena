@@ -27,6 +27,8 @@ export default function EditProfilePage() {
   const [activeTab, setActiveTab] = useState(initialStep === 3 ? 'stats' : 'profile');
   const [saving, setSaving] = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
+  const [statsInputMode, setStatsInputMode] = useState({});
+  const [uidInputs, setUidInputs] = useState({});
   const [activeStatGame, setActiveStatGame] = useState(initialGame);
   const [selectedGames, setSelectedGames] = useState([]);
   const [gameData, setGameData] = useState({});
@@ -140,6 +142,34 @@ export default function EditProfilePage() {
       if (!result[key]) { const m = text.match(regex); if (m) result[key] = m[1].trim(); }
     });
     return result;
+  };
+
+  const fetchStatsByUid = async (game) => {
+    const uid = uidInputs[game];
+    if (!uid?.trim()) return;
+    setOcrLoading(true);
+    try {
+      const res = await fetch(`http://localhost:3001/api/freefire/stats/${uid.trim()}`);
+      const data = await res.json();
+      if (data.br) {
+        const quad = data.br.quadstats;
+        const d = quad?.detailedstats || {};
+        const extracted = {
+          kd_ratio: quad?.kills && quad?.gamesplayed ? (quad.kills / quad.gamesplayed).toFixed(2) : '',
+          win_rate: quad?.wins && quad?.gamesplayed ? ((quad.wins / quad.gamesplayed) * 100).toFixed(1) : '',
+          total_matches: quad?.gamesplayed?.toString() || '',
+          total_kills: quad?.kills?.toString() || '',
+          wins: quad?.wins?.toString() || '',
+          headshot: d.headshotkills && quad?.kills ? ((d.headshotkills / quad.kills) * 100).toFixed(1) : '',
+          damage: d.damage?.toString() || '',
+        };
+        setStatsData(prev => ({ ...prev, [game]: { ...prev[game], ...extracted } }));
+        alert('Stats fetched! Review and save.');
+      } else {
+        alert('Player not found!');
+      }
+    } catch { alert('Failed to fetch. Check UID.'); }
+    finally { setOcrLoading(false); }
   };
 
   const saveStats = async (game) => {
@@ -356,19 +386,73 @@ export default function EditProfilePage() {
                   <div className="rounded-2xl p-6" style={{background: '#050505', border: `1px solid ${g.color}25`}}>
                     <p className="text-xs font-black tracking-widest mb-4" style={{fontFamily: "'Orbitron', sans-serif", color: g.color}}>// {activeStatGame.toUpperCase()} STATS</p>
 
-                    {/* OCR Upload */}
-                    <div className="rounded-xl p-4 mb-5" style={{background: '#0a0a0a', border: `1px dashed ${g.color}40`}}>
-                      <p className="text-xs font-black text-gray-500 mb-3 tracking-widest">📸 UPLOAD SCREENSHOT → AUTO EXTRACT</p>
-                      <div className="flex items-center gap-3">
-                        <input ref={fileRef} type="file" accept="image/*" className="hidden"
-                          onChange={async e => { if (e.target.files[0]) await handleOCR(e.target.files[0], activeStatGame); }} />
-                        <button onClick={() => fileRef.current?.click()} disabled={ocrLoading}
-                          className="px-4 py-2 rounded-lg font-black text-xs tracking-widest transition"
-                          style={{background: g.color+'20', border: `1px solid ${g.color}40`, color: g.color, fontFamily: "'Orbitron', sans-serif"}}>
-                          {ocrLoading ? '⟳ SCANNING...' : '📷 UPLOAD SS'}
+                    {/* UID / OCR Selector */}
+                    {!statsInputMode[activeStatGame] ? (
+                      <div className="grid grid-cols-2 gap-3 mb-5">
+                        <button onClick={() => setStatsInputMode(p => ({...p, [activeStatGame]: 'uid'}))}
+                          className="rounded-xl p-4 text-center transition-all duration-300 hover:scale-105"
+                          style={{background: g.color+'08', border: `1px solid ${g.color}30`}}>
+                          <div className="text-2xl mb-2">🔢</div>
+                          <p className="font-black text-white mb-1" style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px'}}>ENTER UID</p>
+                          <p className="text-gray-600 font-bold" style={{fontSize: '9px'}}>Fetch stats automatically</p>
+                          <div className="mt-2 py-1 rounded-lg font-black" style={{background: g.color+'20', color: g.color, fontFamily: "'Orbitron', sans-serif", fontSize: '8px'}}>QUICK → AUTO FETCH</div>
+                        </button>
+                        <button onClick={() => setStatsInputMode(p => ({...p, [activeStatGame]: 'ocr'}))}
+                          className="rounded-xl p-4 text-center transition-all duration-300 hover:scale-105"
+                          style={{background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)'}}>
+                          <div className="text-2xl mb-2">📸</div>
+                          <p className="font-black text-white mb-1" style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px'}}>SCREENSHOT</p>
+                          <p className="text-gray-600 font-bold" style={{fontSize: '9px'}}>Upload & auto extract</p>
+                          <div className="mt-2 py-1 rounded-lg font-black" style={{background: 'rgba(99,102,241,0.2)', color: '#6366f1', fontFamily: "'Orbitron', sans-serif", fontSize: '8px'}}>OCR → AUTO EXTRACT</div>
                         </button>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="rounded-xl p-4 mb-5" style={{background: '#0a0a0a', border: `1px solid ${g.color}25`}}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <button onClick={() => setStatsInputMode(p => ({...p, [activeStatGame]: null}))}
+                            className="text-gray-600 hover:text-red-400 font-black text-xs transition">← BACK</button>
+                          <p className="text-xs font-black tracking-widest" style={{color: g.color, fontFamily: "'Orbitron', sans-serif", fontSize: '9px'}}>
+                            {statsInputMode[activeStatGame] === 'uid' ? 'ENTER UID' : 'UPLOAD SCREENSHOT'}
+                          </p>
+                        </div>
+
+                        {statsInputMode[activeStatGame] === 'uid' && (
+                          <div className="flex gap-2">
+                            <input value={uidInputs[activeStatGame] || ''} 
+                              onChange={e => setUidInputs(p => ({...p, [activeStatGame]: e.target.value}))}
+                              onKeyDown={e => e.key === 'Enter' && fetchStatsByUid(activeStatGame)}
+                              placeholder="Enter your UID..."
+                              className="flex-1 rounded-xl px-4 py-2.5 font-bold text-white outline-none text-sm"
+                              style={{background: '#080808', border: `1px solid ${g.color}30`, fontFamily: "'Rajdhani', sans-serif"}} />
+                            <button onClick={() => fetchStatsByUid(activeStatGame)} disabled={ocrLoading}
+                              className="px-4 py-2.5 rounded-xl font-black text-xs text-white transition"
+                              style={{background: g.color, fontFamily: "'Orbitron', sans-serif"}}>
+                              {ocrLoading ? '⟳' : '🔍'}
+                            </button>
+                          </div>
+                        )}
+
+                        {statsInputMode[activeStatGame] === 'ocr' && (
+                          <label className="flex flex-col items-center justify-center rounded-xl p-6 cursor-pointer"
+                            style={{background: '#080808', border: '2px dashed rgba(99,102,241,0.3)'}}>
+                            <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                              onChange={async e => { if (e.target.files[0]) await handleOCR(e.target.files[0], activeStatGame); }} />
+                            {ocrLoading ? (
+                              <div className="flex flex-col items-center gap-2">
+                                <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+                                <p className="text-indigo-400 font-black text-xs" style={{fontFamily: "'Orbitron', sans-serif"}}>SCANNING...</p>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="text-3xl mb-2">📲</div>
+                                <p className="font-black text-white mb-1" style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px'}}>TAP TO UPLOAD</p>
+                                <p className="text-gray-600 font-bold text-center" style={{fontSize: '9px'}}>Upload screenshot — stats auto extracted</p>
+                              </>
+                            )}
+                          </label>
+                        )}
+                      </div>
+                    )}
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">

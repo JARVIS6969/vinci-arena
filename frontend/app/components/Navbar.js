@@ -89,12 +89,17 @@ export default function Navbar() {
 
           {/* NAV LINKS */}
           <div className="hidden md:flex items-center gap-6">
+            <Link href="/">
+              <span className="nav-link text-gray-400 text-xs font-black tracking-widest cursor-pointer" style={{fontFamily: "'Rajdhani', sans-serif"}}>
+                HOME
+              </span>
+            </Link>
             <Link href="/dashboard">
               <span className="nav-link text-gray-400 text-xs font-black tracking-widest cursor-pointer" style={{fontFamily: "'Rajdhani', sans-serif"}}>
                 DASHBOARD
               </span>
             </Link>
-            <Link href="/tournaments/create">
+            <Link href="/studio">
               <span className="nav-link text-gray-400 text-xs font-black tracking-widest cursor-pointer" style={{fontFamily: "'Rajdhani', sans-serif"}}>
                 VINCI-STUDIO
               </span>
@@ -212,7 +217,7 @@ export default function Navbar() {
       )}
 
       {/* SPACER so content doesn't hide behind fixed navbar */}
-      <div className="h-16" />
+     
     </>
   );
 }
