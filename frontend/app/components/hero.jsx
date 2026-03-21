@@ -36,8 +36,15 @@ function ThreeLeft() {
   const mountRef = useRef(null)
   useEffect(() => {
     let THREE, renderer, scene, camera, animId
-    let points, rings = [], icosa
+    let rings = [], icosa
     let mouse = { x: 0, y: 0 }, lx = 0, ly = 0
+
+    // Neural network nodes
+    const neuralNodes = []
+    const neuralLines = []
+    let nodeCount = 0
+    let lastNodeTime = 0
+
     async function init() {
       THREE = await import('three')
       const el = mountRef.current
@@ -51,54 +58,303 @@ function ThreeLeft() {
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
       renderer.setClearColor(0, 0)
       el.appendChild(renderer.domElement)
+
       const φ = 1.618033988749895
-      const N = 500, pos = new Float32Array(N*3), col = new Float32Array(N*3)
-      for (let i = 0; i < N; i++) {
-        const θ = i * 2.399963, r = Math.sqrt(i/N) * 5
-        pos[i*3] = Math.cos(θ)*r; pos[i*3+1] = (Math.random()-.5)*8; pos[i*3+2] = Math.sin(θ)*r
-        const t = i/N
-        if (t < 0.33)      { col[i*3]=0;   col[i*3+1]=0.9+t; col[i*3+2]=1 }
-        else if (t < 0.66) { col[i*3]=1;   col[i*3+1]=0;     col[i*3+2]=0.8-(t-.33) }
-        else               { col[i*3]=0.2; col[i*3+1]=1;     col[i*3+2]=0.1 }
-      }
-      const geo = new THREE.BufferGeometry()
-      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-      geo.setAttribute('color',    new THREE.BufferAttribute(col, 3))
-      points = new THREE.Points(geo, new THREE.PointsMaterial({ size:.04, vertexColors:true, transparent:true, opacity:.9 }))
-      scene.add(points)
+
+      // Icosahedron wireframe globe
       icosa = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.6, 1),
-        new THREE.MeshBasicMaterial({ color:0x00ffff, wireframe:true, transparent:true, opacity:.22 })
+        new THREE.IcosahedronGeometry(1.8, 2),
+        new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true, transparent: true, opacity: .15 })
       )
       scene.add(icosa)
+
+      // Sphere particle cloud — full globe illusion
+      const sphereParticleCount = 800
+      const spos = new Float32Array(sphereParticleCount * 3)
+      const scol = new Float32Array(sphereParticleCount * 3)
+      const neonColors = [
+        [1,.27,.27],   // red
+        [0,1,1],       // cyan
+        [1,0,.8],      // magenta
+        [.98,.75,.14], // yellow
+        [.15,1,.08],   // green
+        [.64,.55,.98], // purple
+        [0,1,.53],     // mint
+        [1,0,.5],      // pink
+      ]
+      for (let i = 0; i < sphereParticleCount; i++) {
+        // Random point on/around sphere — creates globe illusion
+        const u = Math.random(), v = Math.random()
+        const theta = 2 * Math.PI * u
+        const phi = Math.acos(2 * v - 1)
+        const r = 1.6 + (Math.random() - .5) * 2.5
+        spos[i*3]   = r * Math.sin(phi) * Math.cos(theta)
+        spos[i*3+1] = r * Math.sin(phi) * Math.sin(theta)
+        spos[i*3+2] = r * Math.cos(phi)
+        const c = neonColors[Math.floor(Math.random() * neonColors.length)]
+        scol[i*3] = c[0]; scol[i*3+1] = c[1]; scol[i*3+2] = c[2]
+      }
+      const sgeo = new THREE.BufferGeometry()
+      sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3))
+      sgeo.setAttribute('color', new THREE.BufferAttribute(scol, 3))
+      const sphereCloud = new THREE.Points(sgeo, new THREE.PointsMaterial({
+        size: .015,
+        vertexColors: true,
+        transparent: true,
+        opacity: .7,
+        sizeAttenuation: true,
+      }))
+      scene.add(sphereCloud)
+
+      // Golden ratio rings
       ;[1.2, 1.2*φ, 1.2*φ*φ].forEach((r, i) => {
         const m = new THREE.Mesh(
-          new THREE.TorusGeometry(r, .007, 2, 6),
-          new THREE.MeshBasicMaterial({ color:[0x00ffff,0xff00cc,0x39ff14][i], transparent:true, opacity:.55-i*.1 })
+          new THREE.TorusGeometry(r, .006, 2, 80),
+          new THREE.MeshBasicMaterial({ color:[0x00ffff,0xff00cc,0x39ff14][i], transparent:true, opacity:.4-i*.08 })
         )
-        m.rotation.x = [.4,1.,.7][i]; m.rotation.y = [.2,.5,1.1][i]
+        m.rotation.x = [.4,1.,.7][i]
+        m.rotation.y = [.2,.5,1.1][i]
         m.userData.spd = [.005,-.004,.003][i]
         rings.push(m); scene.add(m)
       })
+
+      // Lights
       const pl1 = new THREE.PointLight(0x00ffff,3,8); pl1.position.set(-1,1,2); scene.add(pl1)
       const pl2 = new THREE.PointLight(0xff00cc,2,6); pl2.position.set(1,-1,1); scene.add(pl2)
       const pl3 = new THREE.PointLight(0x39ff14,1.5,5); pl3.position.set(0,2,-1); scene.add(pl3)
+
+      // ── NEURAL NODE SPAWNER ──
+      const nodeColors = [0x00ffff, 0xff00cc, 0x39ff14, 0xfbbf24, 0xff4444, 0xa78bfa]
+
+      const spawnNode = () => {
+        // Random point on sphere surface
+        const theta = Math.random() * Math.PI * 2
+        const phi   = Math.acos(2 * Math.random() - 1)
+        const r     = 1.6 + Math.random() * .4
+        const x = r * Math.sin(phi) * Math.cos(theta)
+        const y = r * Math.sin(phi) * Math.sin(theta)
+        const z = r * Math.cos(phi)
+
+        const color = nodeColors[Math.floor(Math.random() * nodeColors.length)]
+
+        // Glowing sphere node
+        const geo = new THREE.SphereGeometry(.04, 8, 8)
+        const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0 })
+        const mesh = new THREE.Mesh(geo, mat)
+        mesh.position.set(x, y, z)
+        // scene.add(mesh)
+
+        // Pulse ring around node
+        const ringGeo = new THREE.RingGeometry(.04, .08, 16)
+        const ringMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, side: THREE.DoubleSide })
+        const pulseRing = new THREE.Mesh(ringGeo, ringMat)
+        pulseRing.position.copy(mesh.position)
+        pulseRing.lookAt(camera.position)
+        // scene.add(pulseRing)
+
+        const node = { mesh, pulseRing, color, pos: new THREE.Vector3(x,y,z), born: Date.now(), alpha: 0, alive: true }
+        neuralNodes.push(node)
+        nodeCount++
+
+        // Connect to closest 1-3 existing nodes with lines
+        if (neuralNodes.length > 1) {
+          const others = neuralNodes.slice(0, -1)
+            .sort((a,b) => node.pos.distanceTo(a.pos) - node.pos.distanceTo(b.pos))
+            .slice(0, 3)
+
+          others.forEach(other => {
+            if (!other.alive) return
+            const points = [node.pos.clone(), other.pos.clone()]
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(points)
+            const lineMat = new THREE.LineBasicMaterial({
+              color: node.color,
+              transparent: true,
+              opacity: 0
+            })
+            const line = new THREE.Line(lineGeo, lineMat)
+            // scene.add(line)
+            neuralLines.push({ line, mat: lineMat, born: Date.now(), from: node, to: other })
+          })
+        }
+
+        // Auto-remove after 8 seconds
+        setTimeout(() => {
+          node.alive = false
+        }, 8000)
+      }
+
+      // Spawn first node immediately
+      spawnNode()
+
+      // Activity events spawn nodes
+      const handleActivity = () => {
+        const now = Date.now()
+        if (now - lastNodeTime > 800) {
+          lastNodeTime = now
+          spawnNode()
+        }
+      }
+
+      window.addEventListener('mousemove', handleActivity)
+      window.addEventListener('click', () => { spawnNode(); spawnNode() })
+      window.addEventListener('keydown', handleActivity)
+      window.addEventListener('scroll', handleActivity)
+
+      // Auto-spawn every 2.5s to simulate "users connecting"
+      const autoSpawn = setInterval(() => {
+
+      // Random shape illusion system
+      let currentShape = null
+      let shapeLines = []
+      const shapeColors = [0x00ffff, 0xff00cc, 0x39ff14, 0xfbbf24, 0xa78bfa]
+
+      const clearShape = () => {
+        shapeLines.forEach(l => scene.remove(l))
+        shapeLines = []
+      }
+
+      const drawShape = () => {
+        clearShape()
+        const color = shapeColors[Math.floor(Math.random() * shapeColors.length)]
+        const mat = () => new THREE.LineBasicMaterial({ color, transparent: true, opacity: .12 })
+        const r = 1.65
+        const shapes = ["triangle","cross","pentagon","spiral","star"]
+        const shape = shapes[Math.floor(Math.random() * shapes.length)]
+        if (shape === "triangle") {
+          const pts = [0,1,2].map(i => { const a = (i/3)*Math.PI*2; return new THREE.Vector3(Math.cos(a)*r, Math.sin(a)*r, (Math.random()-.5)*.3) })
+          pts.push(pts[0])
+          shapeLines.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat()))
+        } else if (shape === "cross") {
+          [[[- r,0,0],[r,0,0]],[[0,-r,0],[0,r,0]],[[0,0,-r],[0,0,r]]].forEach(p => {
+            shapeLines.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(p.map(v => new THREE.Vector3(...v))), mat()))
+          })
+        } else if (shape === "pentagon") {
+          const pts = [0,1,2,3,4,0].map(i => { const a = (i/5)*Math.PI*2; return new THREE.Vector3(Math.cos(a)*r, Math.sin(a)*r, (Math.random()-.5)*.2) })
+          shapeLines.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat()))
+        } else if (shape === "spiral") {
+          const pts = Array.from({length:60}, (_,i) => { const a=i*.2, rad=.1+i*.03; return new THREE.Vector3(Math.cos(a)*rad, Math.sin(a)*rad, i*.04-.6) })
+          shapeLines.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat()))
+        } else if (shape === "star") {
+          const pts = [0,1,2,3,4,0].map(i => { const a=(i/5)*Math.PI*2-(Math.PI/2), rad=i%2===0?r:r*.4; return new THREE.Vector3(Math.cos(a)*rad, Math.sin(a)*rad, (Math.random()-.5)*.2) })
+          shapeLines.push(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat()))
+        }
+        shapeLines.forEach(l => scene.add(l))
+        let fade = 0, dir = 1
+        let tick = 0, blinkOn = true
+        const fadeAnim = setInterval(() => {
+          tick++
+          if (tick % (8 + Math.floor(Math.random()*7)) === 0) blinkOn = !blinkOn
+          const baseOp = blinkOn ? .18 + Math.sin(tick*.15)*.12 : .02
+          shapeLines.forEach(l => { if(l.material) l.material.opacity = baseOp })
+          if (tick > 300) { clearInterval(fadeAnim); clearShape() }
+        }, 30)
+      }
+      drawShape()
+      const shapeTimer = setInterval(() => { drawShape() }, 6000)
+        // spawnNode disabled
+      }, 2500)
+
       const mv = e => { mouse.x=(e.clientX/window.innerWidth-.5)*2; mouse.y=-(e.clientY/window.innerHeight-.5)*2 }
       const rs = () => { camera.aspect=W()/H(); camera.updateProjectionMatrix(); renderer.setSize(W(),H()) }
       window.addEventListener('mousemove', mv)
       window.addEventListener('resize', rs)
+
       const animate = () => {
         animId = requestAnimationFrame(animate)
-        lx += (mouse.x*.3-lx)*.04; ly += (mouse.y*.25-ly)*.04
-        camera.position.x = lx; camera.position.y = ly
-        points.rotation.y += .0008
-        icosa.rotation.y += .004; icosa.rotation.x += .0015
-        rings.forEach(r => { r.rotation.z += r.userData.spd; r.rotation.x += r.userData.spd*.4 })
+        const now = Date.now()
+
+        lx += (mouse.x*.3-lx)*.04
+        ly += (mouse.y*.25-ly)*.04
+        camera.position.x = lx
+        camera.position.y = ly
+
+        icosa.rotation.y += .003
+        sphereCloud.rotation.y += .0012
+        sphereCloud.rotation.x += .0004
+        icosa.rotation.x += .001
+
+        rings.forEach(r => {
+          r.rotation.z += r.userData.spd
+          r.rotation.x += r.userData.spd * .4
+        })
+
+        // Animate neural nodes
+        neuralNodes.forEach((node, idx) => {
+          const age = now - node.born
+          const maxLife = 8000
+
+          if (node.alive) {
+            // Fade in (0-500ms)
+            if (age < 500) {
+              node.alpha = age / 500
+            } else {
+              node.alpha = 1
+            }
+          } else {
+            // Fade out
+            const deathAge = age - (maxLife)
+            node.alpha = Math.max(0, 1 - deathAge / 1000)
+            if (node.alpha <= 0) {
+              scene.remove(node.mesh)
+              scene.remove(node.pulseRing)
+              neuralNodes.splice(idx, 1)
+              return
+            }
+          }
+
+          node.mesh.material.opacity = node.alpha * .9
+
+          // Pulse ring expand
+          const pulsePhase = (age % 2000) / 2000
+          const pulseScale = 1 + pulsePhase * 3
+          const pulseAlpha = node.alpha * (1 - pulsePhase) * .6
+          node.pulseRing.scale.setScalar(pulseScale)
+          node.pulseRing.material.opacity = pulseAlpha
+          node.pulseRing.lookAt(camera.position)
+
+          // Slight float movement
+          const floatY = Math.sin(age * .001 + idx) * .05
+          node.mesh.position.y = node.pos.y + floatY
+          node.pulseRing.position.y = node.pos.y + floatY
+        })
+
+        // Animate neural lines
+        neuralLines.forEach((nl, idx) => {
+          const age = now - nl.born
+          if (!nl.from.alive || !nl.to.alive) {
+            nl.mat.opacity = Math.max(0, nl.mat.opacity - .01)
+            if (nl.mat.opacity <= 0) {
+              scene.remove(nl.line)
+              neuralLines.splice(idx, 1)
+            }
+            return
+          }
+          // Fade in
+          if (age < 800) {
+            nl.mat.opacity = (age / 800) * .35
+          } else {
+            // Pulse
+            nl.mat.opacity = .15 + Math.sin(age * .002) * .1
+          }
+        })
+
         renderer.render(scene, camera)
       }
       animate()
-      return () => { window.removeEventListener('mousemove',mv); window.removeEventListener('resize',rs) }
+
+      return () => {
+        clearInterval(autoSpawn)
+        if(typeof shapeTimer !== "undefined") clearInterval(shapeTimer)
+        clearShape()
+        window.removeEventListener('mousemove', mv)
+        window.removeEventListener('mousemove', handleActivity)
+        window.removeEventListener('click', handleActivity)
+        window.removeEventListener('keydown', handleActivity)
+        window.removeEventListener('scroll', handleActivity)
+        window.removeEventListener('resize', rs)
+      }
     }
+
     const cleanup = init()
     return () => {
       cleanup.then(fn => fn?.())
@@ -550,7 +806,7 @@ export default function Hero() {
       <style>{CSS}</style>
       <div className="page">
 
-        <div style={{height:'44px'}}/>
+        <div style={{height:'80px'}}/>
 
         <div className="ticker">
           <div className="ticker-lbl">LIVE FEED</div>
@@ -573,6 +829,7 @@ export default function Hero() {
             <ThreeLeft/>
             <BlueprintLeft/>
             <FireParticles/>
+            
             <div className="hero-left-label">
               <div className="hll-line"/>
               <span>φ = 1.618</span>
