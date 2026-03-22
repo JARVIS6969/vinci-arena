@@ -8,7 +8,7 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState(null);
   const [tournaments, setTournaments] = useState([]);
   const [time, setTime] = useState(null);
-  const [activeTab, setActiveTab] = useState('esports');
+  const [activeTab, setActiveTab] = useState(null);
   const canvasRef = useRef(null);
   const animRef = useRef(null);
 
@@ -351,14 +351,12 @@ export default function DashboardPage() {
           <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
             
             <button className={`tab-btn ${activeTab==='studio'?'active-studio':''}`} onClick={()=>setActiveTab('studio')}>
-              🎨 VINCI STUDIO
+              🎨 VINCI STUDIO FOR  DESIGN. EXPORT. MANAGEMENT
             </button>
             <button className={`tab-btn ${activeTab==='esports'?'active-esports':''}`} onClick={()=>setActiveTab('esports')}>
-              🌐 ESPORTS HUB
+              🌐 ESPORTS HUB FOR  MARKETPLACE.COMMUNITIES .PROFILE
             </button>
-            <button className={`tab-btn ${activeTab==='tournaments'?'active-studio':''}`} onClick={()=>setActiveTab('tournaments')}>
-              📊 TOURNAMENTS
-            </button>
+            
           </div>
 
           {/* VINCI STUDIO TAB */}
@@ -414,7 +412,7 @@ export default function DashboardPage() {
           )}
 
           {/* ESPORTS HUB TAB */}
-          {activeTab === 'esports' && (
+          {(activeTab === 'esports' || activeTab === null) && (
             <div className="mcard fu" style={{'--ac':'#a78bfa',background:'linear-gradient(135deg,#0c0820,#070015,#050818)',border:'1px solid rgba(167,139,250,.4)',boxShadow:'0 0 70px rgba(167,139,250,.18)'}}>
               <div className="scan"/>
               <div className="c tl" style={{borderColor:'#a78bfa'}}/><div className="c tr" style={{borderColor:'#22d3ee'}}/>

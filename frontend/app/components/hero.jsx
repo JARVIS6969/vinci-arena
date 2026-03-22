@@ -345,7 +345,6 @@ function ThreeLeft() {
       return () => {
         clearInterval(autoSpawn)
         if(typeof shapeTimer !== "undefined") clearInterval(shapeTimer)
-        clearShape()
         window.removeEventListener('mousemove', mv)
         window.removeEventListener('mousemove', handleActivity)
         window.removeEventListener('click', handleActivity)
@@ -397,7 +396,7 @@ function BlueprintLeft() {
         ctx.beginPath(); ctx.arc(cx+Math.cos(a)*Math.min(W,H)*.17, cy+Math.sin(a)*Math.min(W,H)*.1, r, 0, Math.PI*2)
         ctx.strokeStyle=i%2===0?`rgba(255,0,204,${alpha*.9})`:`rgba(57,255,20,${alpha*.7})`; ctx.stroke()
       })
-      ctx.strokeStyle=`rgba(57,255,20,${alpha*.4})`; ctx.setLineDash([4,14])
+      ctx.strokeStyle=`rgba(57,255,20,0)`; ctx.setLineDash([4,14])
       ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke()
       ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,H); ctx.stroke()
       ctx.setLineDash([])
@@ -573,11 +572,11 @@ export default function Hero() {
   ]
 
   const TICKER = [
-    {t:'🏆 FREE FIRE NATIONALS — FINALS LIVE',   v:'12 TEAMS'},
-    {t:'⚡ BGMI PRO LEAGUE — REGISTRATION OPEN', v:'500+ SLOTS'},
-    {t:'🎯 VALORANT OPEN — QUALIFIERS 20 MAR',   v:'SIGN UP'},
-    {t:'🎨 VINCI STUDIO — 5K+ CREATIONS MADE',  v:'TRY NOW'},
-    {t:'📊 40 EXPORT TEMPLATES AVAILABLE',       v:'FREE'},
+    {t:'CHAT FEATURES ',   v:'AVAILABLE'},
+    {t:'MARKETPLACE ', v:''},
+    {t:'PROFILE',   v:'SIGN UP'},
+    {t:' VINCI STUDIO — 5K+ CREATIONS MADE',  v:'TRY NOW'},
+    {t:' 40 EXPORT TEMPLATES AVAILABLE',       v:'FREE'},
   ]
 
   const CSS = `
@@ -622,7 +621,7 @@ export default function Hero() {
     .hll-line{width:40px;height:1px;background:linear-gradient(90deg,var(--c),transparent);}
     .hero-right{flex:1;display:flex;align-items:center;justify-content:flex-start;padding:0 60px 0 52px;position:relative;z-index:10;}
     .hero-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.12;z-index:0;}
-    .hero-radial{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 110% 80% at 80% 55%,rgba(255,0,204,.1),transparent 60%),radial-gradient(ellipse 60% 50% at 20% 50%,rgba(0,255,255,.08),transparent 65%),linear-gradient(to bottom,rgba(0,0,0,.5) 0%,transparent 40%,rgba(0,0,0,.8) 95%);}
+    .hero-radial{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.5) 0%,transparent 40%,rgba(0,0,0,.4) 95%);}
     .sparks{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2;}
     .sparks::before{content:'';position:absolute;width:200%;height:200%;background-image:radial-gradient(2px 2px at 6% 93%,#00ffff,transparent),radial-gradient(1px 1px at 22% 88%,#ff00cc,transparent),radial-gradient(2px 2px at 38% 92%,#39ff14,transparent),radial-gradient(2px 2px at 74% 87%,#00ffff,transparent),radial-gradient(3px 3px at 46% 94%,#ff00cc,transparent);animation:sparksFloat 11s linear infinite;opacity:.7;}
     .sparks::after{content:'';position:absolute;width:200%;height:200%;background-image:radial-gradient(3px 3px at 14% 90%,#39ff14,transparent),radial-gradient(2px 2px at 36% 87%,#00ffff,transparent),radial-gradient(3px 3px at 77% 89%,#ff00cc,transparent);animation:sparksFloat 17s linear infinite 4s;opacity:.6;}
@@ -632,7 +631,7 @@ export default function Hero() {
     .va-badge{display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(57,255,20,.5);background:rgba(57,255,20,.07);padding:6px 20px;font-family:var(--font-hud);font-size:9px;letter-spacing:3.5px;color:var(--g);clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);}
     .va-h1{font-family:var(--font-hud);font-size:clamp(36px,5vw,74px);font-weight:900;line-height:.93;letter-spacing:-2px;text-align:left;}
     .h1-top{display:block;background:linear-gradient(45deg,#00ffff,#ffffff,#39ff14,#ffffff,#00ffff,#ffe000,#ffffff,#00ffff,#ff00cc,#ffffff,#00ffff);background-size:600% 600%;animation:vcgflow 8s ease infinite;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(0,255,255,.6));}
-    .h1-brand{display:block;background:linear-gradient(45deg,#ff00cc,#00ffff,#39ff14,#ffe000,#ffffff,#00ffff,#ff00cc,#ffe000,#39ff14,#ffffff,#ff00cc,#00ffff,#ffe000,#39ff14,#ffffff,#00ffff);background-size:600% 600%;animation:vcgflow 6s ease infinite,glitch 11s infinite 3s;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 40px rgba(0,255,255,.8)) drop-shadow(0 0 80px rgba(255,0,204,.5));}
+    .h1-brand{display:block;background:linear-gradient(45deg,#ff00cc,#00ffff,#39ff14,#ffe000,#ffffff,#00ffff,#ff00cc,#ffe000,#39ff14,#ffffff,#ff00cc,#00ffff,#ffe000,#39ff14,#ffffff,#00ffff);background-size:600% 600%;animation:vcgflow 6s ease infinite;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 40px rgba(0,255,255,.8)) drop-shadow(0 0 80px rgba(255,0,204,.5));}
     .va-sub{font-family:var(--font-body);font-weight:600;font-size:clamp(15px,2vw,22px);letter-spacing:1.5px;background:linear-gradient(90deg,#00ffff,#ff00cc,#39ff14,#ffe000,#00ffff,#ff00cc,#ffe000,#39ff14,#00ffff);background-size:400% auto;animation:vcgflow 5s linear infinite;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-align:left;filter:drop-shadow(0 0 12px rgba(0,255,255,.5));}
     .va-desc{font-family:var(--font-body);font-size:14px;line-height:1.9;color:rgba(255,255,255,.55);max-width:480px;text-align:left;}
     .va-pills{display:flex;gap:7px;flex-wrap:wrap;}
@@ -820,7 +819,7 @@ export default function Hero() {
         </div>
 
         <section className="va-hero">
-          <img src="/dashboard-bg.png" className="hero-bg-img" alt="" aria-hidden="true"/>
+          
           <div className="hero-radial"/>
           <div className="sparks"/>
           <div className="scan"/>

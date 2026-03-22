@@ -255,9 +255,9 @@ export default function FireParticles() {
     // Two shapes simultaneously — same center, different patterns, offset phases
     // Creates visual depth and interference = hallucination effect
     let shapeA = { idx: 0,  phase: 0, alpha: 0, pair: PAIRS[0], state: 'fadein', hold: 0 }
-    let shapeB = { idx: 7,  phase: Math.PI, alpha: 0, pair: PAIRS[3], state: 'fadein', hold: 100 }
+    let shapeB = { idx: 7,  phase: Math.PI, alpha: 0, pair: PAIRS[3], state: "fadein", hold: 300 }
 
-    const HOLD_MAX  = 200
+    const HOLD_MAX  = 350
     const FADE_IN   = 0.007
     const FADE_OUT  = 0.006
 
@@ -294,7 +294,7 @@ export default function FireParticles() {
     const dot = (x, y, col, op) => {
       if (op < 0.008) return
       const { r, g, b } = col
-      const BASE = 0.8
+      const BASE = 0.5
 
       // Soft glow — subtle, not overpowering
       const glow = ctx.createRadialGradient(x, y, 0, x, y, BASE * 5)
