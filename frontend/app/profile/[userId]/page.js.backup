@@ -1,0 +1,492 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import GameStatsDisplay from '@/app/components/GameStatsDisplay';
+
+const GAME_CONFIG = {
+  'Free Fire': { icon: '🔥', color: '#ef4444', glow: 'rgba(239,68,68,0.4)', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)' },
+  'BGMI':      { icon: '🎯', color: '#f97316', glow: 'rgba(249,115,22,0.4)', bg: 'rgba(249,115,22,0.08)', border: 'rgba(249,115,22,0.25)' },
+  'Valorant':  { icon: '⚡', color: '#6366f1', glow: 'rgba(99,102,241,0.4)',  bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.25)' },
+};
+
+const LF_COLOR = { Team:'#ef4444', Players:'#f97316', Scrims:'#6366f1', Tournament:'#eab308', 'Just Showcasing':'#10b981' };
+
+export default function PublicProfilePage() {
+  const router = useRouter();
+  const params = useParams();
+  const [profile, setProfile] = useState(null);
+  const [games, setGames] = useState([]);
+  const [allStats, setAllStats] = useState([]);
+  const [activeGame, setActiveGame] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
+  const [messaging, setMessaging] = useState(false);
+  const [ffUid, setFfUid] = useState('');
+  const [ffStats, setFfStats] = useState(null);
+  const [ffLoading, setFfLoading] = useState(false);
+  const [ffError, setFfError] = useState('');
+  const [ffMode, setFfMode] = useState('br');
+  const [ffInputMode, setFfInputMode] = useState(null);
+  const [ocrLoading, setOcrLoading] = useState(false);
+
+  useEffect(() => {
+    setCurrentUserId(localStorage.getItem('userId') || '');
+    fetchAll();
+  }, [params.userId]);
+
+  const fetchAll = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const h = { Authorization: `Bearer ${token}` };
+      const [pR, gR, sR] = await Promise.all([
+        fetch(`http://localhost:3001/api/profiles/user/${params.userId}`, { headers: h }),
+        fetch(`http://localhost:3001/api/profiles/user/${params.userId}/games`, { headers: h }),
+        fetch(`http://localhost:3001/api/profiles/user/${params.userId}/stats`, { headers: h }),
+      ]);
+      if (!pR.ok) { setNotFound(true); return; }
+      const [p, g, s] = await Promise.all([pR.json(), gR.json(), sR.json()]);
+      setProfile(p); setGames(g || []); setAllStats(s || []);
+      if (g?.length > 0) setActiveGame(g[0].game);
+    } catch { setNotFound(true); }
+    finally { setLoading(false); }
+  };
+
+  const handleSendMessage = async () => {
+    setMessaging(true);
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:3001/api/chat/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message: '👋 Hey!', receiver_id: params.userId }),
+      });
+      const convRes = await fetch('http://localhost:3001/api/chat/conversations', { headers: { Authorization: `Bearer ${token}` } });
+      const data = await convRes.json();
+      const uid = localStorage.getItem('userId');
+      const dm = data.dms?.find(d => (d.user1_id === uid && d.user2_id === params.userId) || (d.user2_id === uid && d.user1_id === params.userId));
+      if (dm) router.push(`/chat/dm/${dm.id}`);
+    } catch {}
+    finally { setMessaging(false); }
+  };
+
+  const fetchFFStats = async () => {
+    if (!ffUid.trim()) return;
+    setFfLoading(true); setFfError('');
+    try {
+      const res = await fetch(`http://localhost:3001/api/freefire/stats/${ffUid.trim()}`);
+      const data = await res.json();
+      if (data.error) { setFfError('Player not found!'); setFfStats(null); }
+      else setFfStats(data);
+    } catch { setFfError('Failed to fetch'); }
+    finally { setFfLoading(false); }
+  };
+
+  const handleFFOcr = async (file) => {
+    setOcrLoading(true); setFfError('');
+    try {
+      const Tesseract = (await import('tesseract.js')).default;
+      const { data: { text } } = await Tesseract.recognize(file, 'eng');
+      const m = text.match(/\b[0-9]{8,12}\b/);
+      if (m) {
+        setFfUid(m[0]); setFfInputMode('uid');
+        const res = await fetch(`http://localhost:3001/api/freefire/stats/${m[0]}`);
+        const data = await res.json();
+        if (data.error) setFfError('UID found but player not found!');
+        else setFfStats(data);
+      } else { setFfError('UID not found. Try manual entry.'); }
+    } catch { setFfError('OCR failed.'); }
+    finally { setOcrLoading(false); }
+  };
+
+  const activeStats = allStats.find(s => s.game === activeGame)?.stats || {};
+  const activeGC = GAME_CONFIG[activeGame] || GAME_CONFIG['Free Fire'];
+  const activeGD = games.find(g => g.game === activeGame);
+  const isOwner = currentUserId && String(currentUserId) === String(params.userId);
+
+  const StatMini = ({ label, value, icon }) => (
+    <div style={{ textAlign:'center', padding:'8px 6px', background:'#080808', borderRadius:'8px', border:'1px solid rgba(239,68,68,0.08)' }}>
+      <div style={{ fontSize:'14px', marginBottom:'2px' }}>{icon}</div>
+      <div style={{ fontFamily:"'Orbitron',monospace", fontWeight:900, color:'#fff', fontSize:'12px' }}>{value}</div>
+      <div style={{ fontFamily:"'Orbitron',monospace", color:'#ef4444', fontSize:'7px', letterSpacing:'1px' }}>{label}</div>
+    </div>
+  );
+
+  if (loading) return (
+    <div style={{ minHeight:'100vh', background:'#000', display:'flex', alignItems:'center', justifyContent:'center', paddingTop:'44px' }}>
+      <div style={{ color:'#ef4444', fontFamily:"'Orbitron',sans-serif", fontSize:'12px', letterSpacing:'3px' }}>LOADING PROFILE...</div>
+    </div>
+  );
+
+  if (notFound) return (
+    <div style={{ minHeight:'100vh', background:'#000', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', paddingTop:'44px' }}>
+      <div style={{ textAlign:'center' }}>
+        <div style={{ fontSize:'60px', marginBottom:'16px' }}>💀</div>
+        <p style={{ color:'#ef4444', fontFamily:"'Orbitron',sans-serif", fontSize:'18px', marginBottom:'8px' }}>PROFILE NOT FOUND</p>
+        <button onClick={() => router.back()} style={{ background:'#ef4444', color:'#fff', border:'none', padding:'8px 20px', borderRadius:'8px', fontFamily:"'Orbitron',sans-serif", fontSize:'11px', cursor:'pointer' }}>← GO BACK</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight:'100vh', background:'#07070f', color:'#fff', fontFamily:"'Rajdhani',sans-serif", paddingTop:'44px' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
+        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#ef4444}
+        @keyframes scan{0%{top:-2px;opacity:0}5%{opacity:.07}95%{opacity:.04}100%{top:100%;opacity:0}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+        .scan-fx{position:absolute;left:0;right:0;height:1px;pointer-events:none;z-index:10;background:linear-gradient(90deg,transparent,rgba(239,68,68,.6),rgba(0,255,255,.3),transparent);animation:scan 7s linear infinite}
+        .blink{animation:blink 2s infinite}
+        .fu{animation:fadeUp .5s ease both}
+        .grid-bg{background-image:linear-gradient(rgba(239,68,68,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(239,68,68,.04) 1px,transparent 1px);background-size:44px 44px}
+        .c{position:absolute;width:12px;height:12px;border-style:solid;pointer-events:none}
+        .tl{top:6px;left:6px;border-width:2px 0 0 2px}
+        .tr{top:6px;right:6px;border-width:2px 2px 0 0}
+        .bl{bottom:6px;left:6px;border-width:0 0 2px 2px}
+        .br{bottom:6px;right:6px;border-width:0 2px 2px 0}
+        .game-tab{transition:all .25s;cursor:pointer;border-radius:10px;border:none}
+        .game-tab:hover{transform:translateY(-2px)}
+        .hub-row{transition:all .2s}
+        .hub-row:hover{transform:translateX(4px)}
+        .action-btn{transition:all .25s;cursor:pointer;border:none}
+        .action-btn:hover{transform:translateY(-2px)}
+      `}</style>
+
+      <div className="grid-bg">
+
+        {/* ── FULL WIDTH HERO BANNER ── */}
+        <div style={{ position:'relative', height:'220px', overflow:'hidden' }}>
+          {profile?.banner_url ? (
+            <img src={profile.banner_url} alt="banner" style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.5 }} />
+          ) : (
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(135deg,#1a0000,#050015,#000d1a)' }}>
+              <svg style={{ position:'absolute', inset:0, width:'100%', height:'100%', opacity:0.12 }}>
+                <defs>
+                  <pattern id="cir" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+                    <path d="M0 40 L20 40 L30 30 L50 30 L60 40 L80 40" stroke="#ef4444" strokeWidth="0.5" fill="none"/>
+                    <path d="M40 0 L40 20 L50 30" stroke="#00ffff" strokeWidth="0.5" fill="none"/>
+                    <circle cx="30" cy="30" r="2" fill="#ef4444"/>
+                    <circle cx="50" cy="30" r="2" fill="#00ffff"/>
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#cir)"/>
+              </svg>
+            </div>
+          )}
+          <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 30%, #07070f 100%)' }}/>
+          <div style={{ position:'absolute', top:0, left:0, right:0, height:'2px', background:'linear-gradient(90deg,transparent,#ef4444,#00ffff,#ef4444,transparent)' }}/>
+          <div className="scan-fx"/>
+          <button onClick={() => router.back()} style={{ position:'absolute', top:'16px', left:'16px', background:'rgba(0,0,0,0.6)', border:'1px solid rgba(239,68,68,0.3)', color:'#ef4444', padding:'6px 14px', borderRadius:'8px', fontFamily:"'Orbitron',monospace", fontSize:'10px', letterSpacing:'2px', cursor:'pointer', backdropFilter:'blur(10px)' }}>← BACK</button>
+          {isOwner && (
+            <button onClick={() => router.push('/profile/edit')} style={{ position:'absolute', top:'16px', right:'16px', background:'rgba(239,68,68,0.15)', border:'1px solid rgba(239,68,68,0.4)', color:'#ef4444', padding:'6px 14px', borderRadius:'8px', fontFamily:"'Orbitron',monospace", fontSize:'10px', letterSpacing:'2px', cursor:'pointer' }}>✏ EDIT</button>
+          )}
+        </div>
+
+        <div style={{ maxWidth:'1280px', margin:'0 auto', padding:'0 24px' }}>
+
+          {/* ── PROFILE HEADER ── */}
+          <div style={{ display:'flex', alignItems:'flex-end', gap:'20px', marginTop:'-70px', marginBottom:'24px', position:'relative', zIndex:10 }}>
+            <div style={{ width:'120px', height:'120px', borderRadius:'20px', border:'3px solid #07070f', overflow:'hidden', flexShrink:0, boxShadow:'0 0 40px rgba(239,68,68,0.5)' }}>
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              ) : (
+                <div style={{ width:'100%', height:'100%', background:'linear-gradient(135deg,#ef4444,#7c3aed)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Orbitron',monospace", fontWeight:900, fontSize:'48px' }}>
+                  {profile?.display_name?.[0]?.toUpperCase() || '?'}
+                </div>
+              )}
+            </div>
+            <div style={{ flex:1, paddingBottom:'8px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'12px', flexWrap:'wrap', marginBottom:'4px' }}>
+                <h1 style={{ fontFamily:"'Orbitron',monospace", fontWeight:900, fontSize:'28px', textShadow:'0 0 30px rgba(239,68,68,0.5)', margin:0 }}>{profile?.display_name || 'UNKNOWN'}</h1>
+                {profile?.country && <span style={{ color:'#6b7280', fontSize:'14px', fontWeight:700 }}>🌏 {profile.country}</span>}
+              </div>
+              {profile?.tagline && <p style={{ color:'#6b7280', fontWeight:700, fontSize:'14px', marginBottom:'8px', fontStyle:'italic' }}>"{profile.tagline}"</p>}
+              <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', alignItems:'center' }}>
+                {games.map(g => {
+                  const gc = GAME_CONFIG[g.game];
+                  return <span key={g.game} style={{ fontFamily:"'Orbitron',monospace", fontSize:'10px', fontWeight:700, padding:'4px 12px', borderRadius:'99px', background:gc?.bg, border:`1px solid ${gc?.border}`, color:gc?.color }}>{gc?.icon} {g.game}</span>;
+                })}
+                {profile?.looking_for && (
+                  <span style={{ fontFamily:"'Orbitron',monospace", fontSize:'10px', fontWeight:700, padding:'4px 12px', borderRadius:'99px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:LF_COLOR[profile.looking_for]||'#6b7280' }}>🔍 LF {profile.looking_for?.toUpperCase()}</span>
+                )}
+                {!isOwner && currentUserId && (
+                  <button className="action-btn" onClick={handleSendMessage} disabled={messaging}
+                    style={{ fontFamily:"'Orbitron',monospace", fontSize:'10px', fontWeight:900, padding:'6px 16px', borderRadius:'8px', background:'linear-gradient(135deg,#ef4444,#dc2626)', color:'#fff', boxShadow:'0 0 20px rgba(239,68,68,0.5)', letterSpacing:'1px' }}>
+                    {messaging?'⟳':'💬'} MESSAGE
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── 3-COLUMN DOSSIER ── */}
+          <div style={{ display:'grid', gridTemplateColumns:'250px 1fr 270px', gap:'16px', paddingBottom:'40px' }}>
+
+            {/* COL 1 — Identity */}
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+
+              {profile?.bio && (
+                <div className="fu" style={{ padding:'16px', borderRadius:'16px', background:'#050505', border:'1px solid rgba(239,68,68,0.15)', position:'relative', overflow:'hidden' }}>
+                  <div className="scan-fx"/><div className="c tl" style={{borderColor:'#ef4444'}}/><div className="c br" style={{borderColor:'rgba(0,255,255,0.3)'}}/>
+                  <p style={{ fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, color:'rgba(239,68,68,0.6)', letterSpacing:'3px', marginBottom:'10px' }}>//  BIO</p>
+                  <p style={{ color:'rgba(255,255,255,0.6)', fontSize:'13px', lineHeight:1.7, fontWeight:600 }}>{profile.bio}</p>
+                </div>
+              )}
+
+              {(profile?.youtube_url||profile?.instagram_url||profile?.discord_tag||profile?.twitter_url) && (
+                <div className="fu" style={{ animationDelay:'80ms', padding:'16px', borderRadius:'16px', background:'#050505', border:'1px solid rgba(239,68,68,0.15)' }}>
+                  <p style={{ fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, color:'rgba(239,68,68,0.6)', letterSpacing:'3px', marginBottom:'10px' }}>//  SOCIALS</p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                    {profile.youtube_url && <a href={profile.youtube_url} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', fontWeight:700, color:'rgba(255,255,255,0.5)', textDecoration:'none' }}><span style={{color:'#ef4444'}}>▶</span> YouTube</a>}
+                    {profile.instagram_url && <a href={profile.instagram_url} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', fontWeight:700, color:'rgba(255,255,255,0.5)', textDecoration:'none' }}><span style={{color:'#ec4899'}}>📷</span> Instagram</a>}
+                    {profile.discord_tag && <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', fontWeight:700, color:'rgba(255,255,255,0.5)' }}><span style={{color:'#6366f1'}}>💬</span> {profile.discord_tag}</div>}
+                    {profile.twitter_url && <a href={profile.twitter_url} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', fontWeight:700, color:'rgba(255,255,255,0.5)', textDecoration:'none' }}><span style={{color:'#22d3ee'}}>🐦</span> Twitter/X</a>}
+                  </div>
+                </div>
+              )}
+
+              {profile?.achievements?.length > 0 && (
+                <div className="fu" style={{ animationDelay:'160ms', padding:'16px', borderRadius:'16px', background:'#050505', border:'1px solid rgba(239,68,68,0.15)' }}>
+                  <p style={{ fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, color:'rgba(239,68,68,0.6)', letterSpacing:'3px', marginBottom:'10px' }}>//  ACHIEVEMENTS</p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                    {profile.achievements.map((a,i) => (
+                      <div key={i} className="hub-row" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px', borderRadius:'10px', background:'#0a0a0a', border:'1px solid rgba(234,179,8,0.15)' }}>
+                        <div style={{ width:'36px', height:'36px', borderRadius:'8px', background:'rgba(234,179,8,0.15)', border:'1px solid rgba(234,179,8,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', flexShrink:0 }}>🏆</div>
+                        <div>
+                          <p style={{ fontWeight:900, fontSize:'12px', color:'#fff', margin:0 }}>{a.title}</p>
+                          {a.game && <span style={{ fontSize:'10px', fontWeight:700, color:GAME_CONFIG[a.game]?.color||'#ef4444' }}>{a.game}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quick stats mini panel */}
+              {Object.keys(activeStats).length > 0 && (
+                <div className="fu" style={{ animationDelay:'240ms', padding:'16px', borderRadius:'16px', background:'#050505', border:'1px solid rgba(239,68,68,0.15)' }}>
+                  <p style={{ fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, color:'rgba(239,68,68,0.6)', letterSpacing:'3px', marginBottom:'10px' }}>//  QUICK VIEW</p>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px' }}>
+                    {[
+                      {l:'K/D',    v:activeStats.kd_ratio||'—',    c:'#ef4444'},
+                      {l:'WIN%',   v:activeStats.win_rate?activeStats.win_rate+'%':'—', c:'#fbbf24'},
+                      {l:'KILLS',  v:activeStats.total_kills||'—',  c:'#22d3ee'},
+                      {l:'MATCHES',v:activeStats.total_matches||'—',c:'#a78bfa'},
+                    ].map((s,i) => (
+                      <div key={i} style={{ textAlign:'center', padding:'10px 6px', background:'#0a0a0a', borderRadius:'10px', border:`1px solid ${s.c}20` }}>
+                        <div style={{ fontFamily:"'Orbitron',monospace", fontWeight:900, fontSize:'16px', color:s.c, textShadow:`0 0 8px ${s.c}` }}>{s.v}</div>
+                        <div style={{ fontFamily:"'Orbitron',monospace", fontSize:'7px', color:'#4b5563', letterSpacing:'1px', marginTop:'2px' }}>{s.l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* COL 2 — Game Stats (GameStatsDisplay — same as before) */}
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              {games.length > 0 ? (
+                <>
+                  {/* Game tabs */}
+                  <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
+                    {games.map(g => {
+                      const gc = GAME_CONFIG[g.game];
+                      return (
+                        <button key={g.game} className="game-tab" onClick={() => setActiveGame(g.game)}
+                          style={{ padding:'8px 18px', fontFamily:"'Orbitron',monospace", fontWeight:900, fontSize:'10px', letterSpacing:'1px', cursor:'pointer', background:activeGame===g.game?gc?.bg:'rgba(255,255,255,0.04)', border:`1px solid ${activeGame===g.game?gc?.color:'rgba(255,255,255,0.06)'}`, color:activeGame===g.game?gc?.color:'#6b7280', boxShadow:activeGame===g.game?`0 0 20px ${gc?.glow}`:'none' }}>
+                          {gc?.icon} {g.game}
+                        </button>
+                      );
+                    })}
+                    {isOwner && (
+                      <button className="game-tab" onClick={() => router.push('/profile/edit')}
+                        style={{ padding:'8px 14px', fontFamily:"'Orbitron',monospace", fontWeight:900, fontSize:'9px', letterSpacing:'1px', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.25)', color:'#ef4444', cursor:'pointer' }}>
+                        ✏ EDIT
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Active game card with GameStatsDisplay */}
+                  {activeGame && (
+                    <div className="fu" style={{ padding:'20px', borderRadius:'20px', background:'#050505', border:`1px solid ${activeGC.border}`, boxShadow:`0 0 40px ${activeGC.glow}20`, position:'relative', overflow:'hidden' }}>
+                      <div className="scan-fx"/>
+                      <div className="c tl" style={{borderColor:activeGC.color}}/><div className="c tr" style={{borderColor:activeGC.color}}/>
+                      <div className="c bl" style={{borderColor:`${activeGC.color}60`}}/><div className="c br" style={{borderColor:`${activeGC.color}60`}}/>
+                      <div style={{ position:'absolute', inset:0, backgroundImage:`radial-gradient(ellipse 60% 50% at 80% 30%, ${activeGC.color}08, transparent)`, pointerEvents:'none' }}/>
+
+                      {/* Game header */}
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                          <span style={{ fontSize:'32px', filter:`drop-shadow(0 0 12px ${activeGC.color})` }}>{activeGC.icon}</span>
+                          <div>
+                            <p style={{ fontFamily:"'Orbitron',monospace", fontWeight:900, fontSize:'18px', textShadow:`0 0 20px ${activeGC.color}60`, margin:0 }}>{activeGame}</p>
+                            <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
+                              {activeGD?.role && <span style={{ fontSize:'11px', fontWeight:700, color:activeGC.color }}>{activeGD.role}</span>}
+                              {activeGD?.rank && <span style={{ fontSize:'11px', fontWeight:900, padding:'2px 10px', borderRadius:'99px', background:activeGC.bg, border:`1px solid ${activeGC.border}`, color:activeGC.color, fontFamily:"'Orbitron',monospace" }}>👑 {activeGD.rank}</span>}
+                            </div>
+                          </div>
+                        </div>
+                        {isOwner && (
+                          <div style={{ display:'flex', gap:'8px' }}>
+                            <button onClick={() => router.push('/profile/edit')} style={{ fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, padding:'6px 14px', borderRadius:'8px', background:activeGC.bg, color:activeGC.color, border:`1px solid ${activeGC.border}`, cursor:'pointer' }}>✏ EDIT</button>
+                            <button onClick={() => router.push(`/profile/edit?step=3&game=${activeGame}`)} style={{ fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, padding:'6px 14px', borderRadius:'8px', background:'rgba(16,185,129,0.1)', color:'#10b981', border:'1px solid rgba(16,185,129,0.3)', cursor:'pointer' }}>📊 STATS</button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ── SAME GameStatsDisplay as before ── */}
+                      {Object.keys(activeStats).length > 0 ? (
+                        <GameStatsDisplay stats={activeStats} accentColor={activeGC.color} gameName={activeGame} />
+                      ) : (
+                        <div style={{ textAlign:'center', padding:'32px' }}>
+                          <p style={{ fontFamily:"'Orbitron',monospace", color:'#374151', fontSize:'11px', letterSpacing:'2px' }}>NO STATS ADDED YET</p>
+                          {isOwner && <button onClick={() => router.push('/profile/edit?step=3')} style={{ marginTop:'12px', fontFamily:"'Orbitron',monospace", fontSize:'10px', fontWeight:900, padding:'8px 18px', borderRadius:'8px', background:activeGC.bg, color:activeGC.color, border:`1px solid ${activeGC.border}`, cursor:'pointer' }}>+ ADD STATS</button>}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{ padding:'40px', textAlign:'center', borderRadius:'20px', background:'#050505', border:'1px solid rgba(239,68,68,0.1)' }}>
+                  <div style={{ fontSize:'48px', marginBottom:'12px' }}>🎮</div>
+                  <p style={{ fontFamily:"'Orbitron',monospace", color:'#374151', letterSpacing:'2px', fontSize:'12px' }}>NO GAMES ADDED</p>
+                  {isOwner && <button onClick={() => router.push('/profile/edit')} style={{ marginTop:'12px', fontFamily:"'Orbitron',monospace", fontSize:'10px', fontWeight:900, padding:'8px 18px', borderRadius:'8px', background:'rgba(239,68,68,0.1)', color:'#ef4444', border:'1px solid rgba(239,68,68,0.3)', cursor:'pointer' }}>+ SETUP PROFILE</button>}
+                </div>
+              )}
+            </div>
+
+            {/* COL 3 — Live FF Stats + Clips */}
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+
+              {activeGame === 'Free Fire' && (
+                <div className="fu" style={{ animationDelay:'100ms', padding:'16px', borderRadius:'16px', background:'#050505', border:'1px solid rgba(239,68,68,0.2)', position:'relative', overflow:'hidden' }}>
+                  <div className="scan-fx"/>
+                  <p style={{ fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, color:'rgba(239,68,68,0.7)', letterSpacing:'3px', marginBottom:'12px', display:'flex', alignItems:'center', gap:'6px' }}>
+                    <span className="blink" style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#ef4444', boxShadow:'0 0 6px #ef4444', display:'inline-block', flexShrink:0 }}/>
+                    LIVE FF STATS
+                  </p>
+
+                  {!ffInputMode && !ffStats && (
+                    <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                      <button onClick={() => setFfInputMode('uid')} style={{ padding:'14px', borderRadius:'12px', background:'rgba(239,68,68,0.06)', border:'1px solid rgba(239,68,68,0.2)', cursor:'pointer', textAlign:'center' }}>
+                        <div style={{ fontSize:'22px', marginBottom:'6px' }}>🔢</div>
+                        <div style={{ fontFamily:"'Orbitron',monospace", fontWeight:900, fontSize:'10px', color:'#fff', marginBottom:'2px' }}>ENTER UID</div>
+                        <div style={{ fontSize:'10px', color:'#4b5563' }}>Auto fetch stats</div>
+                        <div style={{ marginTop:'8px', padding:'4px', borderRadius:'6px', background:'rgba(239,68,68,0.15)', color:'#ef4444', fontFamily:"'Orbitron',monospace", fontSize:'8px', letterSpacing:'1px' }}>QUICK → AUTO FETCH</div>
+                      </button>
+                      <button onClick={() => setFfInputMode('ocr')} style={{ padding:'14px', borderRadius:'12px', background:'rgba(99,102,241,0.06)', border:'1px solid rgba(99,102,241,0.2)', cursor:'pointer', textAlign:'center' }}>
+                        <div style={{ fontSize:'22px', marginBottom:'6px' }}>📸</div>
+                        <div style={{ fontFamily:"'Orbitron',monospace", fontWeight:900, fontSize:'10px', color:'#fff', marginBottom:'2px' }}>SCREENSHOT</div>
+                        <div style={{ fontSize:'10px', color:'#4b5563' }}>OCR auto extract</div>
+                        <div style={{ marginTop:'8px', padding:'4px', borderRadius:'6px', background:'rgba(99,102,241,0.15)', color:'#6366f1', fontFamily:"'Orbitron',monospace", fontSize:'8px', letterSpacing:'1px' }}>OCR → AUTO EXTRACT</div>
+                      </button>
+                    </div>
+                  )}
+
+                  {ffInputMode === 'uid' && !ffStats && (
+                    <div>
+                      <button onClick={() => { setFfInputMode(null); setFfError(''); }} style={{ background:'none', border:'none', color:'#6b7280', fontWeight:700, fontSize:'12px', cursor:'pointer', marginBottom:'8px' }}>← BACK</button>
+                      <div style={{ display:'flex', gap:'6px' }}>
+                        <input value={ffUid} onChange={e => setFfUid(e.target.value)} onKeyDown={e => e.key==='Enter' && fetchFFStats()} placeholder="Enter UID..."
+                          style={{ flex:1, background:'#0a0a0a', border:'1px solid rgba(239,68,68,0.25)', borderRadius:'8px', color:'#fff', padding:'8px 12px', fontFamily:"'Rajdhani',sans-serif", fontSize:'13px', outline:'none' }} />
+                        <button onClick={fetchFFStats} disabled={ffLoading} style={{ padding:'8px 12px', borderRadius:'8px', background:'linear-gradient(135deg,#ef4444,#dc2626)', border:'none', color:'#fff', fontFamily:"'Orbitron',monospace", fontSize:'10px', cursor:'pointer' }}>
+                          {ffLoading?'⟳':'🔍'}
+                        </button>
+                      </div>
+                      {ffError && <p style={{ color:'#ef4444', fontSize:'11px', marginTop:'6px' }}>{ffError}</p>}
+                    </div>
+                  )}
+
+                  {ffInputMode === 'ocr' && !ffStats && (
+                    <div>
+                      <button onClick={() => { setFfInputMode(null); setFfError(''); }} style={{ background:'none', border:'none', color:'#6b7280', fontWeight:700, fontSize:'12px', cursor:'pointer', marginBottom:'8px' }}>← BACK</button>
+                      <label style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'20px', borderRadius:'12px', background:'#0a0a0a', border:'2px dashed rgba(99,102,241,0.3)', cursor:'pointer' }}>
+                        <input type="file" accept="image/*" style={{ display:'none' }} onChange={e => e.target.files[0] && handleFFOcr(e.target.files[0])} />
+                        {ocrLoading ? <div style={{ color:'#6366f1', fontFamily:"'Orbitron',monospace", fontSize:'10px' }}>SCANNING...</div> : (
+                          <>
+                            <div style={{ fontSize:'28px', marginBottom:'6px' }}>📲</div>
+                            <div style={{ fontFamily:"'Orbitron',monospace", fontSize:'10px', color:'#fff', marginBottom:'4px' }}>UPLOAD SS</div>
+                            <div style={{ fontSize:'10px', color:'#4b5563', textAlign:'center' }}>Auto extract UID</div>
+                          </>
+                        )}
+                      </label>
+                      {ffError && <p style={{ color:'#ef4444', fontSize:'11px', marginTop:'6px' }}>{ffError}</p>}
+                    </div>
+                  )}
+
+                  {ffStats && (
+                    <div>
+                      <div style={{ display:'flex', gap:'6px', marginBottom:'10px' }}>
+                        {['br','cs'].map(m => (
+                          <button key={m} onClick={() => setFfMode(m)} style={{ padding:'5px 12px', borderRadius:'6px', fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, cursor:'pointer', background:ffMode===m?'rgba(239,68,68,0.2)':'#0a0a0a', border:`1px solid ${ffMode===m?'#ef4444':'rgba(255,255,255,0.05)'}`, color:ffMode===m?'#ef4444':'#6b7280' }}>
+                            {m==='br'?'🔥 BR':'⚔️ CS'}
+                          </button>
+                        ))}
+                        <button onClick={() => { setFfStats(null); setFfInputMode(null); setFfUid(''); }} style={{ marginLeft:'auto', padding:'5px 10px', borderRadius:'6px', background:'#0a0a0a', border:'1px solid rgba(255,255,255,0.05)', color:'#6b7280', fontSize:'10px', cursor:'pointer', fontFamily:"'Orbitron',monospace" }}>↺</button>
+                      </div>
+
+                      {ffMode==='br' && ffStats.br && ['solostats','duostats','quadstats'].map(mode => {
+                        const s=ffStats.br[mode]; if(!s?.gamesplayed) return null;
+                        const d=s.detailedstats||{};
+                        const kd=s.kills&&s.gamesplayed?(s.kills/s.gamesplayed).toFixed(2):'0';
+                        const wr=s.wins&&s.gamesplayed?((s.wins/s.gamesplayed)*100).toFixed(1):'0';
+                        const hs=d.headshotkills&&s.kills?((d.headshotkills/s.kills)*100).toFixed(1):'0';
+                        return (
+                          <div key={mode} style={{ marginBottom:'8px', padding:'10px', borderRadius:'10px', background:'#0a0a0a', border:'1px solid rgba(239,68,68,0.1)' }}>
+                            <p style={{ fontFamily:"'Orbitron',monospace", fontSize:'8px', color:'#ef4444', marginBottom:'8px', letterSpacing:'2px' }}>
+                              {mode==='solostats'?'👤 SOLO':mode==='duostats'?'👥 DUO':'👥 SQUAD'}
+                            </p>
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'4px' }}>
+                              {[{l:'MATCH',v:s.gamesplayed,i:'🎮'},{l:'KILLS',v:s.kills,i:'💀'},{l:'WINS',v:s.wins,i:'🏆'},{l:'K/D',v:kd,i:'⚔️'},{l:'WIN%',v:`${wr}%`,i:'🥇'},{l:'HS%',v:`${hs}%`,i:'🎯'}].map((st,i) => (
+                                <StatMini key={i} label={st.l} value={st.v} icon={st.i} />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {ffMode==='cs' && ffStats.cs?.csstats && (() => {
+                        const s=ffStats.cs.csstats; const d=s.detailedstats||{};
+                        const kd=s.kills&&d.deaths?(s.kills/d.deaths).toFixed(2):'0';
+                        return (
+                          <div style={{ padding:'10px', borderRadius:'10px', background:'#0a0a0a', border:'1px solid rgba(239,68,68,0.1)' }}>
+                            <p style={{ fontFamily:"'Orbitron',monospace", fontSize:'8px', color:'#ef4444', marginBottom:'8px', letterSpacing:'2px' }}>⚔️ CLASH SQUAD</p>
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'4px' }}>
+                              {[{l:'MATCH',v:s.gamesplayed,i:'🎮'},{l:'KILLS',v:s.kills,i:'💀'},{l:'WINS',v:s.wins,i:'🏆'},{l:'K/D',v:kd,i:'⚔️'},{l:'MVP',v:d.mvpcount,i:'⭐'},{l:'DMG',v:d.damage,i:'💥'}].filter(x=>x.v).map((st,i) => (
+                                <StatMini key={i} label={st.l} value={st.v} icon={st.i} />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Gameplay clips */}
+              {profile?.gameplay_clips?.length > 0 && (
+                <div className="fu" style={{ animationDelay:'200ms', padding:'16px', borderRadius:'16px', background:'#050505', border:'1px solid rgba(239,68,68,0.15)' }}>
+                  <p style={{ fontFamily:"'Orbitron',monospace", fontSize:'9px', fontWeight:900, color:'rgba(239,68,68,0.6)', letterSpacing:'3px', marginBottom:'10px' }}>//  GAMEPLAY CLIPS</p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                    {profile.gameplay_clips.map((clip,i) => (
+                      <div key={i} style={{ borderRadius:'10px', overflow:'hidden', border:'1px solid rgba(239,68,68,0.15)' }}>
+                        {clip.youtube_url && <div style={{ aspectRatio:'16/9' }}><iframe src={clip.youtube_url.replace('watch?v=','embed/')} style={{ width:'100%', height:'100%' }} allowFullScreen title={clip.title}/></div>}
+                        <div style={{ padding:'8px', background:'rgba(0,0,0,0.5)' }}>
+                          <p style={{ fontWeight:900, fontSize:'12px', color:'#fff', margin:0 }}>{clip.title}</p>
+                          {clip.game && <span style={{ fontSize:'10px', fontWeight:700, color:GAME_CONFIG[clip.game]?.color||'#ef4444' }}>{clip.game}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

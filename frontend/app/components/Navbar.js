@@ -82,7 +82,7 @@ export default function Navbar() {
                 VINCI-ARENA
               </div>
               <div className="text-xs text-red-500 font-bold tracking-wider" style={{fontFamily: "'Rajdhani', sans-serif"}}>
-                Track. Calculate. Win.
+                All Roads Lead to Vinci Arena
               </div>
             </div>
           </Link>

@@ -1,0 +1,230 @@
+'use client';
+import { useEffect, useState, useRef } from 'react';
+
+const STAT_CONFIG = {
+  kd_ratio:      { label: 'K/D RATIO',     icon: '⚔️', max: 10,  suffix: '',  type: 'ring',  color: '#ef4444' },
+  win_rate:      { label: 'WIN RATE',       icon: '🏆', max: 100, suffix: '%', type: 'ring',  color: '#FFD700' },
+  headshot:      { label: 'HEADSHOT',       icon: '🎯', max: 100, suffix: '%', type: 'ring',  color: '#f97316' },
+  total_kills:   { label: 'TOTAL KILLS',    icon: '💀', max: null, suffix: '', type: 'bar',   color: '#ef4444' },
+  total_matches: { label: 'MATCHES',        icon: '🎮', max: null, suffix: '', type: 'bar',   color: '#6366f1' },
+  wins:          { label: 'WINS',           icon: '🥇', max: null, suffix: '', type: 'bar',   color: '#FFD700' },
+  damage:        { label: 'TOTAL DMG',      icon: '💥', max: null, suffix: '', type: 'bar',   color: '#f97316' },
+  avg_damage:    { label: 'AVG DAMAGE',     icon: '📊', max: null, suffix: '', type: 'bar',   color: '#10b981' },
+  rank:          { label: 'RANK',           icon: '👑', max: null, suffix: '', type: 'badge', color: '#a855f7' },
+  combat_score:  { label: 'COMBAT SCORE',   icon: '⚡', max: 300, suffix: '',  type: 'ring',  color: '#6366f1' },
+};
+
+function useCounter(target, duration = 1500, started) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!started || !target) return;
+    const num = parseFloat(target);
+    if (isNaN(num)) { setCount(target); return; }
+    let start = 0;
+    const increment = num / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= num) { setCount(num % 1 !== 0 ? num.toFixed(2) : Math.floor(num)); clearInterval(timer); }
+      else setCount(num % 1 !== 0 ? start.toFixed(2) : Math.floor(start));
+    }, 16);
+    return () => clearInterval(timer);
+  }, [target, started]);
+  return count;
+}
+
+function RingCard({ statKey, value, config, accentColor, index, started }) {
+  const animatedValue = useCounter(value, 1500 + index * 100, started);
+  const numVal = parseFloat(value);
+  const max = config.max || 100;
+  const percent = Math.min((numVal / max) * 100, 100);
+  const circumference = 2 * Math.PI * 36;
+  const strokeDash = (percent / 100) * circumference;
+  const [flipped, setFlipped] = useState(false);
+
+  useEffect(() => {
+    if (started) setTimeout(() => setFlipped(true), index * 150);
+  }, [started]);
+
+  return (
+    <div className="relative group" style={{perspective: '600px'}}>
+      <div style={{
+        transition: 'transform 0.6s ease',
+        transformStyle: 'preserve-3d',
+        transform: flipped ? 'rotateY(0deg)' : 'rotateY(90deg)',
+      }}>
+        <div className="rounded-2xl p-4 text-center cursor-default"
+          style={{
+            background: `linear-gradient(145deg, #0d0d0d, #080808)`,
+            border: `1px solid ${config.color}25`,
+            boxShadow: `0 0 20px ${config.color}08`,
+            transition: 'all 0.3s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.boxShadow = `0 0 25px ${config.color}30`}
+          onMouseLeave={e => e.currentTarget.style.boxShadow = `0 0 20px ${config.color}08`}
+        >
+          <div className="relative w-20 h-20 mx-auto mb-2">
+            <svg width="80" height="80" style={{transform: 'rotate(-90deg)'}}>
+              <circle cx="40" cy="40" r="36" fill="none" stroke={`${config.color}15`} strokeWidth="5" />
+              <circle cx="40" cy="40" r="36" fill="none"
+                stroke={config.color} strokeWidth="5"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={started ? circumference - strokeDash : circumference}
+                style={{transition: 'stroke-dashoffset 1.5s ease', filter: `drop-shadow(0 0 4px ${config.color})`}}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="font-black text-white leading-none" style={{fontSize: '16px', fontFamily: "'Orbitron', sans-serif", textShadow: `0 0 10px ${config.color}80`}}>
+                {animatedValue}{config.suffix}
+              </span>
+            </div>
+          </div>
+          <div className="text-xs font-black tracking-widest" style={{color: config.color, fontSize: '8px', fontFamily: "'Orbitron', sans-serif"}}>{config.label}</div>
+          <div className="text-lg mt-0.5">{config.icon}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BarCard({ statKey, value, config, allStats, index, started }) {
+  const animatedValue = useCounter(value, 1500 + index * 100, started);
+  const [flipped, setFlipped] = useState(false);
+  const numVal = parseFloat(value?.toString().replace(',', '')) || 0;
+  const allNums = Object.entries(allStats)
+    .filter(([k]) => STAT_CONFIG[k]?.type === 'bar')
+    .map(([, v]) => parseFloat(v?.toString().replace(',', '')) || 0);
+  const maxVal = Math.max(...allNums, 1);
+  const barPercent = Math.min((numVal / maxVal) * 100, 100);
+
+  useEffect(() => {
+    if (started) setTimeout(() => setFlipped(true), index * 150 + 300);
+  }, [started]);
+
+  return (
+    <div style={{
+      transition: 'transform 0.6s ease',
+      transformStyle: 'preserve-3d',
+      transform: flipped ? 'rotateX(0deg)' : 'rotateX(90deg)',
+    }}>
+      <div className="rounded-xl p-4"
+        style={{background: '#0d0d0d', border: `1px solid ${config.color}20`, transition: 'all 0.3s'}}
+        onMouseEnter={e => { e.currentTarget.style.border = `1px solid ${config.color}50`; e.currentTarget.style.boxShadow = `0 0 15px ${config.color}15`; }}
+        onMouseLeave={e => { e.currentTarget.style.border = `1px solid ${config.color}20`; e.currentTarget.style.boxShadow = 'none'; }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-base">{config.icon}</span>
+            <span className="font-black text-xs tracking-widest" style={{color: config.color, fontSize: '9px', fontFamily: "'Orbitron', sans-serif"}}>{config.label}</span>
+          </div>
+          <span className="font-black text-white text-sm" style={{fontFamily: "'Orbitron', sans-serif", textShadow: `0 0 10px ${config.color}60`}}>
+            {animatedValue}
+          </span>
+        </div>
+        <div className="relative h-1.5 rounded-full overflow-hidden" style={{background: `${config.color}15`}}>
+          <div className="h-full rounded-full transition-all"
+            style={{
+              width: started ? `${barPercent}%` : '0%',
+              background: `linear-gradient(90deg, ${config.color}80, ${config.color})`,
+              boxShadow: `0 0 8px ${config.color}`,
+              transition: 'width 1.5s ease',
+            }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BadgeCard({ statKey, value, config, index, started }) {
+  const [flipped, setFlipped] = useState(false);
+  useEffect(() => { if (started) setTimeout(() => setFlipped(true), index * 150 + 600); }, [started]);
+
+  return (
+    <div style={{transition: 'transform 0.6s ease', transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(0deg)' : 'rotateY(-90deg)'}}>
+      <div className="rounded-xl p-4 text-center"
+        style={{background: `linear-gradient(135deg, ${config.color}15, ${config.color}05)`, border: `1px solid ${config.color}30`, boxShadow: `0 0 20px ${config.color}10`}}>
+        <div className="text-2xl mb-1">{config.icon}</div>
+        <div className="font-black text-white text-sm mb-0.5" style={{fontFamily: "'Orbitron', sans-serif", textShadow: `0 0 15px ${config.color}`}}>{value}</div>
+        <div className="text-xs font-black tracking-widest" style={{color: config.color, fontSize: '8px', fontFamily: "'Orbitron', sans-serif"}}>{config.label}</div>
+      </div>
+    </div>
+  );
+}
+
+export default function GameStatsDisplay({ stats, accentColor, gameName }) {
+  const [started, setStarted] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setStarted(false); setTimeout(() => setStarted(true), 100); } },
+      { threshold: 0.2 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    setStarted(false);
+    setTimeout(() => setStarted(true), 200);
+  }, [gameName]);
+
+  const ringStats = Object.entries(stats).filter(([k, v]) => v && STAT_CONFIG[k]?.type === 'ring');
+  const barStats = Object.entries(stats).filter(([k, v]) => v && STAT_CONFIG[k]?.type === 'bar');
+  const badgeStats = Object.entries(stats).filter(([k, v]) => v && STAT_CONFIG[k]?.type === 'badge');
+
+  if (Object.keys(stats).length === 0) return null;
+
+  return (
+    <div ref={ref}>
+      <style>{`
+        @keyframes shine { 0%,100% { transform: translateX(-100%); } 50% { transform: translateX(200%); } }
+      `}</style>
+
+      {ringStats.length > 0 && (
+        <div className="mb-5">
+          <p className="text-xs font-black tracking-widest mb-3 flex items-center gap-2" style={{color: accentColor, fontFamily: "'Orbitron', sans-serif", fontSize: '9px'}}>
+            <span className="w-4 h-0.5 rounded" style={{background: accentColor}} />
+            KEY METRICS
+            <span className="flex-1 h-0.5 rounded" style={{background: `linear-gradient(90deg, ${accentColor}40, transparent)`}} />
+          </p>
+          <div className={`grid gap-3 ${ringStats.length === 1 ? 'grid-cols-1' : ringStats.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            {ringStats.map(([key, value], i) => (
+              <RingCard key={key} statKey={key} value={value} config={STAT_CONFIG[key]} accentColor={accentColor} index={i} started={started} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {barStats.length > 0 && (
+        <div className="mb-5">
+          <p className="text-xs font-black tracking-widest mb-3 flex items-center gap-2" style={{color: accentColor, fontFamily: "'Orbitron', sans-serif", fontSize: '9px'}}>
+            <span className="w-4 h-0.5 rounded" style={{background: accentColor}} />
+            PERFORMANCE
+            <span className="flex-1 h-0.5 rounded" style={{background: `linear-gradient(90deg, ${accentColor}40, transparent)`}} />
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {barStats.map(([key, value], i) => (
+              <BarCard key={key} statKey={key} value={value} config={STAT_CONFIG[key]} allStats={stats} index={i} started={started} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {badgeStats.length > 0 && (
+        <div>
+          <p className="text-xs font-black tracking-widest mb-3 flex items-center gap-2" style={{color: accentColor, fontFamily: "'Orbitron', sans-serif", fontSize: '9px'}}>
+            <span className="w-4 h-0.5 rounded" style={{background: accentColor}} />
+            RANK & TITLES
+            <span className="flex-1 h-0.5 rounded" style={{background: `linear-gradient(90deg, ${accentColor}40, transparent)`}} />
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {badgeStats.map(([key, value], i) => (
+              <BadgeCard key={key} statKey={key} value={value} config={STAT_CONFIG[key]} index={i} started={started} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
