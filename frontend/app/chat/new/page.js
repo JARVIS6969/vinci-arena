@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL, getToken, getUserId } from '@/app/utils/chat';
+import '@/app/chat/chat.css';
 
 export default function NewChatPage() {
   const router = useRouter();
@@ -21,9 +23,8 @@ export default function NewChatPage() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/users', {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_URL}/api/users`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
       });
       if (res.ok) setUsers(await res.json());
     } catch (err) { console.error(err); }
@@ -31,19 +32,18 @@ export default function NewChatPage() {
 
   const startDM = async (userId) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/chat/messages', {
+      const res = await fetch(`${API_URL}/api/chat/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ message: '👋 Hey!', receiver_id: userId }),
       });
       if (res.ok) {
-        const convRes = await fetch('http://localhost:3001/api/chat/conversations', {
-          headers: { Authorization: `Bearer ${token}` }
+        const convRes = await fetch(`${API_URL}/api/chat/conversations`, {
+          headers: { Authorization: `Bearer ${getToken()}` }
         });
         if (convRes.ok) {
           const data = await convRes.json();
-          const myId = localStorage.getItem('userId');
+          const myId = getUserId();
           const dm = data.dms.find(d =>
             (d.user1_id === myId && d.user2_id === userId) ||
             (d.user2_id === myId && d.user1_id === userId)
@@ -58,10 +58,9 @@ export default function NewChatPage() {
     if (!groupName.trim()) return;
     setCreating(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/chat/groups', {
+      const res = await fetch(`${API_URL}/api/chat/groups`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ name: groupName, description: groupDesc }),
       });
       if (res.ok) {
@@ -77,9 +76,8 @@ export default function NewChatPage() {
     if (!query.trim()) { setSearchResults([]); return; }
     setSearching(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/chat/groups/search?query=${query}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_URL}/api/chat/groups/search?query=${query}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
       });
       if (res.ok) setSearchResults(await res.json());
     } catch (err) { console.error(err); }
@@ -89,10 +87,9 @@ export default function NewChatPage() {
   const joinGroup = async (groupCode) => {
     setJoining(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/chat/groups/join', {
+      const res = await fetch(`${API_URL}/api/chat/groups/join`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ group_code: groupCode }),
       });
       const data = await res.json();
@@ -111,14 +108,7 @@ export default function NewChatPage() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white" style={{fontFamily: "'Rajdhani', sans-serif"}}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
-        .grid-bg { background-image: linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px); background-size: 40px 40px; }
-        .neon-input { background: #0a0a0a; border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: white; font-family: 'Rajdhani'; font-weight: 600; padding: 10px 14px; width: 100%; outline: none; transition: all 0.2s; }
-        .neon-input:focus { border-color: rgba(239,68,68,0.7); box-shadow: 0 0 10px rgba(239,68,68,0.2); }
-        .neon-input::placeholder { color: #374151; }
-      `}</style>
+    <div className="min-h-screen bg-black text-white" style={{fontFamily: "'Rajdhani', sans-serif", paddingTop: '44px'}}>
 
       {/* Header */}
       <div className="border-b border-red-500/20 px-6 py-4 flex items-center gap-3">
@@ -146,7 +136,8 @@ export default function NewChatPage() {
           {/* DIRECT MESSAGE TAB */}
           {tab === 'dm' && (
             <div>
-              <input className="neon-input mb-4" placeholder="SEARCH PLAYERS..." value={searchUser} onChange={e => setSearchUser(e.target.value)} />
+              <input className="neon-input mb-4" placeholder="SEARCH PLAYERS..."
+                value={searchUser} onChange={e => setSearchUser(e.target.value)} />
               <div className="space-y-2">
                 {filteredUsers.map(user => (
                   <div key={user.id} onClick={() => startDM(user.id)}
@@ -170,14 +161,16 @@ export default function NewChatPage() {
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-black tracking-widest text-red-500/70 mb-2 block">GROUP NAME *</label>
-                <input className="neon-input" placeholder="e.g. VINCI SQUAD FF" value={groupName} onChange={e => setGroupName(e.target.value)} />
+                <input className="neon-input" placeholder="e.g. VINCI SQUAD FF"
+                  value={groupName} onChange={e => setGroupName(e.target.value)} />
               </div>
               <div>
                 <label className="text-xs font-black tracking-widest text-red-500/70 mb-2 block">DESCRIPTION</label>
-                <input className="neon-input" placeholder="What's this group about?" value={groupDesc} onChange={e => setGroupDesc(e.target.value)} />
+                <input className="neon-input" placeholder="What's this group about?"
+                  value={groupDesc} onChange={e => setGroupDesc(e.target.value)} />
               </div>
               <div className="bg-gray-950 border border-gray-800 rounded-xl p-4">
-                <p className="text-xs text-gray-600 font-bold">A unique group code will be auto-generated when you create the group. Share it with others to let them join!</p>
+                <p className="text-xs text-gray-600 font-bold">A unique group code will be auto-generated when you create the group!</p>
               </div>
               <button onClick={createGroup} disabled={!groupName.trim() || creating}
                 className={`w-full py-3 rounded font-black text-xs tracking-widest transition ${groupName.trim() ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-gray-900 text-gray-700 border border-gray-800 cursor-not-allowed'}`}
@@ -190,7 +183,6 @@ export default function NewChatPage() {
           {/* FIND GROUP TAB */}
           {tab === 'find' && (
             <div className="space-y-4">
-              {/* Join by code */}
               <div className="bg-gray-950 border border-red-500/20 rounded-xl p-4">
                 <p className="text-xs font-black tracking-widest text-red-500/70 mb-3">// JOIN BY CODE</p>
                 <div className="flex gap-2">
@@ -204,8 +196,6 @@ export default function NewChatPage() {
                   </button>
                 </div>
               </div>
-
-              {/* Search by name */}
               <div>
                 <p className="text-xs font-black tracking-widest text-red-500/70 mb-3">// SEARCH BY NAME</p>
                 <input className="neon-input mb-3" placeholder="SEARCH GROUP NAME..."

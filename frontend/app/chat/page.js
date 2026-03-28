@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { fetchConversations, timeAgo } from '@/app/utils/chat';
+import '@/app/chat/chat.css';
 
 export default function ChatHubPage() {
   const router = useRouter();
@@ -12,44 +14,19 @@ export default function ChatHubPage() {
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
 
   useEffect(() => {
-    fetchConversations();
+    loadConversations();
   }, []);
 
-  const fetchConversations = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/chat/conversations', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setConversations(data);
-      }
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
-
-  const timeAgo = (date) => {
-    if (!date) return '';
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    if (seconds < 60) return 'just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
+  const loadConversations = async () => {
+    const data = await fetchConversations();
+    setConversations(data);
+    setLoading(false);
   };
 
   const totalCount = conversations.dms.length + conversations.groups.length;
 
   return (
     <div className="min-h-screen bg-black text-white" style={{fontFamily: "'Rajdhani', sans-serif", paddingTop: '44px'}}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
-        .grid-bg { background-image: linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px); background-size: 40px 40px; }
-        .card-hover { transition: all 0.2s ease; }
-        .card-hover:hover { transform: translateY(-2px); border-color: rgba(239,68,68,0.5) !important; }
-        .pulse-dot { animation: pulseDot 2s infinite; }
-        @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
-      `}</style>
 
       {/* Header */}
       <div className="border-b border-red-500/30 px-6 py-4 flex items-center justify-between" style={{boxShadow: '0 0 20px rgba(239,68,68,0.1)'}}>
@@ -79,14 +56,9 @@ export default function ChatHubPage() {
               { id: 'dms', label: 'DIRECT', count: conversations.dms.length },
               { id: 'groups', label: 'GROUPS', count: conversations.groups.length },
             ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded font-black text-xs tracking-widest transition ${
-                  activeTab === tab.id ? 'bg-red-600 text-white' : 'text-gray-500 hover:text-gray-300'
-                }`}
-                style={activeTab === tab.id ? {boxShadow: '0 0 10px rgba(239,68,68,0.4)'} : {}}
-              >
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded font-black text-xs tracking-widest transition ${activeTab === tab.id ? 'bg-red-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                style={activeTab === tab.id ? {boxShadow: '0 0 10px rgba(239,68,68,0.4)'} : {}}>
                 {tab.label}
                 <span className={`px-1.5 py-0.5 rounded text-xs font-black ${activeTab === tab.id ? 'bg-red-800' : 'bg-gray-800 text-gray-500'}`}>{tab.count}</span>
               </button>
@@ -115,9 +87,7 @@ export default function ChatHubPage() {
               {/* DMs */}
               {(activeTab === 'all' || activeTab === 'dms') && conversations.dms.length > 0 && (
                 <div>
-                  {activeTab === 'all' && (
-                    <p className="text-xs font-black tracking-widest text-red-500/70 mb-3" style={{fontFamily: "'Orbitron', sans-serif"}}>// DIRECT MESSAGES</p>
-                  )}
+                  {activeTab === 'all' && <p className="text-xs font-black tracking-widest text-red-500/70 mb-3" style={{fontFamily: "'Orbitron', sans-serif"}}>// DIRECT MESSAGES</p>}
                   {conversations.dms.map(dm => {
                     const other = dm.user1_id === userId ? dm.user2 : dm.user1;
                     return (
@@ -149,9 +119,7 @@ export default function ChatHubPage() {
               {/* Groups */}
               {(activeTab === 'all' || activeTab === 'groups') && conversations.groups.length > 0 && (
                 <div>
-                  {activeTab === 'all' && (
-                    <p className="text-xs font-black tracking-widest text-red-500/70 mb-3 mt-4" style={{fontFamily: "'Orbitron', sans-serif"}}>// GROUP CHATS</p>
-                  )}
+                  {activeTab === 'all' && <p className="text-xs font-black tracking-widest text-red-500/70 mb-3 mt-4" style={{fontFamily: "'Orbitron', sans-serif"}}>// GROUP CHATS</p>}
                   {conversations.groups.map(group => (
                     <Link key={group.id} href={`/chat/group/${group.id}`}>
                       <div className="card-hover bg-gray-950 border border-gray-800 rounded-xl p-4 cursor-pointer mb-2">
