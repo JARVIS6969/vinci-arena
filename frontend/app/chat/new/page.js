@@ -93,11 +93,8 @@ export default function NewChatPage() {
         body: JSON.stringify({ group_code: groupCode }),
       });
       const data = await res.json();
-      if (res.ok) {
-        router.push(`/chat/group/${data.group.id}`);
-      } else {
-        alert(data.error || 'Failed to join');
-      }
+      if (res.ok) router.push(`/chat/group/${data.group.id}`);
+      else alert(data.error || 'Failed to join');
     } catch (err) { console.error(err); }
     finally { setJoining(false); }
   };
@@ -107,49 +104,170 @@ export default function NewChatPage() {
     u.email?.toLowerCase().includes(searchUser.toLowerCase())
   );
 
-  return (
-    <div className="min-h-screen bg-black text-white" style={{fontFamily: "'Rajdhani', sans-serif", paddingTop: '44px'}}>
+  const tabs = [
+    { id: 'dm',     label: '💬 DIRECT',       color: '#ef4444' },
+    { id: 'create', label: '➕ CREATE GROUP',  color: '#a855f7' },
+    { id: 'find',   label: '🔍 FIND GROUP',    color: '#00ffff' },
+  ];
 
-      {/* Header */}
-      <div className="border-b border-red-500/20 px-6 py-4 flex items-center gap-3">
-        <button onClick={() => router.push('/chat')} className="text-red-400 hover:text-red-300 font-bold text-lg">←</button>
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#050510',
+      color: '#e2e8f0',
+      fontFamily: "'Rajdhani', sans-serif",
+      paddingTop: '44px'
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .cyber-grid {
+          background-image:
+            linear-gradient(rgba(0,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,255,255,0.02) 1px, transparent 1px);
+          background-size: 40px 40px;
+        }
+        .user-row:hover { background: rgba(239,68,68,0.05) !important; border-color: rgba(239,68,68,0.3) !important; }
+        .group-row:hover { background: rgba(0,255,255,0.05) !important; border-color: rgba(0,255,255,0.3) !important; }
+        input, textarea { font-family: 'Rajdhani', sans-serif !important; }
+      `}</style>
+
+      {/* HEADER */}
+      <div style={{
+        borderBottom: '1px solid rgba(0,255,255,0.1)',
+        padding: '14px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        background: 'linear-gradient(135deg, #080818, #050510)'
+      }}>
+        <button
+          onClick={() => router.push('/chat')}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(0,255,255,0.2)',
+            borderRadius: '6px',
+            color: '#00ffff',
+            fontFamily: "'Orbitron', sans-serif",
+            fontSize: '10px',
+            padding: '6px 12px',
+            cursor: 'pointer',
+            letterSpacing: '2px'
+          }}>← BACK</button>
         <div>
-          <h1 className="font-black tracking-widest text-red-500" style={{fontFamily: "'Orbitron', sans-serif", fontSize: '16px'}}>NEW CHAT</h1>
-          <p className="text-xs text-gray-600 font-bold tracking-wider">START A CONVERSATION</p>
+          <h1 style={{
+            fontFamily: "'Orbitron', sans-serif",
+            fontSize: '14px',
+            fontWeight: '900',
+            color: '#00ffff',
+            letterSpacing: '4px',
+            textShadow: '0 0 15px rgba(0,255,255,0.5)',
+            margin: 0
+          }}>NEW CHAT</h1>
+          <p style={{
+            fontFamily: "'Share Tech Mono', monospace",
+            fontSize: '10px',
+            color: 'rgba(0,255,255,0.3)',
+            margin: 0,
+            letterSpacing: '2px'
+          }}>// initiate communication channel</p>
         </div>
       </div>
 
-      <div className="grid-bg min-h-screen">
-        <div className="max-w-xl mx-auto p-6">
+      <div className="cyber-grid" style={{minHeight: 'calc(100vh - 70px)', padding: '24px'}}>
+        <div style={{maxWidth: '560px', margin: '0 auto'}}>
 
-          {/* Tabs */}
-          <div className="flex gap-1 mb-6 bg-gray-950 border border-gray-800 rounded-lg p-1">
-            {['dm', 'create', 'find'].map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                className={`flex-1 py-2 rounded font-black text-xs tracking-widest transition ${tab === t ? 'bg-red-600 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                style={tab === t ? {boxShadow: '0 0 10px rgba(239,68,68,0.4)'} : {}}>
-                {t === 'dm' ? '💬 DIRECT MSG' : t === 'create' ? '➕ CREATE GROUP' : '🔍 FIND GROUP'}
+          {/* TABS */}
+          <div style={{
+            display: 'flex',
+            gap: '4px',
+            marginBottom: '24px',
+            background: '#080818',
+            border: '1px solid rgba(0,255,255,0.1)',
+            borderRadius: '8px',
+            padding: '4px'
+          }}>
+            {tabs.map(t => (
+              <button key={t.id}
+                onClick={() => setTab(t.id)}
+                style={{
+                  flex: 1,
+                  padding: '8px 4px',
+                  borderRadius: '6px',
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontWeight: '700',
+                  fontSize: '9px',
+                  letterSpacing: '1px',
+                  background: tab === t.id ? 'rgba(255,255,255,0.05)' : 'transparent',
+                  color: tab === t.id ? t.color : 'rgba(255,255,255,0.2)',
+                  border: tab === t.id ? `1px solid ${t.color}30` : '1px solid transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: tab === t.id ? `0 0 15px ${t.color}15` : 'none'
+                }}>
+                {t.label}
               </button>
             ))}
           </div>
 
-          {/* DIRECT MESSAGE TAB */}
+          {/* DM TAB */}
           {tab === 'dm' && (
             <div>
-              <input className="neon-input mb-4" placeholder="SEARCH PLAYERS..."
-                value={searchUser} onChange={e => setSearchUser(e.target.value)} />
-              <div className="space-y-2">
+              <input
+                placeholder="// SEARCH PLAYERS..."
+                value={searchUser}
+                onChange={e => setSearchUser(e.target.value)}
+                style={{
+                  width: '100%',
+                  background: '#080818',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                  borderRadius: '6px',
+                  color: '#e2e8f0',
+                  fontFamily: "'Rajdhani', sans-serif",
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  padding: '10px 14px',
+                  outline: 'none',
+                  marginBottom: '12px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
                 {filteredUsers.map(user => (
-                  <div key={user.id} onClick={() => startDM(user.id)}
-                    className="flex items-center gap-3 p-3 bg-gray-950 border border-gray-800 hover:border-red-500/40 rounded-xl cursor-pointer transition">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center font-black">
+                  <div key={user.id}
+                    className="user-row"
+                    onClick={() => startDM(user.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px 14px',
+                      background: '#080818',
+                      border: '1px solid rgba(239,68,68,0.1)',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}>
+                    <div style={{
+                      width: '38px', height: '38px',
+                      background: 'linear-gradient(135deg, #ef4444, #7c3aed)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: "'Orbitron', sans-serif",
+                      fontWeight: '900',
+                      fontSize: '14px',
+                      color: 'white',
+                      flexShrink: 0
+                    }}>
                       {user.name?.[0]?.toUpperCase() || '?'}
                     </div>
-                    <div>
-                      <p className="font-black text-sm text-white">{user.name}</p>
-                      <p className="text-xs text-gray-600">{user.email}</p>
+                    <div style={{flex: 1}}>
+                      <p style={{fontFamily: "'Orbitron', sans-serif", fontWeight: '700', fontSize: '12px', color: '#e2e8f0', margin: 0, letterSpacing: '1px'}}>{user.name}</p>
+                      <p style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: 'rgba(255,255,255,0.3)', margin: 0}}>{user.email}</p>
                     </div>
-                    <div className="ml-auto text-red-400 font-black text-xs">MSG →</div>
+                    <span style={{color: 'rgba(239,68,68,0.5)', fontSize: '12px', fontFamily: "'Orbitron', sans-serif"}}>MSG →</span>
                   </div>
                 ))}
               </div>
@@ -158,68 +276,225 @@ export default function NewChatPage() {
 
           {/* CREATE GROUP TAB */}
           {tab === 'create' && (
-            <div className="space-y-4">
+            <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
               <div>
-                <label className="text-xs font-black tracking-widest text-red-500/70 mb-2 block">GROUP NAME *</label>
-                <input className="neon-input" placeholder="e.g. VINCI SQUAD FF"
-                  value={groupName} onChange={e => setGroupName(e.target.value)} />
+                <label style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', color: 'rgba(168,85,247,0.6)', letterSpacing: '3px', display: 'block', marginBottom: '8px'}}>
+                  // GROUP NAME *
+                </label>
+                <input
+                  placeholder="e.g. VINCI SQUAD FF"
+                  value={groupName}
+                  onChange={e => setGroupName(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: '#080818',
+                    border: '1px solid rgba(168,85,247,0.2)',
+                    borderRadius: '6px',
+                    color: '#e2e8f0',
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    padding: '10px 14px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
               </div>
               <div>
-                <label className="text-xs font-black tracking-widest text-red-500/70 mb-2 block">DESCRIPTION</label>
-                <input className="neon-input" placeholder="What's this group about?"
-                  value={groupDesc} onChange={e => setGroupDesc(e.target.value)} />
+                <label style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', color: 'rgba(168,85,247,0.6)', letterSpacing: '3px', display: 'block', marginBottom: '8px'}}>
+                  // DESCRIPTION
+                </label>
+                <input
+                  placeholder="What's this squad about?"
+                  value={groupDesc}
+                  onChange={e => setGroupDesc(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: '#080818',
+                    border: '1px solid rgba(168,85,247,0.2)',
+                    borderRadius: '6px',
+                    color: '#e2e8f0',
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    padding: '10px 14px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
               </div>
-              <div className="bg-gray-950 border border-gray-800 rounded-xl p-4">
-                <p className="text-xs text-gray-600 font-bold">A unique group code will be auto-generated when you create the group!</p>
+              <div style={{
+                background: 'rgba(168,85,247,0.05)',
+                border: '1px solid rgba(168,85,247,0.15)',
+                borderRadius: '8px',
+                padding: '12px 14px'
+              }}>
+                <p style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '11px', color: 'rgba(168,85,247,0.5)', margin: 0}}>
+                  // a unique group code will be auto-generated
+                </p>
               </div>
-              <button onClick={createGroup} disabled={!groupName.trim() || creating}
-                className={`w-full py-3 rounded font-black text-xs tracking-widest transition ${groupName.trim() ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-gray-900 text-gray-700 border border-gray-800 cursor-not-allowed'}`}
-                style={groupName.trim() ? {boxShadow: '0 0 15px rgba(239,68,68,0.4)'} : {}}>
-                {creating ? 'CREATING...' : '⚡ CREATE GROUP'}
+              <button
+                onClick={createGroup}
+                disabled={!groupName.trim() || creating}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: groupName.trim() ? 'linear-gradient(135deg, #1a0a2e, #0a0a2e)' : '#080818',
+                  border: `1px solid ${groupName.trim() ? 'rgba(168,85,247,0.4)' : 'rgba(255,255,255,0.05)'}`,
+                  borderRadius: '6px',
+                  color: groupName.trim() ? '#a855f7' : 'rgba(255,255,255,0.2)',
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontWeight: '700',
+                  fontSize: '11px',
+                  letterSpacing: '3px',
+                  cursor: groupName.trim() ? 'pointer' : 'not-allowed',
+                  boxShadow: groupName.trim() ? '0 0 20px rgba(168,85,247,0.2)' : 'none',
+                  transition: 'all 0.2s'
+                }}>
+                {creating ? '// CREATING...' : '⚡ CREATE SQUAD'}
               </button>
             </div>
           )}
 
           {/* FIND GROUP TAB */}
           {tab === 'find' && (
-            <div className="space-y-4">
-              <div className="bg-gray-950 border border-red-500/20 rounded-xl p-4">
-                <p className="text-xs font-black tracking-widest text-red-500/70 mb-3">// JOIN BY CODE</p>
-                <div className="flex gap-2">
-                  <input className="neon-input flex-1" placeholder="ENTER GROUP CODE e.g. ABC123"
-                    value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                    style={{letterSpacing: '4px', fontWeight: '900'}} />
-                  <button onClick={() => joinGroup(joinCode)} disabled={!joinCode.trim() || joining}
-                    className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded font-black text-xs tracking-widest transition flex-shrink-0"
-                    style={{boxShadow: '0 0 10px rgba(239,68,68,0.4)'}}>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
+
+              {/* JOIN BY CODE */}
+              <div style={{
+                background: 'rgba(0,255,255,0.03)',
+                border: '1px solid rgba(0,255,255,0.15)',
+                borderRadius: '8px',
+                padding: '16px'
+              }}>
+                <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', color: 'rgba(0,255,255,0.5)', letterSpacing: '3px', marginBottom: '10px'}}>
+                  // JOIN BY CODE
+                </p>
+                <div style={{display: 'flex', gap: '8px'}}>
+                  <input
+                    placeholder="ENTER CODE e.g. ABC123"
+                    value={joinCode}
+                    onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                    style={{
+                      flex: 1,
+                      background: '#080818',
+                      border: '1px solid rgba(0,255,255,0.2)',
+                      borderRadius: '6px',
+                      color: '#00ffff',
+                      fontFamily: "'Share Tech Mono', monospace",
+                      fontWeight: '700',
+                      fontSize: '14px',
+                      padding: '10px 14px',
+                      outline: 'none',
+                      letterSpacing: '4px'
+                    }}
+                  />
+                  <button
+                    onClick={() => joinGroup(joinCode)}
+                    disabled={!joinCode.trim() || joining}
+                    style={{
+                      padding: '10px 20px',
+                      background: 'rgba(0,255,255,0.08)',
+                      border: '1px solid rgba(0,255,255,0.3)',
+                      borderRadius: '6px',
+                      color: '#00ffff',
+                      fontFamily: "'Orbitron', sans-serif",
+                      fontWeight: '700',
+                      fontSize: '10px',
+                      letterSpacing: '2px',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      boxShadow: '0 0 15px rgba(0,255,255,0.1)'
+                    }}>
                     {joining ? '...' : 'JOIN'}
                   </button>
                 </div>
               </div>
+
+              {/* SEARCH BY NAME */}
               <div>
-                <p className="text-xs font-black tracking-widest text-red-500/70 mb-3">// SEARCH BY NAME</p>
-                <input className="neon-input mb-3" placeholder="SEARCH GROUP NAME..."
-                  value={groupSearch} onChange={e => searchGroups(e.target.value)} />
-                {searching && <div className="flex justify-center py-4"><div className="w-6 h-6 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" /></div>}
-                <div className="space-y-2">
+                <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', color: 'rgba(0,255,255,0.5)', letterSpacing: '3px', marginBottom: '10px'}}>
+                  // SEARCH BY NAME
+                </p>
+                <input
+                  placeholder="// SEARCH GROUP NAME..."
+                  value={groupSearch}
+                  onChange={e => searchGroups(e.target.value)}
+                  style={{
+                    width: '100%',
+                    background: '#080818',
+                    border: '1px solid rgba(0,255,255,0.2)',
+                    borderRadius: '6px',
+                    color: '#e2e8f0',
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    padding: '10px 14px',
+                    outline: 'none',
+                    marginBottom: '10px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {searching && (
+                  <div style={{display: 'flex', justifyContent: 'center', padding: '16px'}}>
+                    <div style={{width: '24px', height: '24px', border: '2px solid rgba(0,255,255,0.1)', borderTop: '2px solid #00ffff', borderRadius: '50%', animation: 'spin 1s linear infinite'}}/>
+                  </div>
+                )}
+                <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
                   {searchResults.map(group => (
-                    <div key={group.id} className="flex items-center gap-3 p-3 bg-gray-950 border border-gray-800 hover:border-red-500/40 rounded-xl transition">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center font-black">
+                    <div key={group.id}
+                      className="group-row"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 14px',
+                        background: '#080818',
+                        border: '1px solid rgba(0,255,255,0.1)',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s'
+                      }}>
+                      <div style={{
+                        width: '38px', height: '38px',
+                        background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontFamily: "'Orbitron', sans-serif",
+                        fontWeight: '900',
+                        fontSize: '14px',
+                        color: 'white',
+                        flexShrink: 0
+                      }}>
                         {group.name?.[0]?.toUpperCase()}
                       </div>
-                      <div className="flex-1">
-                        <p className="font-black text-sm text-white">{group.name}</p>
-                        <p className="text-xs text-gray-600">{group.description || 'No description'}</p>
-                        <p className="text-xs text-red-400 font-black tracking-widest mt-0.5">CODE: {group.group_code}</p>
+                      <div style={{flex: 1}}>
+                        <p style={{fontFamily: "'Orbitron', sans-serif", fontWeight: '700', fontSize: '12px', color: '#e2e8f0', margin: 0}}>{group.name}</p>
+                        <p style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: 'rgba(255,255,255,0.3)', margin: 0}}>{group.description || '// no description'}</p>
+                        <p style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: '#00ffff', margin: 0, letterSpacing: '2px'}}>CODE: {group.group_code}</p>
                       </div>
-                      <button onClick={() => joinGroup(group.group_code)} disabled={joining}
-                        className="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded font-black text-xs tracking-widest transition">
-                        JOIN
-                      </button>
+                      <button
+                        onClick={() => joinGroup(group.group_code)}
+                        disabled={joining}
+                        style={{
+                          padding: '6px 14px',
+                          background: 'rgba(0,255,255,0.08)',
+                          border: '1px solid rgba(0,255,255,0.3)',
+                          borderRadius: '6px',
+                          color: '#00ffff',
+                          fontFamily: "'Orbitron', sans-serif",
+                          fontWeight: '700',
+                          fontSize: '9px',
+                          letterSpacing: '2px',
+                          cursor: 'pointer'
+                        }}>JOIN</button>
                     </div>
                   ))}
                   {groupSearch && !searching && searchResults.length === 0 && (
-                    <p className="text-center text-gray-600 font-bold text-sm py-4">No groups found</p>
+                    <p style={{textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: '11px', color: 'rgba(255,255,255,0.2)', padding: '16px'}}>
+                      // no groups found
+                    </p>
                   )}
                 </div>
               </div>

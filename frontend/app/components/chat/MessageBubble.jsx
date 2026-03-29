@@ -2,27 +2,114 @@
 
 import { timeStr } from '@/app/utils/chat';
 
-export default function MessageBubble({ msg, userId, showName = false, avatarColor = 'from-red-600 to-purple-600' }) {
+export default function MessageBubble({ msg, userId, showName = false, avatarColor = '#00ffff' }) {
   const isMe = String(msg.sender_id) === String(userId);
 
   return (
-    <div className={`flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'} ${msg.temp ? 'temp-msg' : ''}`}>
-      <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-xs flex-shrink-0 bg-gradient-to-br ${isMe ? 'from-red-600 to-red-800' : avatarColor}`}>
+    <div style={{
+      display: 'flex',
+      gap: '10px',
+      flexDirection: isMe ? 'row-reverse' : 'row',
+      opacity: msg.temp ? 0.6 : 1,
+      marginBottom: '4px'
+    }}>
+
+      {/* AVATAR */}
+      <div style={{
+        width: '32px', height: '32px',
+        borderRadius: '6px',
+        background: isMe
+          ? 'linear-gradient(135deg, #ef4444, #7c3aed)'
+          : 'linear-gradient(135deg, #1a1a3e, #0a1a3e)',
+        border: `1px solid ${isMe ? 'rgba(239,68,68,0.4)' : 'rgba(0,255,255,0.2)'}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: "'Orbitron', sans-serif",
+        fontWeight: '900',
+        fontSize: '11px',
+        color: isMe ? 'white' : '#00ffff',
+        flexShrink: 0,
+        boxShadow: isMe
+          ? '0 0 10px rgba(239,68,68,0.2)'
+          : '0 0 10px rgba(0,255,255,0.1)'
+      }}>
         {msg.sender?.name?.[0]?.toUpperCase() || '?'}
       </div>
-      <div className={`max-w-xs flex flex-col gap-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
+
+      {/* MESSAGE CONTENT */}
+      <div style={{
+        maxWidth: '65%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '3px',
+        alignItems: isMe ? 'flex-end' : 'flex-start'
+      }}>
+
+        {/* SENDER NAME */}
         {showName && !isMe && (
-          <p className="text-xs text-gray-500 font-black px-1">
+          <p style={{
+            fontFamily: "'Orbitron', sans-serif",
+            fontSize: '9px',
+            fontWeight: '700',
+            color: '#00ffff',
+            letterSpacing: '2px',
+            margin: 0,
+            paddingLeft: '4px',
+            textShadow: '0 0 8px rgba(0,255,255,0.5)'
+          }}>
             {msg.sender?.name?.toUpperCase()}
           </p>
         )}
-        <div
-          className={`px-3 py-2 rounded-xl text-sm font-medium ${isMe ? 'bg-red-600 text-white rounded-tr-none' : 'bg-gray-900 border border-gray-800 text-gray-200 rounded-tl-none'}`}
-          style={isMe ? { boxShadow: '0 0 10px rgba(239,68,68,0.3)' } : {}}>
+
+        {/* BUBBLE */}
+        <div style={{
+          padding: '8px 14px',
+          borderRadius: isMe ? '12px 2px 12px 12px' : '2px 12px 12px 12px',
+          background: isMe
+            ? 'linear-gradient(135deg, #1a0505, #2d0808)'
+            : 'linear-gradient(135deg, #05051a, #0a0820)',
+          border: isMe
+            ? '1px solid rgba(239,68,68,0.25)'
+            : '1px solid rgba(0,255,255,0.12)',
+          color: '#e2e8f0',
+          fontSize: '13px',
+          fontFamily: "'Rajdhani', sans-serif",
+          fontWeight: '600',
+          lineHeight: '1.5',
+          boxShadow: isMe
+            ? '0 0 15px rgba(239,68,68,0.08)'
+            : '0 0 15px rgba(0,255,255,0.05)',
+          position: 'relative',
+          wordBreak: 'break-word'
+        }}>
+          {/* Corner accent */}
+          <div style={{
+            position: 'absolute',
+            width: '6px', height: '6px',
+            border: isMe
+              ? '1px solid rgba(239,68,68,0.4)'
+              : '1px solid rgba(0,255,255,0.3)',
+            borderRight: 'none',
+            borderBottom: 'none',
+            top: '3px',
+            left: isMe ? 'auto' : '3px',
+            right: isMe ? '3px' : 'auto',
+            borderLeft: isMe ? 'none' : undefined,
+            borderRight: isMe ? '1px solid rgba(239,68,68,0.4)' : 'none',
+          }}/>
           {msg.message}
         </div>
-        <span className="text-xs text-gray-700 font-bold px-1">
-          {msg.temp ? '⏳' : timeStr(msg.created_at)}
+
+        {/* TIMESTAMP */}
+        <span style={{
+          fontSize: '10px',
+          color: 'rgba(0,255,255,0.25)',
+          fontFamily: "'Share Tech Mono', monospace",
+          paddingLeft: isMe ? 0 : '4px',
+          paddingRight: isMe ? '4px' : 0
+        }}>
+          {msg.temp ? '⟳ sending...' : `// ${timeStr(msg.created_at)}`}
         </span>
       </div>
     </div>

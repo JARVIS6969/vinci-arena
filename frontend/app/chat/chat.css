@@ -1,20 +1,82 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
 
-.grid-bg {
-  background-image: linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px);
+/* ============================================
+   VINCI ARENA — CYBER CHAT DESIGN SYSTEM
+   Color Psychology: Red=Power, Cyan=Tech, Purple=Prestige
+============================================ */
+
+:root {
+  --red:     #ef4444;
+  --cyan:    #00ffff;
+  --purple:  #a855f7;
+  --green:   #00ff88;
+  --bg:      #050510;
+  --bg2:     #080818;
+  --bg3:     #0a0a20;
+  --border:  rgba(0,255,255,0.15);
+  --border2: rgba(239,68,68,0.2);
+  --text:    #e2e8f0;
+  --muted:   #475569;
+}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 2px; }
+
+/* ============ CYBER GRID BACKGROUND ============ */
+.cyber-grid {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,255,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
-::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 2px; }
-
-.msg-input {
-  background: #0a0a0a;
-  border: 1px solid rgba(239,68,68,0.3);
+/* ============ CORNER BRACKETS ============ */
+.cyber-card {
+  position: relative;
+  background: var(--bg2);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  color: white;
+}
+.cyber-card::before,
+.cyber-card::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--cyan);
+  border-style: solid;
+}
+.cyber-card::before {
+  top: -1px; left: -1px;
+  border-width: 2px 0 0 2px;
+  border-radius: 2px 0 0 0;
+}
+.cyber-card::after {
+  bottom: -1px; right: -1px;
+  border-width: 0 2px 2px 0;
+  border-radius: 0 0 2px 0;
+}
+.cyber-card:hover {
+  border-color: rgba(0,255,255,0.4);
+  box-shadow: 0 0 20px rgba(0,255,255,0.05);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* ============ NEON TEXT ============ */
+.neon-red   { color: var(--red);    text-shadow: 0 0 10px rgba(239,68,68,0.8); }
+.neon-cyan  { color: var(--cyan);   text-shadow: 0 0 10px rgba(0,255,255,0.8); }
+.neon-purple{ color: var(--purple); text-shadow: 0 0 10px rgba(168,85,247,0.8); }
+
+/* ============ CYBER INPUT ============ */
+.cyber-input {
+  background: var(--bg);
+  border: 1px solid rgba(0,255,255,0.2);
+  border-radius: 6px;
+  color: var(--text);
   font-family: 'Rajdhani', sans-serif;
   font-weight: 600;
   font-size: 13px;
@@ -24,46 +86,154 @@
   resize: none;
   transition: all 0.2s;
 }
-
-.msg-input:focus {
-  border-color: rgba(239,68,68,0.7);
-  box-shadow: 0 0 10px rgba(239,68,68,0.2);
+.cyber-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 15px rgba(0,255,255,0.15), inset 0 0 10px rgba(0,255,255,0.03);
 }
+.cyber-input::placeholder { color: var(--muted); }
 
-.msg-input::placeholder { color: #374151; }
+/* alias for old class names */
 
-.temp-msg { opacity: 0.7; }
-
-.neon-input {
-  background: #0a0a0a;
-  border: 1px solid rgba(239,68,68,0.3);
-  border-radius: 8px;
-  color: white;
+.msg-input, .neon-input {
+  background: var(--bg);
+  border: 1px solid rgba(0,255,255,0.2);
+  border-radius: 6px;
+  color: var(--text);
   font-family: 'Rajdhani', sans-serif;
   font-weight: 600;
+  font-size: 13px;
   padding: 10px 14px;
   width: 100%;
   outline: none;
+  resize: none;
   transition: all 0.2s;
 }
+.msg-input:focus, .neon-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 15px rgba(0,255,255,0.15);
+}
+.msg-input::placeholder,
+.neon-input::placeholder { color: var(--muted); }
 
-.neon-input:focus {
-  border-color: rgba(239,68,68,0.7);
-  box-shadow: 0 0 10px rgba(239,68,68,0.2);
+/* ============ CYBER BUTTON ============ */
+.cyber-btn {
+  background: linear-gradient(135deg, #1a0a2e, #0a1a2e);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.cyber-btn:hover {
+  background: rgba(0,255,255,0.1);
+  box-shadow: 0 0 20px rgba(0,255,255,0.3);
+}
+.cyber-btn-red {
+  border-color: var(--red);
+  color: var(--red);
+}
+.cyber-btn-red:hover {
+  background: rgba(239,68,68,0.1);
+  box-shadow: 0 0 20px rgba(239,68,68,0.3);
+}
+.cyber-btn-solid {
+  background: var(--red);
+  border-color: var(--red);
+  color: white;
+}
+.cyber-btn-solid:hover {
+  background: #dc2626;
+  box-shadow: 0 0 20px rgba(239,68,68,0.5);
 }
 
-.neon-input::placeholder { color: #374151; }
-
-.card-hover { transition: all 0.2s ease; }
-.card-hover:hover {
-  transform: translateY(-2px);
-  border-color: rgba(239,68,68,0.5) !important;
+/* ============ MESSAGE BUBBLES ============ */
+.msg-mine {
+  background: linear-gradient(135deg, #1a0505, #2d0a0a);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px 2px 12px 12px;
+  color: var(--text);
+  box-shadow: 0 0 15px rgba(239,68,68,0.1);
+}
+.msg-theirs {
+  background: linear-gradient(135deg, #050a1a, #0a0520);
+  border: 1px solid rgba(0,255,255,0.15);
+  border-radius: 2px 12px 12px 12px;
+  color: var(--text);
 }
 
-.pulse-dot { animation: pulseDot 2s infinite; }
+/* ============ STATUS INDICATORS ============ */
+.status-online  { color: var(--green);  }
+.status-offline { color: var(--muted);  }
+.status-ingame  { color: var(--purple); }
+
+.pulse-online {
+  animation: pulseOnline 2s infinite;
+}
+@keyframes pulseOnline {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+  50% { opacity: 0.8; transform: scale(1.2); box-shadow: 0 0 0 4px rgba(0,255,136,0); }
+}
+
+.pulse-dot {
+  animation: pulseDot 2s infinite;
+}
 @keyframes pulseDot {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.3); }
 }
 
-.temp-msg { opacity: 0.7; }
+/* ============ SCAN LINE EFFECT ============ */
+.scan-line {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,255,255,0.01) 2px,
+    rgba(0,255,255,0.01) 4px
+  );
+}
+
+/* ============ TYPING INDICATOR ============ */
+.typing-dot {
+  width: 6px; height: 6px;
+  background: var(--cyan);
+  border-radius: 50%;
+  display: inline-block;
+  animation: typingBounce 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ============ TEMP MESSAGE ============ */
+.temp-msg { opacity: 0.6; }
+
+/* ============ CARD HOVER ============ */
+.card-hover { transition: all 0.2s ease; }
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0,255,255,0.4) !important;
+}
+
+/* ============ CYBER SEPARATOR ============ */
+.cyber-sep {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.3;
+  margin: 8px 0;
+}
+
+/* ============ GLOW EFFECTS ============ */
+.glow-red  { box-shadow: 0 0 20px rgba(239,68,68,0.4); }
+.glow-cyan { box-shadow: 0 0 20px rgba(0,255,255,0.4); }
+.glow-purple { box-shadow: 0 0 20px rgba(168,85,247,0.4); }

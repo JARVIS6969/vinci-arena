@@ -8,44 +8,244 @@ export default function ChatSidebar({ conversations, activeId, type }) {
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
 
   return (
-    <div className="w-64 bg-black border-r border-red-500/20 flex flex-col">
-      <div className="p-3 border-b border-red-500/20">
-        <button onClick={() => router.push('/dashboard')} className="text-red-400 hover:text-red-300 font-bold text-sm mb-2">← BACK</button>
-        <p className="text-xs font-black tracking-widest text-red-500" style={{fontFamily: "'Orbitron', sans-serif"}}>// MESSAGES</p>
+    <div style={{
+      width: '260px',
+      background: '#050510',
+      borderRight: '1px solid rgba(0,255,255,0.1)',
+      display: 'flex',
+      flexDirection: 'column',
+      flexShrink: 0
+    }}>
+
+      {/* HEADER */}
+      <div style={{
+        padding: '12px 14px',
+        borderBottom: '1px solid rgba(0,255,255,0.1)',
+        background: 'linear-gradient(135deg, #080818, #050510)'
+      }}>
+        <button
+          onClick={() => router.push('/dashboard')}
+          style={{
+            color: '#00ffff',
+            background: 'transparent',
+            border: 'none',
+            fontFamily: "'Orbitron', sans-serif",
+            fontSize: '10px',
+            fontWeight: '700',
+            letterSpacing: '2px',
+            cursor: 'pointer',
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            opacity: 0.7,
+            transition: 'opacity 0.2s'
+          }}
+          onMouseEnter={e => e.target.style.opacity = 1}
+          onMouseLeave={e => e.target.style.opacity = 0.7}
+        >
+          ← BACK
+        </button>
+        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+          <div style={{
+            width: '6px', height: '6px',
+            background: '#00ffff',
+            borderRadius: '50%',
+            boxShadow: '0 0 8px #00ffff'
+          }}/>
+          <p style={{
+            fontFamily: "'Orbitron', sans-serif",
+            fontSize: '11px',
+            fontWeight: '900',
+            color: '#00ffff',
+            letterSpacing: '3px',
+            textShadow: '0 0 10px rgba(0,255,255,0.5)',
+            margin: 0
+          }}>MESSAGES</p>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2">
-        <p className="text-xs font-black tracking-widest text-gray-600 mb-2 px-2">DIRECT MESSAGES</p>
+      {/* CONVERSATIONS LIST */}
+      <div style={{flex: 1, overflowY: 'auto', padding: '8px'}}>
+
+        {/* DMs SECTION */}
+        <div style={{
+          fontSize: '9px',
+          fontFamily: "'Orbitron', sans-serif",
+          color: 'rgba(0,255,255,0.4)',
+          letterSpacing: '3px',
+          padding: '8px 8px 4px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <div style={{flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(0,255,255,0.3), transparent)'}}/>
+          DM
+          <div style={{flex: 1, height: '1px', background: 'linear-gradient(270deg, rgba(0,255,255,0.3), transparent)'}}/>
+        </div>
+
         {conversations.dms?.map(dm => {
           const other = dm.user1_id === userId ? dm.user2 : dm.user1;
           const isActive = type === 'dm' && dm.id === activeId;
           return (
             <Link key={dm.id} href={`/chat/dm/${dm.id}`}>
-              <div className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer mb-1 transition border ${isActive ? 'bg-red-600/20 border-red-500/40' : 'hover:bg-gray-900 border-transparent'}`}>
-                <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-purple-600 rounded-full flex items-center justify-center font-black text-xs flex-shrink-0">
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                marginBottom: '2px',
+                cursor: 'pointer',
+                background: isActive ? 'rgba(239,68,68,0.1)' : 'transparent',
+                border: isActive ? '1px solid rgba(239,68,68,0.3)' : '1px solid transparent',
+                transition: 'all 0.2s',
+                position: 'relative'
+              }}
+              onMouseEnter={e => { if(!isActive) e.currentTarget.style.background = 'rgba(0,255,255,0.05)' }}
+              onMouseLeave={e => { if(!isActive) e.currentTarget.style.background = 'transparent' }}>
+                {isActive && <div style={{
+                  position: 'absolute',
+                  left: 0, top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '3px', height: '60%',
+                  background: '#ef4444',
+                  borderRadius: '0 2px 2px 0',
+                  boxShadow: '0 0 8px #ef4444'
+                }}/>}
+                <div style={{
+                  width: '32px', height: '32px',
+                  background: isActive
+                    ? 'linear-gradient(135deg, #ef4444, #7c3aed)'
+                    : 'linear-gradient(135deg, #1a1a3e, #0a0a2e)',
+                  border: `1px solid ${isActive ? 'rgba(239,68,68,0.5)' : 'rgba(0,255,255,0.2)'}`,
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontWeight: '900',
+                  fontSize: '12px',
+                  color: isActive ? 'white' : '#00ffff',
+                  flexShrink: 0
+                }}>
                   {other?.name?.[0]?.toUpperCase() || '?'}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-xs text-white truncate">{other?.name?.toUpperCase() || 'UNKNOWN'}</p>
-                  <p className="text-xs text-gray-600 truncate">{dm.last_message || 'No messages'}</p>
+                <div style={{flex: 1, minWidth: 0}}>
+                  <p style={{
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: '700',
+                    fontSize: '12px',
+                    color: isActive ? '#ef4444' : '#e2e8f0',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: '1px'
+                  }}>{other?.name?.toUpperCase() || 'UNKNOWN'}</p>
+                  <p style={{
+                    fontSize: '10px',
+                    color: 'rgba(0,255,255,0.3)',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    fontFamily: "'Share Tech Mono', monospace"
+                  }}>{dm.last_message || '// no messages'}</p>
                 </div>
+                {/* Online dot */}
+                <div style={{
+                  width: '6px', height: '6px',
+                  background: '#00ff88',
+                  borderRadius: '50%',
+                  boxShadow: '0 0 6px #00ff88',
+                  flexShrink: 0
+                }}/>
               </div>
             </Link>
           );
         })}
 
-        <p className="text-xs font-black tracking-widest text-gray-600 mb-2 px-2 mt-4">GROUPS</p>
+        {/* GROUPS SECTION */}
+        <div style={{
+          fontSize: '9px',
+          fontFamily: "'Orbitron', sans-serif",
+          color: 'rgba(168,85,247,0.4)',
+          letterSpacing: '3px',
+          padding: '12px 8px 4px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <div style={{flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(168,85,247,0.3), transparent)'}}/>
+          GROUPS
+          <div style={{flex: 1, height: '1px', background: 'linear-gradient(270deg, rgba(168,85,247,0.3), transparent)'}}/>
+        </div>
+
         {conversations.groups?.map(group => {
           const isActive = type === 'group' && group.id === activeId;
           return (
             <Link key={group.id} href={`/chat/group/${group.id}`}>
-              <div className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer mb-1 transition border ${isActive ? 'bg-red-600/20 border-red-500/40' : 'hover:bg-gray-900 border-transparent'}`}>
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center font-black text-xs flex-shrink-0">
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                marginBottom: '2px',
+                cursor: 'pointer',
+                background: isActive ? 'rgba(168,85,247,0.1)' : 'transparent',
+                border: isActive ? '1px solid rgba(168,85,247,0.3)' : '1px solid transparent',
+                transition: 'all 0.2s',
+                position: 'relative'
+              }}
+              onMouseEnter={e => { if(!isActive) e.currentTarget.style.background = 'rgba(168,85,247,0.05)' }}
+              onMouseLeave={e => { if(!isActive) e.currentTarget.style.background = 'transparent' }}>
+                {isActive && <div style={{
+                  position: 'absolute',
+                  left: 0, top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '3px', height: '60%',
+                  background: '#a855f7',
+                  borderRadius: '0 2px 2px 0',
+                  boxShadow: '0 0 8px #a855f7'
+                }}/>}
+                <div style={{
+                  width: '32px', height: '32px',
+                  background: isActive
+                    ? 'linear-gradient(135deg, #7c3aed, #2563eb)'
+                    : 'linear-gradient(135deg, #1a0a2e, #0a0a2e)',
+                  border: `1px solid ${isActive ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.2)'}`,
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontWeight: '900',
+                  fontSize: '12px',
+                  color: isActive ? 'white' : '#a855f7',
+                  flexShrink: 0
+                }}>
                   {group.name?.[0]?.toUpperCase() || '?'}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-xs text-white truncate">{group.name?.toUpperCase()}</p>
-                  <p className="text-xs text-gray-600">Group</p>
+                <div style={{flex: 1, minWidth: 0}}>
+                  <p style={{
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: '700',
+                    fontSize: '12px',
+                    color: isActive ? '#a855f7' : '#e2e8f0',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: '1px'
+                  }}>{group.name?.toUpperCase()}</p>
+                  <p style={{
+                    fontSize: '10px',
+                    color: 'rgba(168,85,247,0.4)',
+                    margin: 0,
+                    fontFamily: "'Share Tech Mono', monospace"
+                  }}>// group chat</p>
                 </div>
               </div>
             </Link>
@@ -53,9 +253,37 @@ export default function ChatSidebar({ conversations, activeId, type }) {
         })}
       </div>
 
-      <div className="p-3 border-t border-red-500/20">
+      {/* NEW CHAT BUTTON */}
+      <div style={{
+        padding: '12px',
+        borderTop: '1px solid rgba(0,255,255,0.1)'
+      }}>
         <Link href="/chat/new">
-          <button className="w-full bg-red-600 hover:bg-red-500 text-white py-2 rounded font-black text-xs tracking-widest transition">+ NEW CHAT</button>
+          <button style={{
+            width: '100%',
+            padding: '10px',
+            background: 'linear-gradient(135deg, #0a0a20, #150520)',
+            border: '1px solid rgba(0,255,255,0.3)',
+            borderRadius: '6px',
+            color: '#00ffff',
+            fontFamily: "'Orbitron', sans-serif",
+            fontWeight: '700',
+            fontSize: '10px',
+            letterSpacing: '3px',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            textShadow: '0 0 10px rgba(0,255,255,0.5)'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(0,255,255,0.08)'
+            e.currentTarget.style.boxShadow = '0 0 20px rgba(0,255,255,0.2)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'linear-gradient(135deg, #0a0a20, #150520)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}>
+            + NEW CHAT
+          </button>
         </Link>
       </div>
     </div>
