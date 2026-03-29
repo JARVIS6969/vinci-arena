@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { io } from 'socket.io-client';
-import { API_URL, getToken, getUserId, fetchConversations, handleKeyPress } from '@/app/utils/chat';
+import {
+  API_URL, getToken, getUserId,
+  fetchConversations, handleKeyPress,
+  emitTypingStart, emitTypingStop, getParticles
+} from '@/app/utils/chat';
 import ChatSidebar from '@/app/components/chat/ChatSidebar';
 import MessageBubble from '@/app/components/chat/MessageBubble';
 import '@/app/chat/chat.css';
@@ -19,15 +23,23 @@ export default function DMChatPage() {
   const [sending, setSending] = useState(false);
   const [otherUser, setOtherUser] = useState(null);
   const [conversations, setConversations] = useState({ dms: [], groups: [] });
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState('');
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const roomIdRef = useRef(null);
   const userId = getUserId();
+  const userName = typeof window !== 'undefined' ? localStorage.getItem('userName') : '';
+  const particles = useMemo(() => getParticles(10), []);
 
   useEffect(() => {
     loadConversations();
     const socket = io(API_URL);
     socketRef.current = socket;
+
     socket.on('connect', () => socket.emit('join', userId));
+
     socket.on('new_message', (msg) => {
       setMessages(prev => {
         const updated = [...prev, msg];
@@ -35,6 +47,17 @@ export default function DMChatPage() {
         return updated;
       });
     });
+
+    socket.on('typing_start', ({ userName: name }) => {
+      setTypingUser(name);
+      setIsTyping(true);
+    });
+
+    socket.on('typing_stop', () => {
+      setIsTyping(false);
+      setTypingUser('');
+    });
+
     return () => socket.disconnect();
   }, []);
 
@@ -47,6 +70,7 @@ export default function DMChatPage() {
         const otherId = dm.user1_id === userId ? dm.user2_id : dm.user1_id;
         if (socketRef.current) {
           const roomId = [userId, otherId].sort().join('_');
+          roomIdRef.current = roomId;
           socketRef.current.emit('join_room', roomId);
         }
         if (messageCache.has(params.id)) {
@@ -83,22 +107,43 @@ export default function DMChatPage() {
     finally { setLoading(false); }
   };
 
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+
+    // Emit typing start
+    emitTypingStart(socketRef.current, roomIdRef.current, userName);
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    // Stop typing after 2 seconds of no input
+    typingTimeoutRef.current = setTimeout(() => {
+      emitTypingStop(socketRef.current, roomIdRef.current, userName);
+    }, 2000);
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim() || sending) return;
     const dm = conversations.dms?.find(d => d.id === params.id);
     if (!dm) return;
     const otherId = dm.user1_id === userId ? dm.user2_id : dm.user1_id;
+
+    // Stop typing
+    emitTypingStop(socketRef.current, roomIdRef.current, userName);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
     const optimisticMsg = {
       id: `temp_${Date.now()}`,
       message: newMessage,
       sender_id: userId,
-      sender: { name: localStorage.getItem('userName') },
+      sender: { name: userName },
       created_at: new Date().toISOString(),
       temp: true
     };
     setMessages(prev => [...prev, optimisticMsg]);
     setNewMessage('');
     setSending(true);
+
     try {
       const res = await fetch(`${API_URL}/api/chat/messages`, {
         method: 'POST',
@@ -126,6 +171,22 @@ export default function DMChatPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes floatUp {
+          0%   { transform: translateY(0) translateX(0); opacity: 0; }
+          10%  { opacity: 0.5; }
+          90%  { opacity: 0.2; }
+          100% { transform: translateY(-100vh) translateX(15px); opacity: 0; }
+        }
+        @keyframes scanLine {
+          0%   { top: 0%; opacity: 0; }
+          5%   { opacity: 1; }
+          95%  { opacity: 0.3; }
+          100% { top: 100%; opacity: 0; }
+        }
+        @keyframes typingBounce {
+          0%, 100% { transform: translateY(0); opacity: 0.3; }
+          50%       { transform: translateY(-4px); opacity: 1; }
+        }
         .cyber-grid {
           background-image:
             linear-gradient(rgba(0,255,255,0.02) 1px, transparent 1px),
@@ -136,6 +197,11 @@ export default function DMChatPage() {
         ::-webkit-scrollbar-track { background: #050510; }
         ::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 2px; }
         textarea { font-family: 'Rajdhani', sans-serif !important; }
+        .msg-enter { animation: msgSlideIn 0.2s ease-out forwards; }
+        @keyframes msgSlideIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
 
       {/* SIDEBAR */}
@@ -154,9 +220,13 @@ export default function DMChatPage() {
           padding: '0 16px',
           gap: '12px',
           boxShadow: '0 0 20px rgba(0,255,255,0.05)',
-          flexShrink: 0
+          flexShrink: 0,
+          position: 'relative',
+          overflow: 'hidden'
         }}>
-          {/* Avatar */}
+          {/* Scan beam */}
+          <div className="scan-beam" style={{animationDuration: '10s'}}/>
+
           <div style={{
             width: '36px', height: '36px',
             background: 'linear-gradient(135deg, #ef4444, #7c3aed)',
@@ -188,7 +258,8 @@ export default function DMChatPage() {
                 width: '6px', height: '6px',
                 background: '#00ff88',
                 borderRadius: '50%',
-                boxShadow: '0 0 6px #00ff88'
+                boxShadow: '0 0 6px #00ff88',
+                animation: 'pulse 2s infinite'
               }}/>
               <span style={{
                 fontFamily: "'Share Tech Mono', monospace",
@@ -199,7 +270,6 @@ export default function DMChatPage() {
             </div>
           </div>
 
-          {/* Decorative */}
           <div style={{
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: '10px',
@@ -208,43 +278,94 @@ export default function DMChatPage() {
           }}>// DM CHANNEL</div>
         </div>
 
-        {/* MESSAGES */}
+        {/* MESSAGES AREA */}
         <div className="cyber-grid" style={{
           flex: 1,
           overflowY: 'auto',
           padding: '20px 16px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px'
+          gap: '8px',
+          position: 'relative'
         }}>
+          {/* Floating particles */}
+          {particles.map(p => (
+            <div key={p.id} style={{
+              position: 'fixed',
+              left: p.left,
+              bottom: '0',
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              borderRadius: '50%',
+              background: p.color,
+              boxShadow: `0 0 4px ${p.color}`,
+              animation: `floatUp ${p.duration} ${p.delay} linear infinite`,
+              pointerEvents: 'none',
+              zIndex: 0,
+              opacity: 0
+            }}/>
+          ))}
+
           {loading ? (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px'}}>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', zIndex: 1}}>
               <div style={{width: '32px', height: '32px', border: '2px solid rgba(0,255,255,0.1)', borderTop: '2px solid #00ffff', borderRadius: '50%', animation: 'spin 1s linear infinite'}}/>
               <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px', color: 'rgba(0,255,255,0.4)', letterSpacing: '3px'}}>LOADING...</p>
             </div>
           ) : messages.length === 0 ? (
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px'}}>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', zIndex: 1}}>
               <div style={{fontSize: '40px'}}>💬</div>
               <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '11px', color: 'rgba(0,255,255,0.3)', letterSpacing: '3px'}}>NO MESSAGES YET</p>
               <p style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: 'rgba(255,255,255,0.2)'}}>// initiate communication</p>
             </div>
-          ) : messages.map((msg) => (
-            <MessageBubble key={msg.id} msg={msg} userId={userId} showName={false} />
-          ))}
+          ) : (
+            <div style={{zIndex: 1, display: 'flex', flexDirection: 'column', gap: '8px'}}>
+              {messages.map((msg, i) => (
+                <div key={msg.id} className="msg-enter" style={{animationDelay: `${i * 0.02}s`}}>
+                  <MessageBubble msg={msg} userId={userId} showName={false} />
+                </div>
+              ))}
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* INPUT */}
+        {/* INPUT AREA */}
         <div style={{
-          padding: '12px 16px',
+          padding: '10px 16px 12px',
           borderTop: '1px solid rgba(0,255,255,0.1)',
           background: 'linear-gradient(135deg, #080818, #050510)',
           flexShrink: 0
         }}>
+          {/* Typing Indicator */}
+          <div style={{height: '20px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px'}}>
+            {isTyping && (
+              <>
+                <div style={{display: 'flex', gap: '3px', alignItems: 'center'}}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{
+                      width: '4px', height: '4px',
+                      borderRadius: '50%',
+                      background: '#00ffff',
+                      boxShadow: '0 0 4px #00ffff',
+                      animation: `typingBounce 1.2s ease-in-out infinite`,
+                      animationDelay: `${i * 0.15}s`
+                    }}/>
+                  ))}
+                </div>
+                <span style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: '10px',
+                  color: 'rgba(0,255,255,0.5)',
+                  letterSpacing: '1px'
+                }}>{typingUser} is typing...</span>
+              </>
+            )}
+          </div>
+
           <div style={{display: 'flex', gap: '10px', alignItems: 'flex-end'}}>
             <textarea
               value={newMessage}
-              onChange={e => setNewMessage(e.target.value)}
+              onChange={handleTyping}
               onKeyDown={e => handleKeyPress(e, sendMessage)}
               placeholder={`// MESSAGE ${otherUser?.name?.toUpperCase() || ''}...`}
               rows={1}
@@ -291,7 +412,7 @@ export default function DMChatPage() {
           <p style={{
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: '10px',
-            color: 'rgba(0,255,255,0.2)',
+            color: 'rgba(0,255,255,0.15)',
             margin: '6px 0 0',
             letterSpacing: '1px'
           }}>// ENTER to send · SHIFT+ENTER new line</p>
