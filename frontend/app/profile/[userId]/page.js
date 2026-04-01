@@ -243,7 +243,7 @@ export default function PublicProfilePage() {
         fetch(`http://localhost:3001/api/profiles/user/${params.userId}/games`,{headers:h}),
         fetch(`http://localhost:3001/api/profiles/user/${params.userId}/stats`,{headers:h}),
       ]);
-      if(!pR.ok){setNotFound(true);return;}
+      if(!pR.ok && pR.status !== 404){setNotFound(true);return;}
       const [p,g,s]=await Promise.all([pR.json(),gR.json(),sR.json()]);
       setProfile(p);setGames(g||[]);setAllStats(s||[]);
       if(g?.length>0)setActiveGame(g[0].game);

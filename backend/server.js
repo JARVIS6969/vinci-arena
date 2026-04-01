@@ -235,7 +235,27 @@ app.get('/api/profiles/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const { data, error } = await supabase.from('player_profiles').select('*, player_stats(*)').eq('user_id', userId).single();
-    if (error) throw error;
+    if (error || !data) {
+      const { data: user } = await supabase
+        .from('users')
+        .select('id, name, email')
+        .eq('id', userId)
+        .single();
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      return res.json({
+        display_name: user.name,
+        bio: '',
+        tagline: '',
+        avatar_url: '',
+        banner_url: '',
+        country: '',
+        looking_for: '',
+        achievements: [],
+        gameplay_clips: [],
+        userName: user.name,
+        no_profile: true
+      });
+    }
     const { data: achs } = await supabase.from('achievements').select('*').eq('profile_id', data.id);
     const { data: clips } = await supabase.from('gameplay_clips').select('*').eq('profile_id', data.id);
     data.achievements = achs || [];
