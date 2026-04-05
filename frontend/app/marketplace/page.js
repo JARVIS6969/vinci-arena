@@ -78,27 +78,25 @@ export default function MarketplacePage() {
   };
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col overflow-hidden" style={{fontFamily: "'Rajdhani', 'Orbitron', sans-serif"}}>
-
+    <div style={{
+      height: 'calc(100vh - 104px)',
+      marginTop: '104px',
+      background: '#07070f',
+      color: 'white',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      fontFamily: "'Rajdhani', 'Orbitron', sans-serif"
+    }}>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; }
         ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 2px; }
-        .neon-red { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444, 0 0 40px #ef4444; }
         .neon-border { box-shadow: 0 0 10px rgba(239,68,68,0.3), inset 0 0 10px rgba(239,68,68,0.05); }
         .neon-border-active { box-shadow: 0 0 15px rgba(239,68,68,0.6), 0 0 30px rgba(239,68,68,0.3), inset 0 0 15px rgba(239,68,68,0.1); }
-        .grid-bg { background-image: linear-gradient(rgba(239,68,68,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px); background-size: 40px 40px; }
-        .scan-line { background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(239,68,68,0.015) 2px, rgba(239,68,68,0.015) 4px); }
         .card-hover { transition: all 0.2s ease; }
         .card-hover:hover { transform: translateY(-2px); }
-        .glitch { animation: glitch 3s infinite; }
-        @keyframes glitch {
-          0%, 90%, 100% { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
-          92% { text-shadow: -2px 0 #00ffff, 2px 0 #ef4444; }
-          94% { text-shadow: 2px 0 #00ffff, -2px 0 #ef4444; }
-          96% { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
-        }
         .pulse-dot { animation: pulseDot 2s infinite; }
         @keyframes pulseDot {
           0%, 100% { opacity: 1; transform: scale(1); }
@@ -106,99 +104,190 @@ export default function MarketplacePage() {
         }
       `}</style>
 
-      {/* TOP BAR */}
-      <div className="h-14 bg-black border-b border-red-500/30 flex items-center px-4 z-50 relative" style={{boxShadow: '0 0 20px rgba(239,68,68,0.2)'}}>
-        <div className="absolute inset-0 scan-line pointer-events-none opacity-50" />
-        <div className="flex items-center gap-3 flex-1">
-          <button onClick={() => router.push('/esports')} className="text-red-400 hover:text-red-300 transition font-bold text-lg mr-1">←</button>
-          <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center" style={{boxShadow: '0 0 15px rgba(239,68,68,0.7)'}}>
-            <span className="text-sm">⚡</span>
-          </div>
-          <h1 className="text-base font-black tracking-widest glitch" style={{fontFamily: "'Orbitron', sans-serif", color: '#ef4444'}}>VINCI MARKET</h1>
-          <div className="ml-2 flex items-center gap-1">
-            <span className="w-2 h-2 bg-green-400 rounded-full pulse-dot inline-block" />
-            <span className="text-xs text-green-400 font-bold">{jobs.length} LIVE</span>
-          </div>
+      {/* SUB HEADER */}
+      <div style={{
+        background: '#080810',
+        borderBottom: '1px solid rgba(239,68,68,0.2)',
+        padding: '8px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        flexShrink: 0
+      }}>
+        <div style={{flex: 1, maxWidth: '480px', position: 'relative'}}>
+          <span style={{position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#ef4444'}}>🔍</span>
+          <input
+            type="text"
+            placeholder="SEARCH OPPORTUNITIES..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              background: '#0a0a0a',
+              border: '1px solid rgba(239,68,68,0.3)',
+              borderRadius: '6px',
+              paddingLeft: '32px',
+              paddingRight: '12px',
+              paddingTop: '7px',
+              paddingBottom: '7px',
+              color: 'white',
+              fontSize: '11px',
+              fontFamily: "'Rajdhani', sans-serif",
+              fontWeight: '700',
+              letterSpacing: '1px',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
+          />
         </div>
-        <div className="flex-1 max-w-md mx-4">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-red-500 text-sm">🔍</span>
-            <input
-              type="text"
-              placeholder="SEARCH OPPORTUNITIES..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-950 border border-red-500/30 rounded pl-9 pr-4 py-2 text-xs font-bold tracking-wider text-white placeholder-gray-600 focus:outline-none focus:border-red-500 transition"
-              style={{fontFamily: "'Rajdhani', sans-serif"}}
-            />
-          </div>
+        <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+          <span style={{width: '8px', height: '8px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 6px #4ade80', display: 'inline-block'}}/>
+          <span style={{color: '#4ade80', fontSize: '11px', fontWeight: '700', fontFamily: "'Orbitron', sans-serif", letterSpacing: '2px'}}>{jobs.length} LIVE</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div style={{marginLeft: 'auto', display: 'flex', gap: '8px'}}>
           <Link href="/marketplace/my-applications">
-            <button className="bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-red-500/50 text-gray-300 hover:text-white px-3 py-1.5 rounded font-bold text-xs tracking-wider transition">
-              📋 MY ACTIVITY
-            </button>
+            <button style={{
+              background: '#0a0a0a',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '6px',
+              color: '#9ca3af',
+              padding: '7px 14px',
+              fontFamily: "'Orbitron', sans-serif",
+              fontWeight: '700',
+              fontSize: '10px',
+              letterSpacing: '2px',
+              cursor: 'pointer'
+            }}>📋 MY ACTIVITY</button>
           </Link>
           <Link href="/marketplace/post">
-            <button className="bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded font-black text-xs tracking-widest transition" style={{boxShadow: '0 0 15px rgba(239,68,68,0.5)'}}>
-              + POST JOB
-            </button>
+            <button style={{
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              border: 'none',
+              borderRadius: '6px',
+              color: 'white',
+              padding: '7px 16px',
+              fontFamily: "'Orbitron', sans-serif",
+              fontWeight: '900',
+              fontSize: '10px',
+              letterSpacing: '2px',
+              cursor: 'pointer',
+              boxShadow: '0 0 15px rgba(239,68,68,0.4)'
+            }}>+ POST JOB</button>
           </Link>
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden grid-bg">
+      {/* MAIN CONTENT */}
+      <div style={{flex: 1, display: 'flex', overflow: 'hidden'}}>
+
         {/* LEFT SIDEBAR */}
-        <div className="w-56 bg-black border-r border-red-500/20 flex flex-col overflow-hidden">
-          <div className="p-3 border-b border-red-500/20">
-            <p className="text-xs font-black tracking-widest text-red-500/70 mb-2" style={{fontFamily: "'Orbitron', sans-serif"}}>// GAMES</p>
-            <div className="space-y-0.5">
+        <div style={{
+          width: '224px',
+          background: '#07070f',
+          borderRight: '1px solid rgba(239,68,68,0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          flexShrink: 0
+        }}>
+          <div style={{padding: '12px', borderBottom: '1px solid rgba(239,68,68,0.15)'}}>
+            <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(239,68,68,0.7)', letterSpacing: '3px', marginBottom: '8px'}}>//  GAMES</p>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '2px'}}>
               {games.map((game) => (
                 <button key={game.id} onClick={() => setActiveGame(game.id)}
-                  className={`w-full text-left px-3 py-2 rounded font-bold text-xs tracking-wider transition flex items-center gap-2 ${
-                    activeGame === game.id ? 'bg-red-600/20 border border-red-500/60 text-red-300' : 'text-gray-500 hover:bg-gray-900 hover:text-gray-300 border border-transparent'
-                  }`}>
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontFamily: "'Rajdhani', sans-serif",
+                    fontWeight: '700',
+                    fontSize: '11px',
+                    letterSpacing: '1px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: activeGame === game.id ? 'rgba(239,68,68,0.15)' : 'transparent',
+                    border: activeGame === game.id ? '1px solid rgba(239,68,68,0.5)' : '1px solid transparent',
+                    color: activeGame === game.id ? '#fca5a5' : '#6b7280',
+                    transition: 'all 0.2s'
+                  }}>
                   <span>{game.icon}</span>
                   <span>{game.name.toUpperCase()}</span>
-                  {activeGame === game.id && <span className="ml-auto text-red-500">▶</span>}
+                  {activeGame === game.id && <span style={{marginLeft: 'auto', color: '#ef4444'}}>▶</span>}
                 </button>
               ))}
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-3">
-            <p className="text-xs font-black tracking-widest text-red-500/70 mb-2" style={{fontFamily: "'Orbitron', sans-serif"}}>// ROLES</p>
-            <div className="space-y-0.5">
+
+          <div style={{flex: 1, overflowY: 'auto', padding: '12px'}}>
+            <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(239,68,68,0.7)', letterSpacing: '3px', marginBottom: '8px'}}>//  ROLES</p>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '2px'}}>
               {categories.map((cat) => {
                 const count = cat.id === 'all' ? jobs.length : jobs.filter(j => j.job_type === cat.id).length;
                 return (
                   <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                    className={`w-full text-left px-3 py-2 rounded font-bold text-xs tracking-wider transition border ${
-                      activeCategory === cat.id ? 'bg-red-600/20 border-red-500/60 text-white' : 'text-gray-500 hover:bg-gray-900 hover:text-gray-300 border-transparent'
-                    }`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span>{cat.icon}</span>
-                        <span>{cat.name.toUpperCase()}</span>
-                      </div>
-                      {count > 0 && (
-                        <span className={`text-xs px-1.5 py-0.5 rounded font-black ${activeCategory === cat.id ? 'bg-red-500 text-white' : 'bg-gray-800 text-gray-400'}`}>{count}</span>
-                      )}
-                    </div>
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      fontFamily: "'Rajdhani', sans-serif",
+                      fontWeight: '700',
+                      fontSize: '11px',
+                      letterSpacing: '1px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: activeCategory === cat.id ? 'rgba(239,68,68,0.15)' : 'transparent',
+                      border: activeCategory === cat.id ? '1px solid rgba(239,68,68,0.5)' : '1px solid transparent',
+                      color: activeCategory === cat.id ? 'white' : '#6b7280',
+                      transition: 'all 0.2s'
+                    }}>
+                    <span>{cat.icon}</span>
+                    <span style={{flex: 1}}>{cat.name.toUpperCase()}</span>
+                    {count > 0 && (
+                      <span style={{
+                        fontSize: '10px',
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        fontWeight: '900',
+                        background: activeCategory === cat.id ? '#ef4444' : '#1f2937',
+                        color: activeCategory === cat.id ? 'white' : '#6b7280'
+                      }}>{count}</span>
+                    )}
                   </button>
                 );
               })}
             </div>
           </div>
-          <div className="p-3 border-t border-red-500/20 bg-black">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-purple-600 rounded flex items-center justify-center font-black text-sm" style={{boxShadow: '0 0 10px rgba(239,68,68,0.4)'}}>
+
+          {/* USER */}
+          <div style={{padding: '12px', borderTop: '1px solid rgba(239,68,68,0.15)', background: '#050508'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <div style={{
+                width: '32px', height: '32px',
+                background: 'linear-gradient(135deg, #ef4444, #7c3aed)',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: "'Orbitron', sans-serif",
+                fontWeight: '900',
+                fontSize: '13px',
+                color: 'white',
+                boxShadow: '0 0 10px rgba(239,68,68,0.4)',
+                flexShrink: 0
+              }}>
                 {userName[0]?.toUpperCase()}
               </div>
               <div>
-                <p className="font-black text-xs tracking-wider text-white">{userName.toUpperCase()}</p>
-                <div className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full pulse-dot" />
-                  <span className="text-xs text-green-400 font-bold">ONLINE</span>
+                <p style={{fontFamily: "'Orbitron', sans-serif", fontWeight: '900', fontSize: '11px', color: 'white', letterSpacing: '1px', margin: 0}}>{userName.toUpperCase()}</p>
+                <div style={{display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px'}}>
+                  <span className="pulse-dot" style={{width: '6px', height: '6px', background: '#4ade80', borderRadius: '50%', display: 'inline-block'}}/>
+                  <span style={{fontSize: '10px', color: '#4ade80', fontWeight: '700'}}>ONLINE</span>
                 </div>
               </div>
             </div>
@@ -206,112 +295,135 @@ export default function MarketplacePage() {
         </div>
 
         {/* CENTER FEED */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-gray-950/30">
-          <div className="px-4 py-2 border-b border-red-500/20 flex items-center justify-between bg-black/50">
-            <div className="flex items-center gap-2">
-              <span className="text-red-500 font-black text-xs tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>
-                ⚡ {activeCategory === 'all' ? 'ALL OPPORTUNITIES' : activeCategory.toUpperCase().replace('_', ' ')}
-              </span>
-              <span className="text-gray-600 text-xs">— {filteredJobs.length} results</span>
-            </div>
+        <div style={{flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'rgba(10,10,20,0.5)'}}>
+          <div style={{
+            padding: '8px 16px',
+            borderBottom: '1px solid rgba(239,68,68,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(0,0,0,0.3)',
+            flexShrink: 0
+          }}>
+            <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px', fontWeight: '900', color: '#ef4444', letterSpacing: '2px'}}>
+              ⚡ {activeCategory === 'all' ? 'ALL OPPORTUNITIES' : activeCategory.toUpperCase().replace('_', ' ')}
+            </span>
+            <span style={{fontSize: '11px', color: '#4b5563'}}>— {filteredJobs.length} results</span>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+
+          <div style={{flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="w-12 h-12 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
-                <p className="text-red-500/60 text-xs tracking-widest font-bold" style={{fontFamily: "'Orbitron', sans-serif"}}>LOADING DATA...</p>
+              <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: '16px'}}>
+                <div style={{width: '48px', height: '48px', border: '2px solid rgba(239,68,68,0.3)', borderTop: '2px solid #ef4444', borderRadius: '50%', animation: 'spin 1s linear infinite'}}/>
+                <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px', color: 'rgba(239,68,68,0.6)', letterSpacing: '3px'}}>LOADING DATA...</p>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               </div>
             ) : filteredJobs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="text-5xl">💀</div>
-                <p className="text-red-500 font-black text-lg tracking-widest" style={{fontFamily: "'Orbitron', sans-serif"}}>NO RESULTS FOUND</p>
-                <p className="text-gray-600 text-xs tracking-wider">Try different filters or post your own opportunity</p>
+              <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: '16px'}}>
+                <div style={{fontSize: '48px'}}>💀</div>
+                <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '16px', color: '#ef4444', fontWeight: '900', letterSpacing: '3px'}}>NO RESULTS FOUND</p>
+                <p style={{fontSize: '11px', color: '#4b5563', letterSpacing: '1px'}}>Try different filters or post your own opportunity</p>
                 <Link href="/marketplace/post">
-                  <button className="mt-2 bg-red-600 hover:bg-red-500 text-white px-6 py-2 rounded font-black text-xs tracking-widest transition" style={{boxShadow: '0 0 15px rgba(239,68,68,0.4)'}}>+ POST NOW</button>
+                  <button style={{background: '#ef4444', color: 'white', border: 'none', padding: '8px 24px', borderRadius: '6px', fontFamily: "'Orbitron', sans-serif", fontWeight: '900', fontSize: '10px', letterSpacing: '2px', cursor: 'pointer', boxShadow: '0 0 15px rgba(239,68,68,0.4)'}}>+ POST NOW</button>
                 </Link>
               </div>
-            ) : (
-              filteredJobs.map((job) => {
-                const config = getConfig(job.job_type);
-                const isSelected = selectedJob?.id === job.id;
-                return (
-                  <div key={job.id} onClick={() => setSelectedJob(job)}
-                    className={`card-hover bg-gray-950 border rounded-lg p-4 cursor-pointer transition-all ${
-                      isSelected ? 'border-red-500/80 neon-border-active' : 'border-gray-800 hover:border-red-500/40 neon-border'
-                    }`}>
-                    <div className="flex items-start gap-3">
-                      <div className={`w-12 h-12 bg-gradient-to-br ${config.color} rounded-lg flex items-center justify-center text-xl flex-shrink-0`}>
-                        {config.icon}
+            ) : filteredJobs.map((job) => {
+              const config = getConfig(job.job_type);
+              const isSelected = selectedJob?.id === job.id;
+              return (
+                <div key={job.id} onClick={() => setSelectedJob(job)}
+                  className={`card-hover ${isSelected ? 'neon-border-active' : 'neon-border'}`}
+                  style={{
+                    background: '#0a0a14',
+                    border: isSelected ? '1px solid rgba(239,68,68,0.8)' : '1px solid #1f2937',
+                    borderRadius: '10px',
+                    padding: '16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}>
+                  <div style={{display: 'flex', alignItems: 'flex-start', gap: '12px'}}>
+                    <div className={`bg-gradient-to-br ${config.color}`}
+                      style={{width: '48px', height: '48px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0}}>
+                      {config.icon}
+                    </div>
+                    <div style={{flex: 1, minWidth: 0}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '4px'}}>
+                        <h3 style={{fontFamily: "'Rajdhani', sans-serif", fontWeight: '900', fontSize: '14px', color: 'white', letterSpacing: '1px', margin: 0}}>{job.title}</h3>
+                        <span style={{fontSize: '10px', color: '#4b5563', fontWeight: '700', flexShrink: 0}}>{timeAgo(job.created_at)}</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-black text-sm tracking-wide text-white leading-tight">{job.title}</h3>
-                          <span className="text-xs text-gray-600 flex-shrink-0 font-bold">{timeAgo(job.created_at)}</span>
-                        </div>
-                        <p className="text-gray-500 text-xs mb-2 line-clamp-1">{job.description}</p>
-                        <div className="flex flex-wrap gap-1.5 mb-2">
-                          <span className="bg-red-500/10 text-red-400 text-xs px-2 py-0.5 rounded border border-red-500/20 font-bold tracking-wider">{job.game}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded border font-bold tracking-wider ${config.badge}`}>{job.job_type.replace('_', ' ').toUpperCase()}</span>
-                          {job.budget_type && <span className="bg-green-500/10 text-green-400 text-xs px-2 py-0.5 rounded border border-green-500/20 font-bold tracking-wider">{job.budget_type.toUpperCase()}</span>}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Link href={`/profile/${job.posted_by}`} onClick={e => e.stopPropagation()}>
-  <span className="text-xs text-gray-600 hover:text-red-400 transition cursor-pointer">BY <span className="text-red-400 font-bold hover:underline">{job.users?.name?.toUpperCase() || 'ANONYMOUS'}</span></span>
-</Link>
-                          <span className="text-xs text-gray-600 font-bold">{job.applications_count || 0} APPLICANTS</span>
-                        </div>
+                      <p style={{fontSize: '11px', color: '#6b7280', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{job.description}</p>
+                      <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px'}}>
+                        <span style={{background: 'rgba(239,68,68,0.1)', color: '#f87171', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)', fontWeight: '700'}}>{job.game}</span>
+                        <span className={config.badge} style={{fontSize: '10px', padding: '2px 8px', borderRadius: '4px', fontWeight: '700'}}>{job.job_type.replace('_', ' ').toUpperCase()}</span>
+                        {job.budget_type && <span style={{background: 'rgba(34,197,94,0.1)', color: '#4ade80', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(34,197,94,0.2)', fontWeight: '700'}}>{job.budget_type.toUpperCase()}</span>}
+                      </div>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <Link href={`/profile/${job.posted_by}`} onClick={e => e.stopPropagation()}>
+                          <span style={{fontSize: '11px', color: '#4b5563', cursor: 'pointer'}}>BY <span style={{color: '#ef4444', fontWeight: '700'}}>{job.users?.name?.toUpperCase() || 'ANONYMOUS'}</span></span>
+                        </Link>
+                        <span style={{fontSize: '10px', color: '#4b5563', fontWeight: '700'}}>{job.applications_count || 0} APPLICANTS</span>
                       </div>
                     </div>
-                    {isSelected && (
-                      <div className="mt-3 pt-3 border-t border-red-500/20">
-                        <Link href={`/marketplace/jobs/${job.id}`}>
-                          <button className="w-full bg-red-600 hover:bg-red-500 text-white py-2 rounded font-black text-xs tracking-widest transition" style={{boxShadow: '0 0 10px rgba(239,68,68,0.4)'}}>VIEW & APPLY →</button>
-                        </Link>
-                      </div>
-                    )}
                   </div>
-                );
-              })
-            )}
+                  {isSelected && (
+                    <div style={{marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(239,68,68,0.2)'}}>
+                      <Link href={`/marketplace/jobs/${job.id}`}>
+                        <button style={{width: '100%', background: '#ef4444', color: 'white', border: 'none', padding: '8px', borderRadius: '6px', fontFamily: "'Orbitron', sans-serif", fontWeight: '900', fontSize: '11px', letterSpacing: '2px', cursor: 'pointer', boxShadow: '0 0 10px rgba(239,68,68,0.4)'}}>VIEW & APPLY →</button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* RIGHT PANEL */}
         {selectedJob && (
-          <div className="w-80 bg-black border-l border-red-500/20 overflow-y-auto flex flex-col">
-            <div className="p-4 border-b border-red-500/20">
-              <p className="text-xs font-black tracking-widest text-red-500/70 mb-3" style={{fontFamily: "'Orbitron', sans-serif"}}>// JOB DETAILS</p>
+          <div style={{
+            width: '300px',
+            background: '#07070f',
+            borderLeft: '1px solid rgba(239,68,68,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            flexShrink: 0
+          }}>
+            <div style={{padding: '16px', borderBottom: '1px solid rgba(239,68,68,0.15)'}}>
+              <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(239,68,68,0.7)', letterSpacing: '3px', marginBottom: '12px'}}>//  JOB DETAILS</p>
               {(() => {
                 const config = getConfig(selectedJob.job_type);
                 return (
                   <>
-                    <div className={`w-full h-24 bg-gradient-to-br ${config.color} rounded-lg flex items-center justify-center text-4xl mb-4`}>
+                    <div className={`bg-gradient-to-br ${config.color}`}
+                      style={{width: '100%', height: '80px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', marginBottom: '12px'}}>
                       {config.icon}
                     </div>
-                    <h2 className="font-black text-base tracking-wide text-white mb-1">{selectedJob.title}</h2>
-                    <p className="text-xs text-gray-500 font-bold mb-3">BY {selectedJob.users?.name?.toUpperCase() || 'ANONYMOUS'}</p>
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      <span className="bg-red-500/10 text-red-400 text-xs px-2 py-0.5 rounded border border-red-500/20 font-bold">{selectedJob.game}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded border font-bold ${config.badge}`}>{selectedJob.job_type.replace('_', ' ').toUpperCase()}</span>
+                    <h2 style={{fontFamily: "'Rajdhani', sans-serif", fontWeight: '900', fontSize: '15px', color: 'white', letterSpacing: '1px', margin: '0 0 4px'}}>{selectedJob.title}</h2>
+                    <p style={{fontSize: '11px', color: '#6b7280', fontWeight: '700', marginBottom: '10px'}}>BY {selectedJob.users?.name?.toUpperCase() || 'ANONYMOUS'}</p>
+                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
+                      <span style={{background: 'rgba(239,68,68,0.1)', color: '#f87171', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)', fontWeight: '700'}}>{selectedJob.game}</span>
+                      <span className={config.badge} style={{fontSize: '10px', padding: '2px 8px', borderRadius: '4px', fontWeight: '700'}}>{selectedJob.job_type.replace('_', ' ').toUpperCase()}</span>
                     </div>
                   </>
                 );
               })()}
             </div>
-            <div className="p-4 space-y-4 flex-1">
+
+            <div style={{padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px'}}>
               <div>
-                <p className="text-xs font-black tracking-widest text-red-500/70 mb-2" style={{fontFamily: "'Orbitron', sans-serif"}}>// DESCRIPTION</p>
-                <p className="text-gray-400 text-xs leading-relaxed">{selectedJob.description}</p>
+                <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(239,68,68,0.7)', letterSpacing: '3px', marginBottom: '8px'}}>//  DESCRIPTION</p>
+                <p style={{fontSize: '11px', color: '#9ca3af', lineHeight: '1.6'}}>{selectedJob.description}</p>
               </div>
               {selectedJob.requirements && (
                 <div>
-                  <p className="text-xs font-black tracking-widest text-red-500/70 mb-2" style={{fontFamily: "'Orbitron', sans-serif"}}>// REQUIREMENTS</p>
-                  <p className="text-gray-400 text-xs leading-relaxed">{selectedJob.requirements}</p>
+                  <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(239,68,68,0.7)', letterSpacing: '3px', marginBottom: '8px'}}>//  REQUIREMENTS</p>
+                  <p style={{fontSize: '11px', color: '#9ca3af', lineHeight: '1.6'}}>{selectedJob.requirements}</p>
                 </div>
               )}
               <div>
-                <p className="text-xs font-black tracking-widest text-red-500/70 mb-2" style={{fontFamily: "'Orbitron', sans-serif"}}>// INFO</p>
-                <div className="space-y-2">
+                <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(239,68,68,0.7)', letterSpacing: '3px', marginBottom: '8px'}}>//  INFO</p>
+                <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
                   {[
                     { label: 'GAME', value: selectedJob.game },
                     { label: 'ROLE', value: selectedJob.job_type.replace('_', ' ').toUpperCase() },
@@ -320,21 +432,34 @@ export default function MarketplacePage() {
                     { label: 'APPLICANTS', value: `${selectedJob.applications_count || 0} PLAYERS` },
                     { label: 'POSTED', value: new Date(selectedJob.created_at).toLocaleDateString() },
                   ].map(({ label, value }) => (
-                    <div key={label} className="flex justify-between items-center py-1.5 border-b border-gray-900">
-                      <span className="text-xs text-gray-600 font-bold tracking-wider">{label}</span>
-                      <span className="text-xs text-white font-black">{value}</span>
+                    <div key={label} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #111'}}>
+                      <span style={{fontSize: '10px', color: '#4b5563', fontWeight: '700', letterSpacing: '1px'}}>{label}</span>
+                      <span style={{fontSize: '11px', color: 'white', fontWeight: '900'}}>{value}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="p-4 border-t border-red-500/20">
+
+            <div style={{padding: '16px', borderTop: '1px solid rgba(239,68,68,0.15)'}}>
               <Link href={`/marketplace/jobs/${selectedJob.id}`}>
-                <button className="w-full bg-red-600 hover:bg-red-500 text-white py-3 rounded font-black text-sm tracking-widest transition mb-2" style={{boxShadow: '0 0 20px rgba(239,68,68,0.5)'}}>
-                  ⚡ APPLY NOW
-                </button>
+                <button style={{
+                  width: '100%',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontWeight: '900',
+                  fontSize: '12px',
+                  letterSpacing: '2px',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 20px rgba(239,68,68,0.5)',
+                  marginBottom: '8px'
+                }}>⚡ APPLY NOW</button>
               </Link>
-              <p className="text-center text-xs text-gray-700 font-bold">{selectedJob.applications_count || 0} players already applied</p>
+              <p style={{textAlign: 'center', fontSize: '10px', color: '#374151', fontWeight: '700'}}>{selectedJob.applications_count || 0} players already applied</p>
             </div>
           </div>
         )}
