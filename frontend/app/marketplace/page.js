@@ -6,57 +6,48 @@ import Link from 'next/link';
 /* ─── THEME — VINCI ARENA PRO PALETTE ─────────────────────────
    Psychology: Red = urgency/action, Cyan = trust/tech,
    Purple = prestige, Green = success, Amber = reward/premium
-   Matches profile page's vivid neon-on-dark aesthetic
 ──────────────────────────────────────────────────────────────── */
 const T = {
-  /* Backgrounds */
-  bg:        '#07070d',
-  surface:   '#0d0d17',
-  card:      '#10101a',
-  cardHover: '#181826',
+  bg:        '#050508',
+  surface:   '#0a0a12',
+  card:      '#0e0e18',
+  cardHover: '#14141f',
+  glass:     'rgba(255,255,255,0.025)',
 
-  /* Borders */
   border:    'rgba(255,255,255,0.06)',
-  borderHi:  'rgba(255,255,255,0.14)',
+  borderHi:  'rgba(255,255,255,0.16)',
 
-  /* Brand Red — urgency, CTA, action */
   red:       '#ff3b3b',
   redMid:    '#cc2e2e',
   redDim:    'rgba(255,59,59,0.12)',
-  redGlow:   'rgba(255,59,59,0.35)',
+  redGlow:   'rgba(255,59,59,0.4)',
 
-  /* Cyan — tech, info, trust */
   cyan:      '#00e5ff',
   cyanMid:   '#00b8cc',
   cyanDim:   'rgba(0,229,255,0.10)',
-  cyanGlow:  'rgba(0,229,255,0.30)',
+  cyanGlow:  'rgba(0,229,255,0.32)',
 
-  /* Purple — prestige, ranked, premium */
   purple:    '#b57aff',
   purpleMid: '#8c4fff',
   purpleDim: 'rgba(181,122,255,0.12)',
-  purpleGlow:'rgba(181,122,255,0.30)',
+  purpleGlow:'rgba(181,122,255,0.32)',
 
-  /* Green — success, live, online */
   green:     '#00ff88',
   greenMid:  '#00cc6a',
   greenDim:  'rgba(0,255,136,0.10)',
-  greenGlow: 'rgba(0,255,136,0.28)',
+  greenGlow: 'rgba(0,255,136,0.30)',
 
-  /* Amber — gold, reward, pro tier */
   amber:     '#ffb800',
   amberMid:  '#cc9200',
   amberDim:  'rgba(255,184,0,0.12)',
-  amberGlow: 'rgba(255,184,0,0.28)',
+  amberGlow: 'rgba(255,184,0,0.30)',
 
-  /* Pink — creator, social */
   pink:      '#ff6eb4',
   pinkMid:   '#cc4d8a',
   pinkDim:   'rgba(255,110,180,0.12)',
-  pinkGlow:  'rgba(255,110,180,0.28)',
+  pinkGlow:  'rgba(255,110,180,0.30)',
 
-  /* Text */
-  text:      '#eef0f8',
+  text:      '#f0f2fb',
   textMuted: '#6b7280',
   textDim:   '#374151',
 };
@@ -113,13 +104,14 @@ function NeonTag({ children, color, dim, glow }) {
     <span style={{
       display: 'inline-flex', alignItems: 'center',
       padding: '2px 10px', borderRadius: 20,
-      fontSize: 11, fontWeight: 600, lineHeight: '18px',
+      fontSize: 10, fontWeight: 700, lineHeight: '18px',
       fontFamily: "'Inter', system-ui, sans-serif",
       background: dim, color,
-      border: `1px solid ${color}50`,
+      border: `1px solid ${color}45`,
       whiteSpace: 'nowrap',
-      textShadow: `0 0 8px ${color}80`,
-      boxShadow: `inset 0 0 6px ${dim}`,
+      textShadow: `0 0 10px ${color}90`,
+      boxShadow: `inset 0 0 8px ${dim}, 0 0 6px ${color}15`,
+      letterSpacing: '0.4px',
     }}>
       {children}
     </span>
@@ -129,34 +121,49 @@ function NeonTag({ children, color, dim, glow }) {
 /* ─── SIDEBAR BUTTON ─────────────────────────────────────────── */
 function SideBtn({ active, onClick, icon, label, count, color }) {
   const accent = color || T.red;
+  const [hovered, setHovered] = useState(false);
   return (
-    <button onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', gap: 8,
-      width: '100%', padding: '7px 10px',
-      borderRadius: 8,
-      border: active ? `1px solid ${accent}40` : '1px solid transparent',
-      cursor: 'pointer', textAlign: 'left',
-      fontSize: 12, fontWeight: active ? 600 : 400,
-      fontFamily: "'Inter', system-ui, sans-serif",
-      background: active ? `${accent}12` : 'transparent',
-      color: active ? accent : T.textMuted,
-      transition: 'all 0.2s',
-      boxShadow: active ? `0 0 12px ${accent}20` : 'none',
-      textShadow: active ? `0 0 10px ${accent}60` : 'none',
-    }}>
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        width: '100%', padding: '7px 10px',
+        borderRadius: 8,
+        border: active ? `1px solid ${accent}50` : hovered ? `1px solid ${T.borderHi}` : '1px solid transparent',
+        cursor: 'pointer', textAlign: 'left',
+        fontSize: 12, fontWeight: active ? 700 : 400,
+        fontFamily: "'Inter', system-ui, sans-serif",
+        background: active ? `${accent}15` : hovered ? T.glass : 'transparent',
+        color: active ? accent : hovered ? T.text : T.textMuted,
+        transition: 'all 0.15s',
+        boxShadow: active ? `0 0 16px ${accent}22` : 'none',
+        textShadow: active ? `0 0 12px ${accent}70` : 'none',
+      }}
+    >
       <span style={{ fontSize: 13 }}>{icon}</span>
       <span style={{ flex: 1 }}>{label}</span>
       {count != null && (
         <span style={{
-          fontSize: 10, fontWeight: 700, padding: '1px 6px',
-          borderRadius: 10, minWidth: 20, textAlign: 'center',
-          background: active ? `${accent}25` : T.border,
+          fontSize: 10, fontWeight: 700, padding: '1px 7px',
+          borderRadius: 10, minWidth: 22, textAlign: 'center',
+          background: active ? `${accent}28` : T.border,
           color: active ? accent : T.textDim,
-          border: active ? `1px solid ${accent}40` : 'none',
-          boxShadow: active ? `0 0 6px ${accent}30` : 'none',
+          border: active ? `1px solid ${accent}45` : 'none',
+          boxShadow: active ? `0 0 8px ${accent}35` : 'none',
         }}>{count}</span>
       )}
     </button>
+  );
+}
+
+/* ─── PROFILE LINK — reusable clickable name ─────────────────── */
+function ProfileLink({ userId, name }) {
+  return (
+    <Link href={`/profile/${userId}`} className="profile-link">
+      {name || 'Anonymous'}
+    </Link>
   );
 }
 
@@ -172,21 +179,32 @@ function JobCard({ job, selected, onClick }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         background: selected
-          ? `linear-gradient(135deg, ${m.color}10 0%, ${T.cardHover} 100%)`
+          ? `linear-gradient(135deg, ${m.color}12 0%, ${T.cardHover} 60%, ${T.card} 100%)`
           : hovered ? T.cardHover : T.card,
         border: selected
-          ? `1px solid ${m.color}55`
+          ? `1px solid ${m.color}60`
           : hovered ? `1px solid ${T.borderHi}` : `1px solid ${T.border}`,
         borderRadius: 14, padding: '14px 16px',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         boxShadow: selected
-          ? `0 0 28px ${m.color}20, inset 0 0 20px ${m.color}05`
-          : hovered ? `0 4px 20px rgba(0,0,0,0.4)` : 'none',
+          ? `0 0 32px ${m.color}22, 0 0 0 1px ${m.color}15 inset`
+          : hovered ? `0 6px 24px rgba(0,0,0,0.5)` : 'none',
         position: 'relative', overflow: 'hidden',
       }}
     >
-      {/* Animated scan line on selected */}
+      {/* Animated shimmer on selected */}
+      {selected && (
+        <div style={{
+          position: 'absolute', top: 0, left: '-100%', right: 0,
+          height: '100%', width: '60%',
+          background: `linear-gradient(90deg, transparent, ${m.color}06, transparent)`,
+          animation: 'shimmerSweep 3s ease-in-out infinite',
+          pointerEvents: 'none',
+        }} />
+      )}
+
+      {/* Top scan line */}
       {selected && (
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: 2,
@@ -195,55 +213,57 @@ function JobCard({ job, selected, onClick }) {
         }} />
       )}
 
-      {/* Left color bar */}
+      {/* Left accent bar */}
       <div style={{
-        position: 'absolute', left: 0, top: '15%', bottom: '15%',
+        position: 'absolute', left: 0, top: '12%', bottom: '12%',
         width: selected ? 3 : hovered ? 2 : 0,
         background: `linear-gradient(180deg, ${m.color}, ${T.purple})`,
         borderRadius: '0 3px 3px 0',
         transition: 'width 0.2s',
-        boxShadow: selected ? `0 0 8px ${m.color}` : 'none',
+        boxShadow: selected ? `0 0 10px ${m.color}` : 'none',
       }} />
 
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+        {/* Role icon */}
         <div style={{
-          width: 42, height: 42, borderRadius: 11, flexShrink: 0,
-          background: `radial-gradient(circle at 30% 30%, ${m.color}30, ${m.dim})`,
-          border: `1px solid ${m.color}40`,
+          width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+          background: `radial-gradient(circle at 30% 30%, ${m.color}35, ${m.dim})`,
+          border: `1px solid ${m.color}45`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 18, color: m.color,
-          boxShadow: selected ? `0 0 14px ${m.color}40` : `0 0 6px ${m.color}20`,
+          fontSize: 19, color: m.color,
+          boxShadow: selected ? `0 0 18px ${m.color}50` : `0 0 8px ${m.color}25`,
           transition: 'box-shadow 0.2s',
         }}>
           {m.icon}
         </div>
+
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontFamily: "'Inter', system-ui, sans-serif",
             fontSize: 13, fontWeight: 700, color: T.text,
-            marginBottom: 2, lineHeight: 1.3,
+            marginBottom: 3, lineHeight: 1.3,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {job.title}
           </div>
           <div style={{ fontSize: 11, color: T.textMuted }}>
-            by <span style={{
-              color: T.cyan, fontWeight: 700,
-              textShadow: `0 0 8px ${T.cyan}60`,
-            }}>{job.users?.name || 'Anonymous'}</span>
+            by{' '}
+            <ProfileLink userId={job.posted_by} name={job.users?.name} />
             {' · '}{job.game}
           </div>
         </div>
+
         <span style={{
           fontSize: 10, color: T.textDim, flexShrink: 0, marginTop: 2,
-          background: T.border, padding: '2px 6px', borderRadius: 6,
+          background: 'rgba(255,255,255,0.04)', padding: '2px 7px', borderRadius: 6,
+          border: `1px solid ${T.border}`,
         }}>
           {timeAgo(job.created_at)}
         </span>
       </div>
 
       <p style={{
-        fontSize: 12, color: T.textMuted, lineHeight: 1.65,
+        fontSize: 12, color: T.textMuted, lineHeight: 1.7,
         margin: '0 0 10px 0',
         overflow: 'hidden', display: '-webkit-box',
         WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
@@ -269,13 +289,13 @@ function JobCard({ job, selected, onClick }) {
           <Link href={`/marketplace/jobs/${job.id}`}>
             <button style={{
               width: '100%',
-              background: `linear-gradient(135deg, ${m.color}, ${m.color}99)`,
-              border: `1px solid ${m.color}60`,
-              borderRadius: 9, color: '#fff',
+              background: `linear-gradient(135deg, ${m.color} 0%, ${m.color}aa 100%)`,
+              border: `1px solid ${m.color}55`,
+              borderRadius: 10, color: '#fff',
               padding: '10px 0', fontSize: 12, fontWeight: 700,
               fontFamily: "'Inter', system-ui, sans-serif",
-              cursor: 'pointer', letterSpacing: '0.5px',
-              boxShadow: `0 0 20px ${m.glow}`,
+              cursor: 'pointer', letterSpacing: '0.6px',
+              boxShadow: `0 0 24px ${m.glow}, 0 4px 12px rgba(0,0,0,0.3)`,
               textShadow: '0 1px 4px rgba(0,0,0,0.4)',
               transition: 'all 0.2s',
             }}>
@@ -302,7 +322,7 @@ function DetailPanel({ job }) {
 
   return (
     <div style={{
-      width: 282, flexShrink: 0,
+      width: 290, flexShrink: 0,
       background: T.surface,
       borderLeft: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
@@ -311,99 +331,87 @@ function DetailPanel({ job }) {
     }}>
       {/* Animated color stripe */}
       <div className="panel-stripe" style={{
-        height: 3,
+        height: 3, flexShrink: 0,
         backgroundImage: `linear-gradient(90deg, ${m.color}, ${T.purple}, ${T.cyan}, ${m.color})`,
         backgroundSize: '200% 100%',
-        flexShrink: 0,
       }} />
 
-      {/* Faint radial glow bg */}
+      {/* Background glow */}
       <div style={{
-        position: 'absolute', top: 0, right: 0, width: 200, height: 200,
-        background: `radial-gradient(circle at 80% 0%, ${m.color}08 0%, transparent 70%)`,
+        position: 'absolute', top: 0, right: 0, width: 240, height: 240,
+        background: `radial-gradient(circle at 80% 0%, ${m.color}10 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
 
       {/* Header */}
-      <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${T.border}`, position: 'relative' }}>
-        {/* Role icon */}
+      <div style={{ padding: '20px 18px 16px', borderBottom: `1px solid ${T.border}`, position: 'relative' }}>
         <div style={{
-          width: 56, height: 56, borderRadius: 14, marginBottom: 14,
-          background: `radial-gradient(circle at 30% 30%, ${m.color}35, ${m.dim})`,
-          border: `1px solid ${m.color}50`,
+          width: 58, height: 58, borderRadius: 15, marginBottom: 16,
+          background: `radial-gradient(circle at 30% 30%, ${m.color}40, ${m.dim})`,
+          border: `1px solid ${m.color}55`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 26, color: m.color,
-          boxShadow: `0 0 28px ${m.color}35, inset 0 0 12px ${m.color}15`,
+          fontSize: 28, color: m.color,
+          boxShadow: `0 0 32px ${m.color}40, inset 0 0 14px ${m.color}18`,
           animation: 'iconPulse 3s ease-in-out infinite',
         }}>
           {m.icon}
         </div>
 
-        {/* Title */}
         <div style={{
           fontFamily: "'Inter', system-ui, sans-serif",
-          fontSize: 14, fontWeight: 700, color: T.text,
-          marginBottom: 5, lineHeight: 1.4,
+          fontSize: 15, fontWeight: 700, color: T.text,
+          marginBottom: 6, lineHeight: 1.4,
         }}>
           {job.title}
         </div>
 
-        {/* Posted by */}
-        <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 12 }}>
+        <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 14 }}>
           posted by{' '}
-          <Link href={`/profile/${job.posted_by}`} style={{
-            color: T.cyan, fontWeight: 700, textDecoration: 'none',
-            textShadow: `0 0 8px ${T.cyan}60`,
-          }}>
-            {job.users?.name || 'Anonymous'}
-          </Link>
+          <ProfileLink userId={job.posted_by} name={job.users?.name} />
         </div>
 
-        {/* Tags */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 18 }}>
           <NeonTag color={T.cyan} dim={T.cyanDim} glow={T.cyanGlow}>{job.game}</NeonTag>
           <NeonTag color={m.color} dim={m.dim} glow={m.glow}>{m.icon} {m.label}</NeonTag>
         </div>
 
-        {/* CTA Button */}
         <Link href={`/marketplace/jobs/${job.id}`}>
           <button
             style={{
               width: '100%',
               background: `linear-gradient(135deg, ${m.color} 0%, ${m.color}bb 100%)`,
               border: `1px solid ${m.color}70`,
-              borderRadius: 11, color: '#fff',
-              padding: '12px 0', fontSize: 13, fontWeight: 700,
+              borderRadius: 12, color: '#fff',
+              padding: '13px 0', fontSize: 13, fontWeight: 700,
               fontFamily: "'Inter', system-ui, sans-serif",
-              cursor: 'pointer', letterSpacing: '0.3px',
-              boxShadow: `0 0 28px ${m.glow}, 0 4px 16px rgba(0,0,0,0.3)`,
+              cursor: 'pointer', letterSpacing: '0.4px',
+              boxShadow: `0 0 32px ${m.glow}, 0 4px 18px rgba(0,0,0,0.35)`,
               textShadow: '0 1px 6px rgba(0,0,0,0.4)',
               transition: 'all 0.2s',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = `0 0 36px ${m.glow}, 0 6px 20px rgba(0,0,0,0.4)`;
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = `0 0 44px ${m.glow}, 0 8px 24px rgba(0,0,0,0.45)`;
             }}
             onMouseLeave={e => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = `0 0 28px ${m.glow}, 0 4px 16px rgba(0,0,0,0.3)`;
+              e.currentTarget.style.boxShadow = `0 0 32px ${m.glow}, 0 4px 18px rgba(0,0,0,0.35)`;
             }}
           >
             ⚡ Apply Now
           </button>
         </Link>
 
-        <p style={{ margin: '8px 0 0', textAlign: 'center', fontSize: 11, color: T.textDim }}>
+        <p style={{ margin: '10px 0 0', textAlign: 'center', fontSize: 11, color: T.textDim }}>
           <span style={{ color: m.color, fontWeight: 700 }}>{job.applications_count || 0}</span> players already applied
         </p>
       </div>
 
       {/* Body */}
-      <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
-
+      <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div>
           <SectionLabel>// Description</SectionLabel>
-          <p style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.75, margin: 0 }}>
+          <p style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.8, margin: 0 }}>
             {job.description}
           </p>
         </div>
@@ -411,7 +419,7 @@ function DetailPanel({ job }) {
         {job.requirements && (
           <div>
             <SectionLabel>// Requirements</SectionLabel>
-            <p style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.75, margin: 0 }}>
+            <p style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.8, margin: 0 }}>
               {job.requirements}
             </p>
           </div>
@@ -422,14 +430,14 @@ function DetailPanel({ job }) {
           <div style={{
             background: T.card,
             border: `1px solid ${T.border}`,
-            borderRadius: 10, overflow: 'hidden',
+            borderRadius: 11, overflow: 'hidden',
           }}>
             {infoRows.map(({ label, value }, i) => (
               <div key={label} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '8px 12px',
+                padding: '9px 13px',
                 borderBottom: i < infoRows.length - 1 ? `1px solid ${T.border}` : 'none',
-                background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)',
+                background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.018)',
               }}>
                 <span style={{ fontSize: 11, color: T.textDim }}>{label}</span>
                 <span style={{
@@ -440,7 +448,6 @@ function DetailPanel({ job }) {
             ))}
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -451,14 +458,15 @@ function SectionLabel({ children }) {
   return (
     <div style={{
       fontFamily: "'Barlow Condensed', sans-serif",
-      fontSize: 11, fontWeight: 700,
+      fontSize: 10, fontWeight: 700,
       color: T.textDim,
-      letterSpacing: '2px', marginBottom: 8,
+      letterSpacing: '2.5px', marginBottom: 9,
       textTransform: 'uppercase',
       display: 'flex', alignItems: 'center', gap: 6,
     }}>
-      <span style={{ width: 12, height: 1, background: T.textDim, display: 'inline-block' }} />
+      <span style={{ width: 14, height: 1, background: T.textDim, display: 'inline-block' }} />
       {children}
+      <span style={{ flex: 1, height: 1, background: T.border, display: 'inline-block' }} />
     </div>
   );
 }
@@ -473,17 +481,17 @@ function Skeleton() {
           borderRadius: 14, padding: '14px 16px',
         }}>
           <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 11, background: T.surface }} />
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: T.surface }} />
             <div style={{ flex: 1 }}>
-              <div style={{ height: 13, background: T.surface, borderRadius: 4, marginBottom: 6, width: '60%' }} />
-              <div style={{ height: 11, background: T.surface, borderRadius: 4, width: '35%' }} />
+              <div style={{ height: 13, background: T.surface, borderRadius: 4, marginBottom: 7, width: '62%' }} />
+              <div style={{ height: 11, background: T.surface, borderRadius: 4, width: '38%' }} />
             </div>
           </div>
           <div style={{ height: 11, background: T.surface, borderRadius: 4, marginBottom: 5 }} />
-          <div style={{ height: 11, background: T.surface, borderRadius: 4, width: '70%', marginBottom: 12 }} />
+          <div style={{ height: 11, background: T.surface, borderRadius: 4, width: '72%', marginBottom: 12 }} />
           <div style={{ display: 'flex', gap: 6 }}>
-            <div style={{ height: 20, width: 58, background: T.surface, borderRadius: 20 }} />
-            <div style={{ height: 20, width: 70, background: T.surface, borderRadius: 20 }} />
+            <div style={{ height: 20, width: 60, background: T.surface, borderRadius: 20 }} />
+            <div style={{ height: 20, width: 72, background: T.surface, borderRadius: 20 }} />
           </div>
         </div>
       ))}
@@ -491,14 +499,19 @@ function Skeleton() {
   );
 }
 
-/* ─── LIVE COUNTER BADGE ─────────────────────────────────────── */
+/* ─── LIVE BADGE ─────────────────────────────────────────────── */
 function LiveBadge({ count }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 7,
+      background: T.greenDim,
+      border: `1px solid ${T.green}30`,
+      borderRadius: 20, padding: '4px 12px',
+    }}>
       <span style={{
-        width: 8, height: 8, borderRadius: '50%',
+        width: 7, height: 7, borderRadius: '50%',
         background: T.green,
-        boxShadow: `0 0 0 3px ${T.greenDim}, 0 0 10px ${T.green}`,
+        boxShadow: `0 0 0 3px ${T.greenDim}, 0 0 12px ${T.green}`,
         display: 'inline-block',
         animation: 'ping 2s ease-in-out infinite',
       }} />
@@ -571,112 +584,113 @@ export default function MarketplacePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
 
-        /* ── Type scale — Netflix/Instagram inspired ──
-           Inter     → UI text, body, labels (clean, legible, professional)
-           Barlow Condensed → headings, badges, brand marks (bold, impactful)
-        ── */
-        .font-ui      { font-family: 'Inter', system-ui, sans-serif; }
-        .font-display { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
         * { box-sizing: border-box; }
 
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 
         input { outline: none; }
-        input:focus { border-color: ${T.cyan}70 !important; box-shadow: 0 0 0 2px ${T.cyan}15 !important; }
+        input:focus { border-color: ${T.cyan}80 !important; box-shadow: 0 0 0 2px ${T.cyan}18 !important; }
 
-        /* ── Fade-up entry for cards ── */
         @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(10px); }
+          from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: none; }
         }
-        .fade-card { animation: fadeUp 0.25s ease both; }
+        .fade-card { animation: fadeUp 0.22s ease both; }
 
-        /* ── Skeleton shimmer ── */
         @keyframes shimmer {
-          0%   { opacity: 0.35; }
-          50%  { opacity: 0.65; }
-          100% { opacity: 0.35; }
+          0%   { opacity: 0.3; }
+          50%  { opacity: 0.6; }
+          100% { opacity: 0.3; }
         }
         .sk-pulse { animation: shimmer 1.6s ease-in-out infinite; }
 
-        /* ── Live dot ping ── */
         @keyframes ping {
           0%, 100% { box-shadow: 0 0 0 3px ${T.greenDim}, 0 0 10px ${T.green}; }
-          50%       { box-shadow: 0 0 0 6px ${T.greenDim}, 0 0 18px ${T.green}80; }
+          50%       { box-shadow: 0 0 0 7px ${T.greenDim}, 0 0 20px ${T.green}80; }
         }
 
-        /* ── Panel stripe scroll ── */
         @keyframes panelStripe {
-          0%   { background-position: 0% 0%;   }
+          0%   { background-position: 0% 0%; }
           100% { background-position: 200% 0%; }
         }
         .panel-stripe { animation: panelStripe 4s linear infinite; }
 
-        /* ── Detail panel icon pulse ── */
         @keyframes iconPulse {
-          0%, 100% { box-shadow: 0 0 20px var(--icon-glow-color, rgba(255,59,59,0.3)), inset 0 0 10px rgba(255,59,59,0.1); }
-          50%       { box-shadow: 0 0 36px var(--icon-glow-color, rgba(255,59,59,0.5)), inset 0 0 16px rgba(255,59,59,0.2); }
+          0%, 100% { box-shadow: 0 0 22px rgba(255,59,59,0.32), inset 0 0 10px rgba(255,59,59,0.12); }
+          50%       { box-shadow: 0 0 38px rgba(255,59,59,0.52), inset 0 0 18px rgba(255,59,59,0.22); }
         }
 
-        /* ── Scan line ── */
         @keyframes scanSlide {
           0%   { opacity: 0.6; transform: scaleX(0.3) translateX(-100%); }
-          50%  { opacity: 1;   transform: scaleX(1)   translateX(0); }
+          50%  { opacity: 1;   transform: scaleX(1) translateX(0); }
           100% { opacity: 0.6; transform: scaleX(0.3) translateX(100%); }
         }
 
-        /* ── Search input placeholder ── */
-        input::placeholder { color: ${T.textDim}; }
+        @keyframes shimmerSweep {
+          0%   { left: -100%; }
+          100% { left: 200%; }
+        }
 
-        /* ── Quick filter hover ── */
-        .qf-btn:hover { filter: brightness(1.2); }
-
-        /* ── Post Job btn pulse ── */
         @keyframes btnPulse {
-          0%, 100% { box-shadow: 0 0 16px ${T.redGlow}; }
-          50%       { box-shadow: 0 0 28px ${T.redGlow}, 0 0 44px ${T.redDim}; }
+          0%, 100% { box-shadow: 0 0 18px ${T.redGlow}; }
+          50%       { box-shadow: 0 0 32px ${T.redGlow}, 0 0 50px ${T.redDim}; }
         }
         .post-btn { animation: btnPulse 3s ease-in-out infinite; }
-        .post-btn:hover { animation: none !important; opacity: 0.88; }
+        .post-btn:hover { animation: none !important; opacity: 0.88; transform: translateY(-1px); }
+
+        input::placeholder { color: ${T.textDim}; }
+        .qf-btn:hover { filter: brightness(1.18); }
+
+        .profile-link {
+          color: ${T.cyan};
+          font-weight: 700;
+          text-decoration: none;
+          text-shadow: 0 0 10px ${T.cyan}70;
+          transition: opacity 0.15s;
+        }
+        .profile-link:hover {
+          text-decoration: underline;
+          text-decoration-color: ${T.cyan};
+          opacity: 0.85;
+        }
       `}</style>
 
       {/* ══════════════════ TOP BAR ══════════════════ */}
       <div style={{
-        background: T.surface,
+        background: `linear-gradient(180deg, ${T.surface} 0%, ${T.bg} 100%)`,
         borderBottom: `1px solid ${T.border}`,
         padding: '10px 20px',
         display: 'flex', alignItems: 'center', gap: 14,
         flexShrink: 0,
-        /* subtle bottom glow */
-        boxShadow: `0 1px 0 ${T.border}, 0 4px 20px rgba(0,0,0,0.6)`,
+        boxShadow: `0 1px 0 ${T.border}, 0 6px 28px rgba(0,0,0,0.7)`,
       }}>
         {/* Brand */}
         <div style={{ marginRight: 4 }}>
           <div style={{
             fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: 16, fontWeight: 800, letterSpacing: '2.5px',
+            fontSize: 17, fontWeight: 800, letterSpacing: '3px',
             color: T.red, textTransform: 'uppercase',
-            textShadow: `0 0 12px ${T.red}90`,
+            textShadow: `0 0 16px ${T.red}90, 0 0 32px ${T.redDim}`,
           }}>
             VINCI MARKET
           </div>
           <div style={{
             fontFamily: "'Inter', system-ui, sans-serif",
-            fontSize: 10, fontWeight: 500, color: T.textMuted, letterSpacing: '0.3px',
+            fontSize: 10, fontWeight: 500, color: T.textMuted, letterSpacing: '0.5px',
           }}>
             Find jobs &amp; opportunities
           </div>
         </div>
 
-        <div style={{ width: 1, height: 28, background: T.border }} />
+        <div style={{ width: 1, height: 30, background: T.border }} />
 
         {/* Search */}
-        <div style={{ position: 'relative', flex: 1, maxWidth: 380 }}>
+        <div style={{ position: 'relative', flex: 1, maxWidth: 400 }}>
           <span style={{
-            position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)',
+            position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
             color: T.textDim, fontSize: 15, pointerEvents: 'none',
           }}>⌕</span>
           <input
@@ -685,8 +699,8 @@ export default function MarketplacePage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
-              width: '100%', padding: '8px 10px 8px 32px',
-              border: `1px solid ${T.border}`, borderRadius: 9,
+              width: '100%', padding: '9px 12px 9px 34px',
+              border: `1px solid ${T.border}`, borderRadius: 10,
               fontSize: 13, color: T.text, background: T.card,
               fontFamily: "'Inter', system-ui, sans-serif",
               transition: 'all 0.2s',
@@ -696,13 +710,12 @@ export default function MarketplacePage() {
 
         <LiveBadge count={jobs.length} />
 
-        {/* Right actions */}
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <Link href="/marketplace/my-applications">
             <button style={{
               background: T.card, border: `1px solid ${T.border}`,
-              borderRadius: 8, color: T.textMuted,
-              padding: '7px 16px', fontFamily: "'Inter', system-ui, sans-serif",
+              borderRadius: 9, color: T.textMuted,
+              padding: '8px 18px', fontFamily: "'Inter', system-ui, sans-serif",
               fontWeight: 600, fontSize: 12, cursor: 'pointer',
               transition: 'all 0.2s', letterSpacing: '0.3px',
             }}
@@ -714,9 +727,9 @@ export default function MarketplacePage() {
           <Link href="/marketplace/post">
             <button className="post-btn" style={{
               background: `linear-gradient(135deg, ${T.red}, ${T.redMid})`,
-              border: `1px solid ${T.red}60`,
-              borderRadius: 8, color: '#fff',
-              padding: '7px 18px', fontFamily: "'Inter', system-ui, sans-serif",
+              border: `1px solid ${T.red}65`,
+              borderRadius: 9, color: '#fff',
+              padding: '8px 20px', fontFamily: "'Inter', system-ui, sans-serif",
               fontWeight: 700, fontSize: 12, cursor: 'pointer',
               letterSpacing: '0.8px',
               textShadow: '0 1px 4px rgba(0,0,0,0.3)',
@@ -732,10 +745,10 @@ export default function MarketplacePage() {
 
         {/* ── LEFT SIDEBAR ── */}
         <div style={{
-          width: 200, flexShrink: 0,
+          width: 204, flexShrink: 0,
           background: T.surface,
           borderRight: `1px solid ${T.border}`,
-          padding: '12px 8px',
+          padding: '14px 9px',
           display: 'flex', flexDirection: 'column', gap: 2,
           overflowY: 'auto',
         }}>
@@ -752,7 +765,7 @@ export default function MarketplacePage() {
             />
           ))}
 
-          <div style={{ height: 1, background: T.border, margin: '10px 0 8px' }} />
+          <div style={{ height: 1, background: T.border, margin: '12px 2px 10px' }} />
 
           <SectionLabel>// Roles</SectionLabel>
           {ROLES.map(r => (
@@ -768,29 +781,29 @@ export default function MarketplacePage() {
           ))}
 
           <div style={{ flex: 1 }} />
-          <div style={{ height: 1, background: T.border, margin: '8px 0' }} />
+          <div style={{ height: 1, background: T.border, margin: '8px 2px' }} />
 
           {/* User chip */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 9,
-            padding: '7px 10px',
-            background: T.card, borderRadius: 10,
+            padding: '8px 10px',
+            background: T.card, borderRadius: 11,
             border: `1px solid ${T.border}`,
           }}>
             <div style={{
-              width: 32, height: 32, borderRadius: 9, flexShrink: 0,
+              width: 34, height: 34, borderRadius: 9, flexShrink: 0,
               background: `linear-gradient(135deg, ${T.red}, ${T.purple})`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 14, fontWeight: 700, color: '#fff',
-              boxShadow: `0 0 12px ${T.redGlow}`,
+              fontSize: 14, fontWeight: 800, color: '#fff',
+              boxShadow: `0 0 14px ${T.redGlow}`,
             }}>
               {userName[0]?.toUpperCase()}
             </div>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: T.text, fontFamily: "'Inter', system-ui, sans-serif" }}>{userName}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.text, fontFamily: "'Inter', system-ui, sans-serif" }}>{userName}</div>
               <div style={{
                 fontSize: 10, color: T.green, fontWeight: 600,
-                textShadow: `0 0 6px ${T.green}80`,
+                textShadow: `0 0 8px ${T.green}80`,
               }}>● Online</div>
             </div>
           </div>
@@ -815,16 +828,16 @@ export default function MarketplacePage() {
                   className="qf-btn"
                   onClick={() => setQuickFilter(f.id)}
                   style={{
-                    padding: '5px 16px', borderRadius: 20,
-                    fontSize: 12, fontWeight: active ? 600 : 500,
+                    padding: '5px 18px', borderRadius: 20,
+                    fontSize: 12, fontWeight: active ? 700 : 500,
                     fontFamily: "'Inter', system-ui, sans-serif",
-                    cursor: 'pointer', transition: 'all 0.2s',
-                    border: active ? `1px solid ${T.red}60` : `1px solid ${T.border}`,
+                    cursor: 'pointer', transition: 'all 0.15s',
+                    border: active ? `1px solid ${T.red}65` : `1px solid ${T.border}`,
                     background: active
                       ? `linear-gradient(135deg, ${T.red}cc, ${T.redMid}aa)`
                       : T.card,
                     color: active ? '#fff' : T.textMuted,
-                    boxShadow: active ? `0 0 14px ${T.redGlow}` : 'none',
+                    boxShadow: active ? `0 0 16px ${T.redGlow}` : 'none',
                     letterSpacing: active ? '0.5px' : '0',
                     textShadow: active ? '0 1px 4px rgba(0,0,0,0.3)' : 'none',
                   }}
@@ -849,16 +862,13 @@ export default function MarketplacePage() {
               <div style={{
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                flex: 1, gap: 14, paddingTop: 60,
+                flex: 1, gap: 14, paddingTop: 70,
               }}>
+                <div style={{ fontSize: 54, filter: `drop-shadow(0 0 18px ${T.red}60)` }}>💀</div>
                 <div style={{
-                  fontSize: 52,
-                  filter: `drop-shadow(0 0 16px ${T.red}60)`,
-                }}>💀</div>
-                <div style={{
-                  fontSize: 16, fontWeight: 700, color: T.red,
-                  letterSpacing: '2px',
-                  textShadow: `0 0 16px ${T.red}80`,
+                  fontSize: 18, fontWeight: 800, color: T.red,
+                  letterSpacing: '3px',
+                  textShadow: `0 0 20px ${T.red}80`,
                 }}>NO RESULTS</div>
                 <div style={{ fontSize: 12, color: T.textMuted }}>Try changing your filters or search term</div>
                 <Link href="/marketplace/post">
@@ -866,7 +876,7 @@ export default function MarketplacePage() {
                     marginTop: 8,
                     background: `linear-gradient(135deg, ${T.red}, ${T.redMid})`,
                     color: '#fff', border: `1px solid ${T.red}60`,
-                    borderRadius: 9, padding: '10px 24px',
+                    borderRadius: 10, padding: '11px 26px',
                     fontSize: 12, fontWeight: 700, cursor: 'pointer',
                     letterSpacing: '0.8px',
                   }}>
@@ -876,7 +886,7 @@ export default function MarketplacePage() {
               </div>
             ) : (
               filtered.map((job, i) => (
-                <div key={job.id} className="fade-card" style={{ animationDelay: `${i * 0.045}s` }}>
+                <div key={job.id} className="fade-card" style={{ animationDelay: `${i * 0.04}s` }}>
                   <JobCard
                     job={job}
                     selected={selectedJob?.id === job.id}
