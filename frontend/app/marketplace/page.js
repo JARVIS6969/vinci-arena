@@ -8,14 +8,14 @@ import Link from 'next/link';
    Purple = prestige, Green = success, Amber = reward/premium
 ──────────────────────────────────────────────────────────────── */
 const T = {
-  bg:        '#050508',
-  surface:   '#0a0a12',
-  card:      '#0e0e18',
-  cardHover: '#14141f',
-  glass:     'rgba(255,255,255,0.025)',
+  bg:        '#000000',
+  surface:   '#020202',
+  card:      '#070707',
+  cardHover: '#0d0d0d',
+  glass:     'rgba(255,255,255,0.012)',
 
-  border:    'rgba(255,255,255,0.06)',
-  borderHi:  'rgba(255,255,255,0.16)',
+  border:    'rgba(255,255,255,0.04)',
+  borderHi:  'rgba(255,255,255,0.10)',
 
   red:       '#ff3b3b',
   redMid:    '#cc2e2e',
@@ -179,8 +179,8 @@ function JobCard({ job, selected, onClick }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         background: selected
-          ? `linear-gradient(135deg, ${m.color}12 0%, ${T.cardHover} 60%, ${T.card} 100%)`
-          : hovered ? T.cardHover : T.card,
+  ? `linear-gradient(135deg, ${m.color}06 0%, #0a0a0a 70%, #070707 100%)`
+  : hovered ? T.cardHover : T.card,
         border: selected
           ? `1px solid ${m.color}60`
           : hovered ? `1px solid ${T.borderHi}` : `1px solid ${T.border}`,
@@ -660,7 +660,7 @@ export default function MarketplacePage() {
 
       {/* ══════════════════ TOP BAR ══════════════════ */}
       <div style={{
-        background: `linear-gradient(180deg, ${T.surface} 0%, ${T.bg} 100%)`,
+        background: '#000000',
         borderBottom: `1px solid ${T.border}`,
         padding: '10px 20px',
         display: 'flex', alignItems: 'center', gap: 14,
@@ -815,7 +815,7 @@ export default function MarketplacePage() {
           {/* Quick filter strip */}
           <div style={{
             padding: '10px 14px',
-            background: `linear-gradient(180deg, ${T.surface} 0%, ${T.bg} 100%)`,
+            background: '#000000',
             borderBottom: `1px solid ${T.border}`,
             display: 'flex', alignItems: 'center', gap: 6,
             flexShrink: 0, flexWrap: 'wrap',
