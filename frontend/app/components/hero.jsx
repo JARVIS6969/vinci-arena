@@ -846,9 +846,11 @@ export default function Hero() {
                 <span className="h1-brand">VINCI-ARENA</span>
               </h1>
               <p className="va-sub">Manage Esports Like a Pro</p>
-              <p className="va-desc">Make your own gaming portfolio. Track matches, calculate points automatically, and export professional standings for Free Fire, BGMI, and Valorant tournaments.</p>
-              <div className="va-pills">
-                {['🔥 FREE FIRE','🎯 BGMI','⚔️ VALORANT','🏆 TOURNAMENTS','📊 ANALYTICS','🎨 STUDIO'].map(p=>(
+              {/* <p className="va-desc">Play, learn, and grow —turn your game into a path where passion becomes purpose</p> */}
+              <p className="va-sub">Play, learn, and grow —turn your game into a path where passion becomes purpose</p>
+              <div className="va-pills"> 
+                {/* className="va-pills" */}
+                {['Profile Portfolio','Marketplace','Squad Portfolio','🏆 TOURNAMENTS','📊 ANALYTICS','🎨 STUDIO'].map(p=>(
                   <span key={p} className="pill">{p}</span>
                 ))}
               </div>
@@ -1006,7 +1008,7 @@ export default function Hero() {
             <img src="/vinci-symbol.jpg" alt="Vinci-Arena" className="footer-logo-img"/>
             <span className="footer-brand">VINCI-ARENA</span>
           </div>
-          <p className="footer-desc">The ultimate tournament calculator for esports</p>
+          <p className="footer-desc">Esports community</p>
           <p className="footer-copy">© 2026 Vinci-Arena. Built with Next.js & Supabase.</p>
         </footer>
 

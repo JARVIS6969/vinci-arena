@@ -84,7 +84,6 @@ function TiltCard({children, accentColor='#ef4444', style={}}) {
   const ref = useRef(null);
   const [tilt, setTilt] = useState({x:0,y:0,gx:50,gy:50});
   const [hov, setHov] = useState(false);
-
   const handleMove = (e) => {
     const r = ref.current.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width - 0.5) * 20;
@@ -93,7 +92,6 @@ function TiltCard({children, accentColor='#ef4444', style={}}) {
     const gy = ((e.clientY - r.top) / r.height) * 100;
     setTilt({x,y,gx,gy});
   };
-
   return (
     <div ref={ref}
       onMouseMove={handleMove}
@@ -108,12 +106,7 @@ function TiltCard({children, accentColor='#ef4444', style={}}) {
         boxShadow: hov?`0 20px 60px ${accentColor}25, 0 0 30px ${accentColor}15`:'none',
         ...style
       }}>
-      {/* Shine effect on tilt */}
-      {hov && <div style={{
-        position:'absolute',inset:0,pointerEvents:'none',zIndex:1,
-        background:`radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.08) 0%, transparent 60%)`,
-      }}/>}
-      {/* Top neon line */}
+      {hov && <div style={{position:'absolute',inset:0,pointerEvents:'none',zIndex:1,background:`radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.08) 0%, transparent 60%)`}}/>}
       <div style={{position:'absolute',top:0,left:0,right:0,height:'1.5px',background:`linear-gradient(90deg,transparent,${accentColor},transparent)`,opacity:hov?1:0,transition:'opacity .3s',zIndex:2}}/>
       {children}
     </div>
@@ -131,28 +124,14 @@ function SkillBar({label, value, max, color, suffix='', delay=0}) {
     if(ref.current) observer.observe(ref.current);
     return ()=>observer.disconnect();
   },[value,max,delay]);
-
-  const numVal = parseFloat(value)||0;
-  const pct = Math.min((numVal/max)*100,100);
-
   return (
     <div ref={ref} style={{marginBottom:'12px'}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'5px'}}>
         <span style={{fontFamily:"'Orbitron',monospace",fontSize:'9px',fontWeight:900,color:'rgba(255,255,255,0.5)',letterSpacing:'2px'}}>{label}</span>
-        <span style={{fontFamily:"'Orbitron',monospace",fontSize:'11px',fontWeight:900,color,textShadow:`0 0 8px ${color}`}}>
-          {value}{suffix}
-        </span>
+        <span style={{fontFamily:"'Orbitron',monospace",fontSize:'11px',fontWeight:900,color,textShadow:`0 0 8px ${color}`}}>{value}{suffix}</span>
       </div>
       <div style={{height:'6px',borderRadius:'99px',background:'rgba(255,255,255,0.06)',overflow:'hidden',position:'relative'}}>
-        <div style={{
-          height:'100%',borderRadius:'99px',
-          width:`${width}%`,
-          background:`linear-gradient(90deg,${color}80,${color})`,
-          boxShadow:`0 0 10px ${color}`,
-          transition:`width 1.2s cubic-bezier(.16,1,.3,1) ${delay}ms`,
-          position:'relative',overflow:'hidden',
-        }}>
-          {/* Shimmer */}
+        <div style={{height:'100%',borderRadius:'99px',width:`${width}%`,background:`linear-gradient(90deg,${color}80,${color})`,boxShadow:`0 0 10px ${color}`,transition:`width 1.2s cubic-bezier(.16,1,.3,1) ${delay}ms`,position:'relative',overflow:'hidden'}}>
           <div style={{position:'absolute',inset:0,background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)',animation:'shimmer 2s infinite',backgroundSize:'200% 100%'}}/>
         </div>
       </div>
@@ -168,7 +147,6 @@ function SkillBar({label, value, max, color, suffix='', delay=0}) {
 function FloatingReactions() {
   const [reactions, setReactions] = useState([]);
   const emojis = ['🔥','⚡','💀','🏆','🎯','👑','💥','🎮','⭐','🚀'];
-
   const addReaction = () => {
     const id = Date.now();
     const emoji = emojis[Math.floor(Math.random()*emojis.length)];
@@ -176,7 +154,6 @@ function FloatingReactions() {
     setReactions(r=>[...r,{id,emoji,x}]);
     setTimeout(()=>setReactions(r=>r.filter(rx=>rx.id!==id)),2000);
   };
-
   return (
     <div style={{position:'relative',display:'inline-block'}}>
       <button onClick={addReaction}
@@ -186,17 +163,13 @@ function FloatingReactions() {
         🎉 REACT
       </button>
       {reactions.map(r=>(
-        <div key={r.id} style={{
-          position:'absolute',bottom:'100%',left:`${r.x}%`,
-          fontSize:'20px',animation:'floatUp 2s ease forwards',
-          pointerEvents:'none',zIndex:50,
-        }}>{r.emoji}</div>
+        <div key={r.id} style={{position:'absolute',bottom:'100%',left:`${r.x}%`,fontSize:'20px',animation:'floatUp 2s ease forwards',pointerEvents:'none',zIndex:50}}>{r.emoji}</div>
       ))}
     </div>
   );
 }
 
-// ── Glow Card (non-tilt) ──
+// ── Glow Card ──
 function GlowCard({children,accentColor='#ef4444',delay='0ms',style={}}) {
   const [hov,setHov]=useState(false);
   return (
@@ -209,6 +182,116 @@ function GlowCard({children,accentColor='#ef4444',delay='0ms',style={}}) {
         position:'relative',overflow:'hidden',animationDelay:delay,...style}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:'1.5px',background:`linear-gradient(90deg,transparent,${accentColor},transparent)`,opacity:hov?1:0,transition:'opacity .3s'}}/>
       {children}
+    </div>
+  );
+}
+
+// ── NEW: Squad Profile Card ──
+function SquadCard({ squad, onView }) {
+  const [hov, setHov] = useState(false);
+  if (!squad) return null;
+
+  const gameColor = GAME_CONFIG[squad.game]?.color || '#a855f7';
+  const gameIcon  = GAME_CONFIG[squad.game]?.icon  || '🎮';
+  const activeMembers = squad.squad_members?.filter(m => m.is_active) || [];
+  const winRate = squad.total_tournaments > 0
+    ? Math.round((squad.total_wins / squad.total_tournaments) * 100)
+    : 0;
+
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        padding: '14px',
+        borderRadius: '16px',
+        background: '#050505',
+        border: `1px solid ${hov ? '#a855f7' : 'rgba(168,85,247,0.3)'}`,
+        boxShadow: hov ? '0 0 30px rgba(168,85,247,0.2), inset 0 0 15px rgba(168,85,247,0.04)' : 'none',
+        transform: hov ? 'translateY(-3px)' : 'translateY(0)',
+        transition: 'all .3s cubic-bezier(.16,1,.3,1)',
+        position: 'relative', overflow: 'hidden',
+        cursor: 'pointer',
+      }}
+      onClick={onView}
+    >
+      {/* Top rainbow line */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1.5px', background: 'linear-gradient(90deg,#a855f7,#00ffff,#ef4444)', opacity: hov ? 1 : 0.5, transition: 'opacity .3s' }} />
+      {/* Corner brackets */}
+      <div style={{ position: 'absolute', top: 6, left: 6, width: 10, height: 10, borderTop: '1.5px solid rgba(168,85,247,0.6)', borderLeft: '1.5px solid rgba(168,85,247,0.6)' }} />
+      <div style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderTop: '1.5px solid rgba(168,85,247,0.6)', borderRight: '1.5px solid rgba(168,85,247,0.6)' }} />
+
+      {/* Header label */}
+      <p style={{ fontFamily: "'Orbitron',monospace", fontSize: '9px', fontWeight: 900, color: 'rgba(168,85,247,0.65)', letterSpacing: '3px', marginBottom: '10px' }}>// SQUAD</p>
+
+      {/* Squad identity row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+          background: 'linear-gradient(135deg,rgba(168,85,247,0.2),rgba(239,68,68,0.15))',
+          border: '1.5px solid rgba(168,85,247,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: "'Orbitron',monospace", fontSize: 13, fontWeight: 900, color: '#a855f7',
+        }}>
+          {(squad.tag || squad.name || '?').slice(0, 2).toUpperCase()}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 13, fontWeight: 900, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {squad.name}
+          </div>
+          <div style={{ display: 'flex', gap: 5, marginTop: 4, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: gameColor + '18', color: gameColor, border: `1px solid ${gameColor}40`, fontFamily: "'Share Tech Mono',monospace" }}>
+              {gameIcon} {squad.game}
+            </span>
+            {squad.region && (
+              <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20, background: 'rgba(168,85,247,0.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.3)', fontFamily: "'Share Tech Mono',monospace" }}>
+                {squad.region}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats mini row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 10 }}>
+        {[
+          { val: squad.elo_rating || '—', lbl: 'ELO',  color: '#ef4444' },
+          { val: squad.total_wins || 0,   lbl: 'Wins',  color: '#00ff88' },
+          { val: `${winRate}%`,            lbl: 'W-Rate',color: '#fbbf24' },
+        ].map(s => (
+          <div key={s.lbl} style={{ background: 'rgba(255,255,255,0.025)', borderRadius: 8, padding: '6px 4px', textAlign: 'center', border: '1px solid rgba(168,85,247,0.08)' }}>
+            <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 13, fontWeight: 900, color: s.color }}>{s.val}</div>
+            <div style={{ fontSize: 9, color: '#475569', fontFamily: "'Share Tech Mono',monospace", marginTop: 2, letterSpacing: 0.5 }}>{s.lbl}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Members avatars row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {activeMembers.slice(0, 5).map((m, i) => (
+            <div key={m.id || i} style={{
+              width: 24, height: 24, borderRadius: '50%',
+              background: 'rgba(168,85,247,0.2)', border: '1px solid rgba(168,85,247,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: "'Orbitron',monospace", fontSize: 9, fontWeight: 900, color: '#a855f7',
+            }}>
+              {(m.users?.name || m.in_game_name || '?').slice(0, 1).toUpperCase()}
+            </div>
+          ))}
+          {activeMembers.length > 5 && (
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#475569' }}>
+              +{activeMembers.length - 5}
+            </div>
+          )}
+          <div style={{ fontSize: 10, color: '#475569', fontFamily: "'Share Tech Mono',monospace", marginLeft: 4, alignSelf: 'center' }}>
+            {activeMembers.length}/7
+          </div>
+        </div>
+        <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 9, color: '#a855f7', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
+          View Squad <span style={{ fontSize: 11 }}>→</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -231,6 +314,8 @@ export default function PublicProfilePage() {
   const [ffMode,setFfMode]=useState('br');
   const [ffInputMode,setFfInputMode]=useState(null);
   const [ocrLoading,setOcrLoading]=useState(false);
+  // ── NEW: squad state ──
+  const [userSquad, setUserSquad] = useState(null);
 
   useEffect(()=>{setCurrentUserId(localStorage.getItem('userId')||'');fetchAll();},[params.userId]);
 
@@ -247,6 +332,17 @@ export default function PublicProfilePage() {
       const [p,g,s]=await Promise.all([pR.json(),gR.json(),sR.json()]);
       setProfile(p);setGames(g||[]);setAllStats(s||[]);
       if(g?.length>0)setActiveGame(g[0].game);
+
+      // ── NEW: fetch this user's squad ──
+      try {
+        const squadsRes = await fetch(`http://localhost:3001/api/squads/user/${params.userId}`, { headers: h });
+        if (squadsRes.ok) {
+          const squadsData = await squadsRes.json();
+          // find the squad where this user is an active member
+          setUserSquad(squadsData || null);
+        }
+      } catch { /* squad fetch failed silently — not critical */ }
+
     }catch{setNotFound(true);}
     finally{setLoading(false);}
   };
@@ -306,7 +402,7 @@ export default function PublicProfilePage() {
   );
 
   if(loading)return(
-    <div style={{minHeight:'100vh',background:'#07070f',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:'44px'}}>
+    <div style={{minHeight:'100vh',background:'#07070f',display:'flex',alignItems:'center',justifyContent:'center',paddingTop:'104px'}}>
       <div style={{textAlign:'center'}}>
         <div style={{width:'40px',height:'40px',border:'2px solid rgba(239,68,68,0.2)',borderTop:'2px solid #ef4444',borderRadius:'50%',animation:'spin 1s linear infinite',margin:'0 auto 16px'}}/>
         <div style={{color:'#ef4444',fontFamily:"'Orbitron',sans-serif",fontSize:'11px',letterSpacing:'3px'}}>LOADING...</div>
@@ -316,7 +412,7 @@ export default function PublicProfilePage() {
   );
 
   if(notFound)return(
-    <div style={{minHeight:'100vh',background:'#07070f',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',paddingTop:'44px'}}>
+    <div style={{minHeight:'100vh',background:'#07070f',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',paddingTop:'104px'}}>
       <div style={{textAlign:'center'}}>
         <div style={{fontSize:'60px',marginBottom:'16px'}}>💀</div>
         <p style={{color:'#ef4444',fontFamily:"'Orbitron',sans-serif",fontSize:'18px',marginBottom:'8px'}}>PROFILE NOT FOUND</p>
@@ -326,7 +422,7 @@ export default function PublicProfilePage() {
   );
 
   return(
-    <div style={{minHeight:'100vh',background:'#07070f',color:'#fff',fontFamily:"'Rajdhani',sans-serif",paddingTop:'44px'}}>
+    <div style={{minHeight:'100vh',background:'#07070f',color:'#fff',fontFamily:"'Rajdhani',sans-serif",paddingTop:'104px'}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:linear-gradient(#ef4444,#a78bfa,#00ffff)}
@@ -343,6 +439,7 @@ export default function PublicProfilePage() {
         @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-80px) scale(1.5)}}
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
         @keyframes neonPulse{0%,100%{opacity:.7}50%{opacity:1}}
+        @keyframes rgbshift{0%{border-color:#ef4444}33%{border-color:#a855f7}66%{border-color:#00ffff}100%{border-color:#ef4444}}
         .scan-fx{position:absolute;left:0;right:0;height:1px;pointer-events:none;z-index:10;
           background:linear-gradient(90deg,transparent,rgba(239,68,68,.6),rgba(0,255,255,.3),transparent);
           animation:scan 7s linear infinite}
@@ -354,13 +451,14 @@ export default function PublicProfilePage() {
         .tl{top:6px;left:6px;border-width:2px 0 0 2px}
         .tr{top:6px;right:6px;border-width:2px 2px 0 0}
         .bl{bottom:6px;left:6px;border-width:0 0 2px 2px}
-        .br{bottom:6px;right:6px;border-width:0 2px 2px 0}
+        .br2{bottom:6px;right:6px;border-width:0 2px 2px 0}
         .game-tab{transition:all .25s;cursor:pointer;border-radius:10px;border:none}
         .game-tab:hover{transform:translateY(-2px)}
         .hub-row{transition:all .2s;cursor:pointer}
         .hub-row:hover{transform:translateX(4px)}
         .action-btn{transition:all .25s;cursor:pointer;border:none}
         .action-btn:hover{transform:translateY(-2px);filter:brightness(1.2)}
+        .squad-card-hover:hover{border-color:rgba(168,85,247,0.6)!important;animation:rgbshift 2s linear infinite}
       `}</style>
 
       <div className="grid-bg">
@@ -399,7 +497,6 @@ export default function PublicProfilePage() {
                   <span className="blink" style={{width:'6px',height:'6px',borderRadius:'50%',background:'#10b981',boxShadow:'0 0 6px #10b981',display:'inline-block'}}/>
                   <span style={{fontFamily:"'Orbitron',monospace",fontSize:'8px',color:'#10b981',fontWeight:900,letterSpacing:'1px'}}>ONLINE</span>
                 </div>
-                {/* Floating reactions button */}
                 <FloatingReactions/>
               </div>
               {profile?.tagline&&<p style={{color:'rgba(255,255,255,0.5)',fontWeight:700,fontSize:'14px',marginBottom:'8px',fontStyle:'italic'}}>"{profile.tagline}"</p>}
@@ -413,19 +510,43 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* ── 3-COLUMN ── */}
+          {/* ── 3-COLUMN LAYOUT ── */}
           <div style={{display:'grid',gridTemplateColumns:'250px 1fr 270px',gap:'16px',paddingBottom:'40px'}}>
 
-            {/* COL 1 */}
+            {/* ── COL 1 ── */}
             <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+
+              {/* ── SQUAD CARD (NEW — above bio) ── */}
+              {userSquad ? (
+                <SquadCard
+                  squad={userSquad}
+                  onView={() => router.push(`/squads/${userSquad.id}`)}
+                />
+              ) : isOwner ? (
+                /* Owner with no squad — show a "Create / Join" prompt */
+                <GlowCard accentColor="#a855f7">
+                  <p style={{fontFamily:"'Orbitron',monospace",fontSize:'9px',fontWeight:900,color:'rgba(168,85,247,0.65)',letterSpacing:'3px',marginBottom:'10px'}}>//  SQUAD</p>
+                  <div style={{textAlign:'center',padding:'14px 0'}}>
+                    <div style={{fontSize:'28px',marginBottom:'8px',opacity:0.4}}>⬡</div>
+                    <p style={{fontFamily:"'Orbitron',monospace",fontSize:'9px',color:'#334155',letterSpacing:'2px',marginBottom:'12px'}}>NOT IN A SQUAD</p>
+                    <div style={{display:'flex',gap:'6px',justifyContent:'center'}}>
+                      <button onClick={()=>router.push('/squads/create')} style={{padding:'5px 12px',borderRadius:8,background:'rgba(168,85,247,0.1)',border:'1px solid rgba(168,85,247,0.3)',color:'#a855f7',fontFamily:"'Orbitron',monospace",fontSize:9,cursor:'pointer',letterSpacing:1}}>+ Create</button>
+                      <button onClick={()=>router.push('/squads')} style={{padding:'5px 12px',borderRadius:8,background:'rgba(0,255,255,0.05)',border:'1px solid rgba(0,255,255,0.2)',color:'#00ffff',fontFamily:"'Orbitron',monospace",fontSize:9,cursor:'pointer',letterSpacing:1}}>Browse</button>
+                    </div>
+                  </div>
+                </GlowCard>
+              ) : null /* other user with no squad — show nothing */}
+
+              {/* BIO */}
               {profile?.bio&&(
                 <GlowCard accentColor="#ef4444">
-                  <div className="scan-fx"/><div className="c tl" style={{borderColor:'#ef4444'}}/><div className="c br" style={{borderColor:'rgba(0,255,255,0.3)'}}/>
+                  <div className="scan-fx"/><div className="c tl" style={{borderColor:'#ef4444'}}/><div className="c br2" style={{borderColor:'rgba(0,255,255,0.3)'}}/>
                   <p style={{fontFamily:"'Orbitron',monospace",fontSize:'9px',fontWeight:900,color:'rgba(239,68,68,0.6)',letterSpacing:'3px',marginBottom:'10px'}}>//  BIO</p>
                   <p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:1.7,fontWeight:600}}>{profile.bio}</p>
                 </GlowCard>
               )}
 
+              {/* SOCIALS */}
               {(profile?.youtube_url||profile?.instagram_url||profile?.discord_tag||profile?.twitter_url)&&(
                 <GlowCard accentColor="#a78bfa">
                   <p style={{fontFamily:"'Orbitron',monospace",fontSize:'9px',fontWeight:900,color:'rgba(167,139,250,0.6)',letterSpacing:'3px',marginBottom:'10px'}}>//  SOCIALS</p>
@@ -438,8 +559,9 @@ export default function PublicProfilePage() {
                 </GlowCard>
               )}
 
+              {/* ACHIEVEMENTS */}
               <GlowCard accentColor="#fbbf24">
-                <div className="scan-fx"/><div className="c tl" style={{borderColor:'#fbbf24'}}/><div className="c br" style={{borderColor:'rgba(251,191,36,0.4)'}}/>
+                <div className="scan-fx"/><div className="c tl" style={{borderColor:'#fbbf24'}}/><div className="c br2" style={{borderColor:'rgba(251,191,36,0.4)'}}/>
                 <p style={{fontFamily:"'Orbitron',monospace",fontSize:'9px',fontWeight:900,color:'rgba(251,191,36,0.6)',letterSpacing:'3px',marginBottom:'10px'}}>//  ACHIEVEMENTS</p>
                 <button onClick={()=>router.push(`/profile/${params.userId}/achievements`)}
                   style={{width:'100%',padding:'7px',marginBottom:'10px',borderRadius:'8px',background:'rgba(251,191,36,0.08)',border:'1px solid rgba(251,191,36,0.3)',color:'#fbbf24',fontFamily:"'Orbitron',monospace",fontSize:'8px',fontWeight:900,letterSpacing:'2px',cursor:'pointer',transition:'all .2s'}}
@@ -460,7 +582,7 @@ export default function PublicProfilePage() {
                 ))}
               </GlowCard>
 
-              {/* ── ANIMATED SKILL BARS ── */}
+              {/* SKILL BARS */}
               {Object.keys(activeStats).length>0&&(
                 <GlowCard accentColor="#00ffff">
                   <p style={{fontFamily:"'Orbitron',monospace",fontSize:'9px',fontWeight:900,color:'rgba(0,255,255,0.6)',letterSpacing:'3px',marginBottom:'14px'}}>//  SKILL METRICS</p>
@@ -472,7 +594,7 @@ export default function PublicProfilePage() {
               )}
             </div>
 
-            {/* COL 2 — 3D Tilt Game Card ── */}
+            {/* ── COL 2 — Game Card ── */}
             <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
               {games.length>0?(
                 <>
@@ -490,7 +612,7 @@ export default function PublicProfilePage() {
                     <TiltCard accentColor={activeGC.color} style={{padding:'20px'}}>
                       <div className="scan-fx"/>
                       <div className="c tl" style={{borderColor:activeGC.color}}/><div className="c tr" style={{borderColor:activeGC.color}}/>
-                      <div className="c bl" style={{borderColor:`${activeGC.color}60`}}/><div className="c br" style={{borderColor:`${activeGC.color}60`}}/>
+                      <div className="c bl" style={{borderColor:`${activeGC.color}60`}}/><div className="c br2" style={{borderColor:`${activeGC.color}60`}}/>
                       <div style={{position:'absolute',inset:0,backgroundImage:`radial-gradient(ellipse 60% 50% at 80% 30%,${activeGC.color}08,transparent)`,pointerEvents:'none',zIndex:0}}/>
                       <div style={{position:'relative',zIndex:1}}>
                         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'20px'}}>
@@ -528,7 +650,7 @@ export default function PublicProfilePage() {
               )}
             </div>
 
-            {/* COL 3 */}
+            {/* ── COL 3 — Live FF Stats + Clips ── */}
             <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
               {activeGame==='Free Fire'&&(
                 <GlowCard accentColor="#ef4444" style={{padding:'16px'}}>
@@ -596,8 +718,8 @@ export default function PublicProfilePage() {
                           <div key={mode} style={{marginBottom:'8px',padding:'10px',borderRadius:'10px',background:'#0a0a0a',border:'1px solid rgba(239,68,68,0.1)'}}>
                             <p style={{fontFamily:"'Orbitron',monospace",fontSize:'8px',color:'#ef4444',marginBottom:'8px',letterSpacing:'2px'}}>{mode==='solostats'?'👤 SOLO':mode==='duostats'?'👥 DUO':'👥 SQUAD'}</p>
                             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'4px'}}>
-                              {[{l:'MATCH',v:s.gamesplayed,i:'🎮'},{l:'KILLS',v:s.kills,i:'💀'},{l:'WINS',v:s.wins,i:'🏆'},{l:'K/D',v:kd,i:'⚔️'},{l:'WIN%',v:`${wr}%`,i:'🥇'},{l:'HS%',v:`${hs}%`,i:'🎯'}].map((st,i)=>(
-                                <StatMini key={i} label={st.l} value={st.v} icon={st.i}/>
+                              {[{l:'MATCH',v:s.gamesplayed,i:'🎮'},{l:'KILLS',v:s.kills,i:'💀'},{l:'WINS',v:s.wins,i:'🏆'},{l:'K/D',v:kd,i:'⚔️'},{l:'WIN%',v:`${wr}%`,i:'🥇'},{l:'HS%',v:`${hs}%`,i:'🎯'}].map((st,idx)=>(
+                                <StatMini key={idx} label={st.l} value={st.v} icon={st.i}/>
                               ))}
                             </div>
                           </div>
@@ -610,8 +732,8 @@ export default function PublicProfilePage() {
                           <div style={{padding:'10px',borderRadius:'10px',background:'#0a0a0a',border:'1px solid rgba(239,68,68,0.1)'}}>
                             <p style={{fontFamily:"'Orbitron',monospace",fontSize:'8px',color:'#ef4444',marginBottom:'8px',letterSpacing:'2px'}}>⚔️ CLASH SQUAD</p>
                             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'4px'}}>
-                              {[{l:'MATCH',v:s.gamesplayed,i:'🎮'},{l:'KILLS',v:s.kills,i:'💀'},{l:'WINS',v:s.wins,i:'🏆'},{l:'K/D',v:kd,i:'⚔️'},{l:'MVP',v:d.mvpcount,i:'⭐'},{l:'DMG',v:d.damage,i:'💥'}].filter(x=>x.v).map((st,i)=>(
-                                <StatMini key={i} label={st.l} value={st.v} icon={st.i}/>
+                              {[{l:'MATCH',v:s.gamesplayed,i:'🎮'},{l:'KILLS',v:s.kills,i:'💀'},{l:'WINS',v:s.wins,i:'🏆'},{l:'K/D',v:kd,i:'⚔️'},{l:'MVP',v:d.mvpcount,i:'⭐'},{l:'DMG',v:d.damage,i:'💥'}].filter(x=>x.v).map((st,idx)=>(
+                                <StatMini key={idx} label={st.l} value={st.v} icon={st.i}/>
                               ))}
                             </div>
                           </div>

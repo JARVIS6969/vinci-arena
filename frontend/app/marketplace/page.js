@@ -1,554 +1,643 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const NEON = ['#ef4444','#f97316','#fbbf24','#10b981','#00ffff','#6366f1','#a78bfa','#ec4899'];
+/* ─── THEME (matches profile page dark palette) ──────────────── */
+const T = {
+  bg:        '#0a0a0f',
+  surface:   '#111118',
+  card:      '#16161f',
+  cardHover: '#1c1c28',
+  border:    'rgba(255,255,255,0.07)',
+  borderHi:  'rgba(255,255,255,0.14)',
+  red:       '#ef4444',
+  redDim:    'rgba(239,68,68,0.15)',
+  redGlow:   'rgba(239,68,68,0.25)',
+  cyan:      '#22d3ee',
+  cyanDim:   'rgba(34,211,238,0.12)',
+  purple:    '#a78bfa',
+  purpleDim: 'rgba(167,139,250,0.12)',
+  green:     '#4ade80',
+  greenDim:  'rgba(74,222,128,0.12)',
+  amber:     '#fbbf24',
+  amberDim:  'rgba(251,191,36,0.12)',
+  pink:      '#f472b6',
+  pinkDim:   'rgba(244,114,182,0.12)',
+  text:      '#f1f5f9',
+  textMuted: '#64748b',
+  textDim:   '#334155',
+};
 
-// ── Canvas Particles ──
-function ParticleCanvas() {
-  const ref = useRef(null);
-  useEffect(() => {
-    const c = ref.current; if (!c) return;
-    const ctx = c.getContext('2d');
-    const resize = () => { c.width = window.innerWidth; c.height = window.innerHeight; };
-    resize();
-    window.addEventListener('resize', resize);
-    const particles = Array.from({length: 60}, () => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.5 + 0.3,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.25,
-      col: NEON[Math.floor(Math.random() * NEON.length)],
-      bp: Math.random() * Math.PI * 2,
-      br: 0.02 + Math.random() * 0.03,
-    }));
-    let frame = 0, id;
-    const loop = () => {
-      id = requestAnimationFrame(loop); frame++;
-      ctx.clearRect(0, 0, c.width, c.height);
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = c.width; if (p.x > c.width) p.x = 0;
-        if (p.y < 0) p.y = c.height; if (p.y > c.height) p.y = 0;
-        const op = 0.2 + 0.5 * Math.abs(Math.sin(frame * p.br + p.bp));
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 5);
-        g.addColorStop(0, p.col + '99'); g.addColorStop(1, p.col + '00');
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 5, 0, Math.PI * 2);
-        ctx.fillStyle = g; ctx.globalAlpha = op * 0.25; ctx.fill();
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.col; ctx.globalAlpha = op; ctx.fill();
-        ctx.globalAlpha = 1;
-      });
-      particles.forEach((a, i) => particles.slice(i + 1).forEach(b => {
-        const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 100) {
-          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = a.col; ctx.globalAlpha = (1 - d / 100) * 0.06;
-          ctx.lineWidth = 0.5; ctx.stroke(); ctx.globalAlpha = 1;
-        }
-      }));
-    };
-    loop();
-    return () => { cancelAnimationFrame(id); window.removeEventListener('resize', resize); };
-  }, []);
-  return <canvas ref={ref} style={{position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0}}/>;
+/* ─── CONSTANTS ──────────────────────────────────────────────── */
+const GAMES = [
+  { id: 'all',       label: 'All Games',  icon: '🎮' },
+  { id: 'Free Fire', label: 'Free Fire',  icon: '🔥' },
+  { id: 'BGMI',      label: 'BGMI',       icon: '🎯' },
+  { id: 'Valorant',  label: 'Valorant',   icon: '⚡' },
+];
+
+const ROLES = [
+  { id: 'all',             label: 'All Roles',       col: T.cyan   },
+  { id: 'player',          label: 'Players Wanted',  col: T.red    },
+  { id: 'squad',           label: 'Squad Recruit',   col: T.green  },
+  { id: 'content_creator', label: 'Content Creator', col: T.pink   },
+  { id: 'coach',           label: 'Coach Needed',    col: T.purple },
+  { id: 'analyst',         label: 'Game Analyst',    col: T.amber  },
+];
+
+const QUICK_FILTERS = [
+  { id: 'all',           label: 'All'           },
+  { id: 'paid',          label: 'Paid'          },
+  { id: 'revenue_share', label: 'Revenue Share' },
+  { id: 'pro',           label: 'Pro'           },
+  { id: 'amateur',       label: 'Amateur'       },
+];
+
+const ROLE_META = {
+  player:          { icon: '◉', color: T.red,    dim: T.redDim,    label: 'Player'          },
+  squad:           { icon: '◈', color: T.green,  dim: T.greenDim,  label: 'Squad'           },
+  content_creator: { icon: '◎', color: T.pink,   dim: T.pinkDim,   label: 'Content Creator' },
+  coach:           { icon: '◆', color: T.purple, dim: T.purpleDim, label: 'Coach'           },
+  analyst:         { icon: '◇', color: T.amber,  dim: T.amberDim,  label: 'Analyst'         },
+};
+
+/* ─── HELPERS ────────────────────────────────────────────────── */
+function timeAgo(date) {
+  const s = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (s < 60)    return 'just now';
+  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
 }
 
-export default function MarketplacePage() {
-  const router = useRouter();
-  const [jobs, setJobs] = useState([]);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [activeGame, setActiveGame] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [userName, setUserName] = useState('');
-  const [scanY, setScanY] = useState(0);
+function getRoleMeta(type) {
+  return ROLE_META[type] || { icon: '◈', color: T.cyan, dim: T.cyanDim, label: type || 'Unknown' };
+}
 
-  // Scan line
-  useEffect(() => {
-    let frame;
-    const animate = () => { setScanY(y => (y + 0.2) % 100); frame = requestAnimationFrame(animate); };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, []);
+/* ─── NEON TAG ───────────────────────────────────────────────── */
+function NeonTag({ children, color, dim }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '2px 9px', borderRadius: 20,
+      fontSize: 11, fontWeight: 600, lineHeight: '18px',
+      background: dim, color, border: `1px solid ${color}40`,
+      whiteSpace: 'nowrap',
+    }}>
+      {children}
+    </span>
+  );
+}
+
+/* ─── SIDEBAR BUTTON ─────────────────────────────────────────── */
+function SideBtn({ active, onClick, icon, label, count, color }) {
+  const accentColor = color || T.red;
+  return (
+    <button onClick={onClick} style={{
+      display: 'flex', alignItems: 'center', gap: 8,
+      width: '100%', padding: '7px 10px',
+      borderRadius: 8,
+      border: active ? `1px solid ${accentColor}30` : '1px solid transparent',
+      cursor: 'pointer', textAlign: 'left',
+      fontSize: 12, fontWeight: active ? 700 : 400,
+      background: active ? `${accentColor}10` : 'transparent',
+      color: active ? accentColor : T.textMuted,
+      transition: 'all 0.15s',
+    }}>
+      <span style={{ fontSize: 13 }}>{icon}</span>
+      <span style={{ flex: 1 }}>{label}</span>
+      {count != null && (
+        <span style={{
+          fontSize: 10, fontWeight: 700, padding: '1px 6px',
+          borderRadius: 10, minWidth: 20, textAlign: 'center',
+          background: active ? `${accentColor}20` : T.border,
+          color: active ? accentColor : T.textDim,
+        }}>{count}</span>
+      )}
+    </button>
+  );
+}
+
+/* ─── JOB CARD ───────────────────────────────────────────────── */
+function JobCard({ job, selected, onClick }) {
+  const m = getRoleMeta(job.job_type);
+  return (
+    <div onClick={onClick} style={{
+      background: selected ? T.cardHover : T.card,
+      border: selected ? `1px solid ${m.color}40` : `1px solid ${T.border}`,
+      borderRadius: 12, padding: '14px 16px',
+      cursor: 'pointer', transition: 'all 0.15s',
+      boxShadow: selected ? `0 0 20px ${m.color}15` : 'none',
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Selected top accent */}
+      {selected && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+          background: `linear-gradient(90deg, ${m.color}, transparent)`,
+        }} />
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+          background: m.dim, border: `1px solid ${m.color}30`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 17, color: m.color,
+        }}>
+          {m.icon}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 13, fontWeight: 700, color: T.text,
+            marginBottom: 2, lineHeight: 1.3,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {job.title}
+          </div>
+          <div style={{ fontSize: 11, color: T.textMuted }}>
+            by <span style={{ color: T.cyan, fontWeight: 600 }}>{job.users?.name || 'Anonymous'}</span>
+            {' · '}{job.game}
+          </div>
+        </div>
+        <span style={{ fontSize: 10, color: T.textDim, flexShrink: 0, marginTop: 2 }}>
+          {timeAgo(job.created_at)}
+        </span>
+      </div>
+
+      <p style={{
+        fontSize: 12, color: T.textMuted, lineHeight: 1.6,
+        margin: '0 0 10px 0',
+        overflow: 'hidden', display: '-webkit-box',
+        WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+      }}>
+        {job.description}
+      </p>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <NeonTag color={T.cyan} dim={T.cyanDim}>{job.game}</NeonTag>
+        <NeonTag color={m.color} dim={m.dim}>{m.icon} {m.label}</NeonTag>
+        {job.budget_type && (
+          <NeonTag color={T.green} dim={T.greenDim}>{job.budget_type.replace('_', ' ')}</NeonTag>
+        )}
+        <span style={{ marginLeft: 'auto', fontSize: 11, color: T.textDim }}>
+          {job.applications_count || 0} applicants
+        </span>
+      </div>
+
+      {selected && (
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
+          <Link href={`/marketplace/jobs/${job.id}`}>
+            <button style={{
+              width: '100%',
+              background: `linear-gradient(135deg, ${m.color}cc, ${m.color}88)`,
+              border: `1px solid ${m.color}50`,
+              borderRadius: 8, color: '#fff',
+              padding: '9px 0', fontSize: 12, fontWeight: 700,
+              cursor: 'pointer', letterSpacing: '0.5px',
+              boxShadow: `0 0 16px ${m.color}30`,
+            }}>
+              View & Apply →
+            </button>
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── DETAIL PANEL ───────────────────────────────────────────── */
+function DetailPanel({ job }) {
+  const m = getRoleMeta(job.job_type);
+  const infoRows = [
+    { label: 'Game',         value: job.game },
+    { label: 'Role',         value: m.label },
+    { label: 'Compensation', value: job.budget_type?.replace('_', ' ') || '—' },
+    { label: 'Experience',   value: job.experience_level || '—' },
+    { label: 'Applicants',   value: `${job.applications_count || 0} players` },
+    { label: 'Posted',       value: new Date(job.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) },
+  ];
+
+  return (
+    <div style={{
+      width: 276, flexShrink: 0,
+      background: T.surface,
+      borderLeft: `1px solid ${T.border}`,
+      display: 'flex', flexDirection: 'column',
+      overflowY: 'auto',
+    }}>
+      {/* Color stripe at top */}
+      <div style={{ height: 2, background: `linear-gradient(90deg, ${m.color}, ${T.purple}, transparent)`, flexShrink: 0 }} />
+
+      {/* Header block — icon, title, by, tags, APPLY BUTTON */}
+      <div style={{ padding: '16px 16px 14px', borderBottom: `1px solid ${T.border}` }}>
+        {/* Role icon */}
+        <div style={{
+          width: 52, height: 52, borderRadius: 12, marginBottom: 12,
+          background: m.dim, border: `1px solid ${m.color}40`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 24, color: m.color,
+          boxShadow: `0 0 20px ${m.color}20`,
+        }}>
+          {m.icon}
+        </div>
+
+        {/* Title */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4, lineHeight: 1.3 }}>
+          {job.title}
+        </div>
+
+        {/* By poster */}
+        <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 12 }}>
+          by{' '}
+          <Link href={`/profile/${job.posted_by}`} style={{ color: T.cyan, fontWeight: 700, textDecoration: 'none' }}>
+            {job.users?.name || 'Anonymous'}
+          </Link>
+        </div>
+
+        {/* Tags */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+          <NeonTag color={T.cyan} dim={T.cyanDim}>{job.game}</NeonTag>
+          <NeonTag color={m.color} dim={m.dim}>{m.icon} {m.label}</NeonTag>
+        </div>
+
+        {/* ── APPLY BUTTON — right here, visible immediately ── */}
+        <Link href={`/marketplace/jobs/${job.id}`}>
+          <button
+            style={{
+              width: '100%',
+              background: `linear-gradient(135deg, ${m.color}, ${m.color}aa)`,
+              border: `1px solid ${m.color}60`,
+              borderRadius: 10, color: '#fff',
+              padding: '11px 0', fontSize: 13, fontWeight: 700,
+              cursor: 'pointer', letterSpacing: '0.5px',
+              boxShadow: `0 0 24px ${m.color}30`,
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            ⚡ Apply Now
+          </button>
+        </Link>
+
+        <p style={{ margin: '8px 0 0', textAlign: 'center', fontSize: 11, color: T.textDim }}>
+          {job.applications_count || 0} players already applied
+        </p>
+      </div>
+
+      {/* Body: description, requirements, details */}
+      <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        <div>
+          <div style={{ fontSize: 9, fontWeight: 700, color: T.textDim, letterSpacing: '1.5px', marginBottom: 6, textTransform: 'uppercase' }}>
+            // Description
+          </div>
+          <p style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.7, margin: 0 }}>
+            {job.description}
+          </p>
+        </div>
+
+        {job.requirements && (
+          <div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: T.textDim, letterSpacing: '1.5px', marginBottom: 6, textTransform: 'uppercase' }}>
+              // Requirements
+            </div>
+            <p style={{ fontSize: 12, color: T.textMuted, lineHeight: 1.7, margin: 0 }}>
+              {job.requirements}
+            </p>
+          </div>
+        )}
+
+        <div>
+          <div style={{ fontSize: 9, fontWeight: 700, color: T.textDim, letterSpacing: '1.5px', marginBottom: 8, textTransform: 'uppercase' }}>
+            // Details
+          </div>
+          {infoRows.map(({ label, value }) => (
+            <div key={label} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '7px 0', borderBottom: `1px solid ${T.border}`,
+            }}>
+              <span style={{ fontSize: 11, color: T.textDim }}>{label}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: T.text, textTransform: 'capitalize' }}>{value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SKELETON ───────────────────────────────────────────────── */
+function Skeleton() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} className="skeleton-pulse" style={{
+          background: T.card, border: `1px solid ${T.border}`,
+          borderRadius: 12, padding: '14px 16px',
+        }}>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: T.surface }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ height: 13, background: T.surface, borderRadius: 4, marginBottom: 6, width: '65%' }} />
+              <div style={{ height: 11, background: T.surface, borderRadius: 4, width: '35%' }} />
+            </div>
+          </div>
+          <div style={{ height: 11, background: T.surface, borderRadius: 4, marginBottom: 4 }} />
+          <div style={{ height: 11, background: T.surface, borderRadius: 4, width: '75%', marginBottom: 10 }} />
+          <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ height: 20, width: 58, background: T.surface, borderRadius: 20 }} />
+            <div style={{ height: 20, width: 70, background: T.surface, borderRadius: 20 }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── MAIN PAGE ──────────────────────────────────────────────── */
+export default function MarketplacePage() {
+  const [jobs, setJobs]               = useState([]);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [activeGame, setActiveGame]   = useState('all');
+  const [activeRole, setActiveRole]   = useState('all');
+  const [quickFilter, setQuickFilter] = useState('all');
+  const [search, setSearch]           = useState('');
+  const [userName, setUserName]       = useState('Player');
 
   useEffect(() => {
     setUserName(localStorage.getItem('userName') || 'Player');
-    fetchJobs();
-  }, [activeCategory, activeGame]);
+  }, []);
+
+  useEffect(() => { fetchJobs(); }, [activeGame, activeRole]);
 
   const fetchJobs = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (activeGame !== 'all') params.append('game', activeGame);
-      if (activeCategory !== 'all') params.append('job_type', activeCategory);
+      if (activeRole !== 'all') params.append('job_type', activeRole);
       const res = await fetch(`http://localhost:3001/api/marketplace/jobs?${params}`);
       if (res.ok) {
         const data = await res.json();
         setJobs(data);
-        if (data.length > 0) setSelectedJob(data[0]);
+        setSelectedJob(data[0] || null);
       }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
 
-  const filteredJobs = jobs.filter(job =>
-    job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    job.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = jobs.filter(job => {
+    const q = search.toLowerCase();
+    const matchSearch = !q ||
+      job.title?.toLowerCase().includes(q) ||
+      job.description?.toLowerCase().includes(q);
+    const matchQuick = quickFilter === 'all' ||
+      job.budget_type === quickFilter ||
+      job.experience_level?.toLowerCase() === quickFilter;
+    return matchSearch && matchQuick;
+  });
 
-  const categories = [
-    { id: 'all', name: 'All Opportunities', icon: '⚡' },
-    { id: 'player', name: 'Players Wanted', icon: '👤' },
-    { id: 'squad', name: 'Squad Recruit', icon: '👥' },
-    { id: 'content_creator', name: 'Content Creator', icon: '🎥' },
-    { id: 'coach', name: 'Coach Needed', icon: '🎓' },
-    { id: 'analyst', name: 'Game Analyst', icon: '📊' },
-  ];
-
-  const games = [
-    { id: 'all', name: 'All Games', icon: '🎮' },
-    { id: 'Free Fire', name: 'Free Fire', icon: '🔥' },
-    { id: 'BGMI', name: 'BGMI', icon: '🎯' },
-    { id: 'Valorant', name: 'Valorant', icon: '⚡' },
-  ];
-
-  const jobTypeConfig = {
-    player: { icon: '👤', color: '#3b82f6', gradient: 'linear-gradient(135deg,#2563eb,#06b6d4)' },
-    squad: { icon: '👥', color: '#10b981', gradient: 'linear-gradient(135deg,#059669,#10b981)' },
-    content_creator: { icon: '🎥', color: '#ec4899', gradient: 'linear-gradient(135deg,#db2777,#f43f5e)' },
-    coach: { icon: '🎓', color: '#a855f7', gradient: 'linear-gradient(135deg,#7c3aed,#a855f7)' },
-    analyst: { icon: '📊', color: '#f97316', gradient: 'linear-gradient(135deg,#ea580c,#ef4444)' },
-  };
-
-  const getConfig = (type) => jobTypeConfig[type] || { icon: '💼', color: '#ef4444', gradient: 'linear-gradient(135deg,#ef4444,#7c3aed)' };
-
-  const timeAgo = (date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    if (seconds < 60) return 'just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
-  };
+  const gameCount = (id) => id === 'all' ? jobs.length : jobs.filter(j => j.game === id).length;
+  const roleCount = (id) => id === 'all' ? jobs.length : jobs.filter(j => j.job_type === id).length;
 
   return (
     <div style={{
       height: 'calc(100vh - 104px)',
       marginTop: '104px',
-      background: '#050510',
-      color: 'white',
-      display: 'flex',
-      flexDirection: 'column',
+      background: T.bg,
+      color: T.text,
+      display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
-      fontFamily: "'Rajdhani', sans-serif",
-      position: 'relative'
+      fontFamily: "'Rajdhani', 'DM Sans', 'Segoe UI', sans-serif",
     }}>
-      <ParticleCanvas/>
-
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
-        @keyframes glowPulse { 0%,100%{box-shadow:0 0 20px rgba(239,68,68,0.3)} 50%{box-shadow:0 0 40px rgba(239,68,68,0.6)} }
-        @keyframes neonFlicker { 0%,95%,100%{opacity:1} 96%{opacity:0.4} 98%{opacity:0.8} }
-        .cyber-grid {
-          background-image: linear-gradient(rgba(0,255,255,0.015) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(239,68,68,0.015) 1px, transparent 1px);
-          background-size: 44px 44px;
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        input { outline: none; }
+        input:focus { border-color: ${T.cyan}60 !important; }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: none; }
         }
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(#ef4444,#00ffff); }
-        .job-card { transition: all 0.25s cubic-bezier(.16,1,.3,1); }
-        .job-card:hover { transform: translateY(-2px); }
-        .sidebar-btn { transition: all 0.2s; border: none; cursor: pointer; }
-        .sidebar-btn:hover { transform: translateX(3px); }
+        .fade-card { animation: fadeUp 0.2s ease both; }
+        @keyframes shimmer { 0%,100%{opacity:.4} 50%{opacity:.8} }
+        .skeleton-pulse { animation: shimmer 1.5s ease-in-out infinite; }
       `}</style>
 
-      {/* Scan line */}
+      {/* ── TOP BAR ── */}
       <div style={{
-        position: 'fixed', left: 0, right: 0, height: '1px',
-        top: `${scanY}%`,
-        background: 'linear-gradient(90deg,transparent,rgba(0,255,255,0.1),rgba(239,68,68,0.2),rgba(0,255,255,0.1),transparent)',
-        pointerEvents: 'none', zIndex: 1
-      }}/>
-
-      {/* Cyber grid overlay */}
-      <div className="cyber-grid" style={{position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0}}/>
-
-      {/* SUB HEADER */}
-      <div style={{
-        position: 'relative', zIndex: 10,
-        background: 'rgba(5,5,16,0.95)',
-        borderBottom: '1px solid rgba(239,68,68,0.15)',
+        background: T.surface,
+        borderBottom: `1px solid ${T.border}`,
         padding: '10px 20px',
-        display: 'flex', alignItems: 'center', gap: '12px',
+        display: 'flex', alignItems: 'center', gap: 12,
         flexShrink: 0,
-        backdropFilter: 'blur(10px)'
       }}>
-        {/* Rainbow top line */}
-        <div style={{position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg,#ef4444,#f97316,#fbbf24,#10b981,#00ffff,#6366f1,#a78bfa,#ef4444)'}}/>
+        <div style={{ marginRight: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.red, letterSpacing: '1px' }}>
+            VINCI MARKET
+          </div>
+          <div style={{ fontSize: 10, color: T.textMuted }}>
+            Find jobs &amp; opportunities
+          </div>
+        </div>
 
-        <div style={{flex: 1, maxWidth: '440px', position: 'relative'}}>
-          <span style={{position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#ef4444', fontSize: '13px'}}>🔍</span>
+        <div style={{ width: 1, height: 28, background: T.border }} />
+
+        <div style={{ position: 'relative', flex: 1, maxWidth: 360 }}>
+          <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: T.textDim, fontSize: 14 }}>⌕</span>
           <input
             type="text"
-            placeholder="// SEARCH OPPORTUNITIES..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search opportunities…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
             style={{
-              width: '100%', background: '#080812',
-              border: '1px solid rgba(239,68,68,0.2)',
-              borderRadius: '8px', paddingLeft: '34px', paddingRight: '12px',
-              paddingTop: '8px', paddingBottom: '8px',
-              color: 'white', fontSize: '11px',
-              fontFamily: "'Share Tech Mono', monospace",
-              letterSpacing: '1px', outline: 'none', boxSizing: 'border-box'
+              width: '100%', padding: '7px 10px 7px 30px',
+              border: `1px solid ${T.border}`, borderRadius: 8,
+              fontSize: 12, color: T.text, background: T.card,
+              fontFamily: 'inherit', transition: 'border-color 0.15s',
             }}
           />
         </div>
 
-        <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
-          <span style={{width: '8px', height: '8px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 8px #4ade80', display: 'inline-block', animation: 'glowPulse 2s infinite'}}/>
-          <span style={{color: '#4ade80', fontSize: '11px', fontWeight: '700', fontFamily: "'Orbitron', sans-serif", letterSpacing: '2px'}}>{jobs.length} LIVE</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{
+            width: 7, height: 7, background: T.green, borderRadius: '50%',
+            display: 'inline-block', boxShadow: `0 0 8px ${T.green}`,
+          }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: T.green }}>{jobs.length} live</span>
         </div>
 
-        <div style={{marginLeft: 'auto', display: 'flex', gap: '8px'}}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <Link href="/marketplace/my-applications">
             <button style={{
-              background: '#080812', border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '8px', color: '#9ca3af',
-              padding: '8px 16px', fontFamily: "'Orbitron', sans-serif",
-              fontWeight: '700', fontSize: '10px', letterSpacing: '2px', cursor: 'pointer',
-              transition: 'all 0.2s'
+              background: T.card, border: `1px solid ${T.border}`,
+              borderRadius: 8, color: T.textMuted,
+              padding: '7px 14px', fontFamily: 'inherit',
+              fontWeight: 600, fontSize: 12, cursor: 'pointer',
+              transition: 'all 0.15s', letterSpacing: '0.3px',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; e.currentTarget.style.color = 'white'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#9ca3af'; }}>
-              📋 MY ACTIVITY
+            onMouseEnter={e => { e.currentTarget.style.borderColor = T.borderHi; e.currentTarget.style.color = T.text; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border;   e.currentTarget.style.color = T.textMuted; }}>
+              My Activity
             </button>
           </Link>
           <Link href="/marketplace/post">
             <button style={{
-              background: 'linear-gradient(135deg,#ef4444,#dc2626)',
-              border: 'none', borderRadius: '8px', color: 'white',
-              padding: '8px 18px', fontFamily: "'Orbitron', sans-serif",
-              fontWeight: '900', fontSize: '10px', letterSpacing: '2px', cursor: 'pointer',
-              boxShadow: '0 0 20px rgba(239,68,68,0.4)', animation: 'glowPulse 3s infinite'
-            }}>
-              ⚡ POST JOB
+              background: T.red, border: 'none',
+              borderRadius: 8, color: '#fff',
+              padding: '7px 16px', fontFamily: 'inherit',
+              fontWeight: 700, fontSize: 12, cursor: 'pointer',
+              boxShadow: `0 0 16px ${T.redGlow}`,
+              transition: 'opacity 0.15s', letterSpacing: '0.5px',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+              + Post Job
             </button>
           </Link>
         </div>
       </div>
 
-      {/* MAIN */}
-      <div style={{flex: 1, display: 'flex', overflow: 'hidden', position: 'relative', zIndex: 2}}>
+      {/* ── BODY ── */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-        {/* LEFT SIDEBAR */}
+        {/* ── LEFT SIDEBAR ── */}
         <div style={{
-          width: '220px', flexShrink: 0,
-          background: 'rgba(5,5,16,0.9)',
-          borderRight: '1px solid rgba(239,68,68,0.1)',
-          display: 'flex', flexDirection: 'column',
-          backdropFilter: 'blur(10px)'
+          width: 196, flexShrink: 0,
+          background: T.surface,
+          borderRight: `1px solid ${T.border}`,
+          padding: '12px 8px',
+          display: 'flex', flexDirection: 'column', gap: 2,
+          overflowY: 'auto',
         }}>
-          {/* Corner brackets on sidebar */}
-          <div style={{position: 'absolute', top: '60px', left: 0, width: '8px', height: '8px', borderTop: '2px solid rgba(239,68,68,0.4)', borderLeft: '2px solid rgba(239,68,68,0.4)'}}/>
+          <div style={{ fontSize: 9, fontWeight: 700, color: T.textDim, letterSpacing: '1.5px', padding: '4px 10px 6px', textTransform: 'uppercase' }}>
+            // Games
+          </div>
+          {GAMES.map(g => (
+            <SideBtn
+              key={g.id}
+              active={activeGame === g.id}
+              onClick={() => setActiveGame(g.id)}
+              icon={g.icon}
+              label={g.label}
+              count={gameCount(g.id)}
+              color={T.cyan}
+            />
+          ))}
 
-          <div style={{padding: '14px 12px', borderBottom: '1px solid rgba(239,68,68,0.08)'}}>
-            <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px'}}>
-              <div style={{width: '4px', height: '4px', background: '#00ffff', borderRadius: '50%', boxShadow: '0 0 6px #00ffff'}}/>
-              <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(0,255,255,0.5)', letterSpacing: '3px'}}>//  GAMES</span>
+          <div style={{ height: 1, background: T.border, margin: '10px 0 8px' }} />
+
+          <div style={{ fontSize: 9, fontWeight: 700, color: T.textDim, letterSpacing: '1.5px', padding: '4px 10px 6px', textTransform: 'uppercase' }}>
+            // Roles
+          </div>
+          {ROLES.map(r => (
+            <SideBtn
+              key={r.id}
+              active={activeRole === r.id}
+              onClick={() => setActiveRole(r.id)}
+              icon={r.id === 'all' ? '◈' : (ROLE_META[r.id]?.icon || '◈')}
+              label={r.label}
+              count={roleCount(r.id)}
+              color={r.col}
+            />
+          ))}
+
+          <div style={{ flex: 1 }} />
+          <div style={{ height: 1, background: T.border, margin: '8px 0' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px' }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+              background: `linear-gradient(135deg, ${T.red}, ${T.purple})`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13, fontWeight: 700, color: '#fff',
+              boxShadow: `0 0 10px ${T.redGlow}`,
+            }}>
+              {userName[0]?.toUpperCase()}
             </div>
-            {games.map(game => (
-              <button key={game.id}
-                className="sidebar-btn"
-                onClick={() => setActiveGame(game.id)}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.text }}>{userName}</div>
+              <div style={{ fontSize: 10, color: T.green, fontWeight: 600 }}>● Online</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── CENTER FEED ── */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Quick filter bar */}
+          <div style={{
+            padding: '10px 14px',
+            background: T.bg,
+            borderBottom: `1px solid ${T.border}`,
+            display: 'flex', alignItems: 'center', gap: 6,
+            flexShrink: 0, flexWrap: 'wrap',
+          }}>
+            {QUICK_FILTERS.map(f => (
+              <button
+                key={f.id}
+                onClick={() => setQuickFilter(f.id)}
                 style={{
-                  width: '100%', textAlign: 'left',
-                  padding: '8px 12px', borderRadius: '6px',
-                  marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px',
-                  background: activeGame === game.id ? 'rgba(239,68,68,0.12)' : 'transparent',
-                  border: activeGame === game.id ? '1px solid rgba(239,68,68,0.35)' : '1px solid transparent',
-                  color: activeGame === game.id ? '#fca5a5' : '#4b5563',
-                  fontFamily: "'Rajdhani', sans-serif", fontWeight: '700',
-                  fontSize: '11px', letterSpacing: '1px',
-                  boxShadow: activeGame === game.id ? '0 0 10px rgba(239,68,68,0.15)' : 'none'
-                }}>
-                <span>{game.icon}</span>
-                <span>{game.name.toUpperCase()}</span>
-                {activeGame === game.id && <span style={{marginLeft: 'auto', color: '#ef4444', fontSize: '10px'}}>▶</span>}
+                  padding: '4px 14px', borderRadius: 20,
+                  fontSize: 12, fontWeight: quickFilter === f.id ? 700 : 500,
+                  cursor: 'pointer', transition: 'all 0.15s', border: 'none',
+                  background: quickFilter === f.id ? T.red : T.card,
+                  color: quickFilter === f.id ? '#fff' : T.textMuted,
+                  boxShadow: quickFilter === f.id ? `0 0 12px ${T.redGlow}` : `0 0 0 1px ${T.border}`,
+                  letterSpacing: '0.3px',
+                }}
+              >
+                {f.label}
               </button>
             ))}
-          </div>
-
-          <div style={{flex: 1, overflowY: 'auto', padding: '12px'}}>
-            <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px'}}>
-              <div style={{width: '4px', height: '4px', background: '#ef4444', borderRadius: '50%', boxShadow: '0 0 6px #ef4444'}}/>
-              <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(239,68,68,0.5)', letterSpacing: '3px'}}>//  ROLES</span>
-            </div>
-            {categories.map(cat => {
-              const count = cat.id === 'all' ? jobs.length : jobs.filter(j => j.job_type === cat.id).length;
-              return (
-                <button key={cat.id}
-                  className="sidebar-btn"
-                  onClick={() => setActiveCategory(cat.id)}
-                  style={{
-                    width: '100%', textAlign: 'left',
-                    padding: '8px 12px', borderRadius: '6px',
-                    marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px',
-                    background: activeCategory === cat.id ? 'rgba(239,68,68,0.12)' : 'transparent',
-                    border: activeCategory === cat.id ? '1px solid rgba(239,68,68,0.35)' : '1px solid transparent',
-                    color: activeCategory === cat.id ? 'white' : '#4b5563',
-                    fontFamily: "'Rajdhani', sans-serif", fontWeight: '700',
-                    fontSize: '11px', letterSpacing: '1px'
-                  }}>
-                  <span>{cat.icon}</span>
-                  <span style={{flex: 1}}>{cat.name.toUpperCase()}</span>
-                  {count > 0 && (
-                    <span style={{
-                      padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '900',
-                      background: activeCategory === cat.id ? '#ef4444' : 'rgba(255,255,255,0.05)',
-                      color: activeCategory === cat.id ? 'white' : '#374151'
-                    }}>{count}</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* User */}
-          <div style={{padding: '12px', borderTop: '1px solid rgba(239,68,68,0.08)', background: 'rgba(5,5,16,0.95)'}}>
-            <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-              <div style={{
-                width: '34px', height: '34px',
-                background: 'linear-gradient(135deg,#ef4444,#7c3aed)',
-                borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'Orbitron', sans-serif", fontWeight: '900', fontSize: '14px', color: 'white',
-                boxShadow: '0 0 12px rgba(239,68,68,0.4)', flexShrink: 0
-              }}>{userName[0]?.toUpperCase()}</div>
-              <div>
-                <p style={{fontFamily: "'Orbitron', sans-serif", fontWeight: '900', fontSize: '10px', color: 'white', letterSpacing: '1px', margin: 0}}>{userName.toUpperCase()}</p>
-                <div style={{display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px'}}>
-                  <span style={{width: '5px', height: '5px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 5px #4ade80', display: 'inline-block'}}/>
-                  <span style={{fontSize: '9px', color: '#4ade80', fontFamily: "'Share Tech Mono', monospace"}}>ONLINE</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CENTER FEED */}
-        <div style={{flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden'}}>
-          <div style={{
-            padding: '10px 16px',
-            borderBottom: '1px solid rgba(239,68,68,0.08)',
-            display: 'flex', alignItems: 'center', gap: '8px',
-            background: 'rgba(5,5,16,0.7)',
-            backdropFilter: 'blur(10px)', flexShrink: 0
-          }}>
-            <div style={{width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%', boxShadow: '0 0 8px #ef4444'}}/>
-            <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px', fontWeight: '900', color: '#ef4444', letterSpacing: '2px', animation: 'neonFlicker 6s infinite'}}>
-              ⚡ {activeCategory === 'all' ? 'ALL OPPORTUNITIES' : activeCategory.toUpperCase().replace('_', ' ')}
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: T.textDim, fontWeight: 600 }}>
+              {filtered.length} result{filtered.length !== 1 ? 's' : ''}
             </span>
-            <span style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: '#374151'}}>// {filteredJobs.length} results</span>
           </div>
 
-          <div style={{flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px'}}>
+          {/* Card list */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {loading ? (
-              <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '16px'}}>
-                <div style={{width: '48px', height: '48px', border: '2px solid rgba(239,68,68,0.2)', borderTop: '2px solid #ef4444', borderRadius: '50%', animation: 'spin 1s linear infinite'}}/>
-                <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px', color: 'rgba(239,68,68,0.5)', letterSpacing: '3px'}}>LOADING DATA...</p>
-              </div>
-            ) : filteredJobs.length === 0 ? (
-              <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '16px'}}>
-                <div style={{fontSize: '52px'}}>💀</div>
-                <p style={{fontFamily: "'Orbitron', sans-serif", fontSize: '16px', color: '#ef4444', fontWeight: '900', letterSpacing: '3px', animation: 'neonFlicker 4s infinite'}}>NO RESULTS</p>
-                <p style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '11px', color: '#374151'}}>// try different filters</p>
+              <Skeleton />
+            ) : filtered.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 14, paddingTop: 40 }}>
+                <div style={{ fontSize: 44 }}>💀</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: T.red, letterSpacing: '1px' }}>NO RESULTS</div>
+                <div style={{ fontSize: 12, color: T.textMuted }}>Try changing your filters or search term</div>
                 <Link href="/marketplace/post">
-                  <button style={{background: 'linear-gradient(135deg,#ef4444,#dc2626)', border: 'none', borderRadius: '8px', color: 'white', padding: '10px 24px', fontFamily: "'Orbitron', sans-serif", fontWeight: '900', fontSize: '10px', letterSpacing: '2px', cursor: 'pointer', boxShadow: '0 0 20px rgba(239,68,68,0.4)'}}>⚡ POST NOW</button>
+                  <button style={{
+                    marginTop: 4, background: T.red, color: '#fff',
+                    border: 'none', borderRadius: 8, padding: '9px 22px',
+                    fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    boxShadow: `0 0 16px ${T.redGlow}`, letterSpacing: '0.5px',
+                  }}>
+                    + Post a Job
+                  </button>
                 </Link>
               </div>
-            ) : filteredJobs.map((job, idx) => {
-              const config = getConfig(job.job_type);
-              const isSelected = selectedJob?.id === job.id;
-              return (
-                <div key={job.id}
-                  className="job-card"
-                  onClick={() => setSelectedJob(job)}
-                  style={{
-                    background: isSelected ? 'rgba(239,68,68,0.06)' : 'rgba(8,8,18,0.8)',
-                    border: isSelected ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.04)',
-                    borderRadius: '12px', padding: '16px', cursor: 'pointer',
-                    boxShadow: isSelected ? '0 0 25px rgba(239,68,68,0.15), inset 0 0 20px rgba(239,68,68,0.03)' : 'none',
-                    backdropFilter: 'blur(10px)',
-                    position: 'relative', overflow: 'hidden',
-                    animation: `fadeUp 0.3s ease ${idx * 0.05}s both`
-                  }}>
-                  {/* Top neon line when selected */}
-                  {isSelected && <div style={{position: 'absolute', top: 0, left: 0, right: 0, height: '1.5px', background: 'linear-gradient(90deg,transparent,#ef4444,#00ffff,#ef4444,transparent)'}}/>}
-                  {/* Corner brackets when selected */}
-                  {isSelected && <>
-                    <div style={{position: 'absolute', top: '6px', left: '6px', width: '10px', height: '10px', borderTop: '1.5px solid #ef4444', borderLeft: '1.5px solid #ef4444'}}/>
-                    <div style={{position: 'absolute', top: '6px', right: '6px', width: '10px', height: '10px', borderTop: '1.5px solid #00ffff', borderRight: '1.5px solid #00ffff'}}/>
-                  </>}
-
-                  <div style={{display: 'flex', alignItems: 'flex-start', gap: '12px'}}>
-                    <div style={{
-                      width: '48px', height: '48px', borderRadius: '10px',
-                      background: config.gradient,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '20px', flexShrink: 0,
-                      boxShadow: isSelected ? `0 0 15px ${config.color}50` : 'none'
-                    }}>{config.icon}</div>
-
-                    <div style={{flex: 1, minWidth: 0}}>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '4px'}}>
-                        <h3 style={{fontFamily: "'Rajdhani', sans-serif", fontWeight: '900', fontSize: '14px', color: isSelected ? 'white' : '#d1d5db', letterSpacing: '1px', margin: 0}}>{job.title}</h3>
-                        <span style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: '#374151', flexShrink: 0}}>{timeAgo(job.created_at)}</span>
-                      </div>
-                      <p style={{fontSize: '11px', color: '#4b5563', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Rajdhani', sans-serif"}}>{job.description}</p>
-                      <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px'}}>
-                        <span style={{background: 'rgba(239,68,68,0.08)', color: '#f87171', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)', fontFamily: "'Orbitron', sans-serif", fontWeight: '700', letterSpacing: '1px'}}>{job.game}</span>
-                        <span style={{background: config.color + '15', color: config.color, fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: `1px solid ${config.color}30`, fontFamily: "'Orbitron', sans-serif", fontWeight: '700', letterSpacing: '1px'}}>{job.job_type.replace('_', ' ').toUpperCase()}</span>
-                        {job.budget_type && <span style={{background: 'rgba(16,185,129,0.08)', color: '#4ade80', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(16,185,129,0.2)', fontFamily: "'Orbitron', sans-serif", fontWeight: '700', letterSpacing: '1px'}}>{job.budget_type.toUpperCase()}</span>}
-                      </div>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <Link href={`/profile/${job.posted_by}`} onClick={e => e.stopPropagation()}>
-                          <span style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: '#374151', cursor: 'pointer'}}>
-                            BY <span style={{color: '#ef4444', fontWeight: '700'}}>{job.users?.name?.toUpperCase() || 'ANONYMOUS'}</span>
-                          </span>
-                        </Link>
-                        <span style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: '#374151'}}>{job.applications_count || 0} APPLICANTS</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {isSelected && (
-                    <div style={{marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(239,68,68,0.15)'}}>
-                      <Link href={`/marketplace/jobs/${job.id}`}>
-                        <button style={{
-                          width: '100%', background: 'linear-gradient(135deg,#ef4444,#dc2626)',
-                          border: 'none', borderRadius: '8px', color: 'white',
-                          padding: '10px', fontFamily: "'Orbitron', sans-serif",
-                          fontWeight: '900', fontSize: '11px', letterSpacing: '2px',
-                          cursor: 'pointer', boxShadow: '0 0 15px rgba(239,68,68,0.4)'
-                        }}>VIEW & APPLY →</button>
-                      </Link>
-                    </div>
-                  )}
+            ) : (
+              filtered.map((job, i) => (
+                <div key={job.id} className="fade-card" style={{ animationDelay: `${i * 0.04}s` }}>
+                  <JobCard
+                    job={job}
+                    selected={selectedJob?.id === job.id}
+                    onClick={() => setSelectedJob(job)}
+                  />
                 </div>
-              );
-            })}
+              ))
+            )}
           </div>
         </div>
 
-        {/* RIGHT PANEL */}
-        {selectedJob && (
-          <div style={{
-            width: '290px', flexShrink: 0,
-            background: 'rgba(5,5,16,0.92)',
-            borderLeft: '1px solid rgba(239,68,68,0.1)',
-            display: 'flex', flexDirection: 'column',
-            overflowY: 'auto',
-            backdropFilter: 'blur(10px)',
-            position: 'relative'
-          }}>
-            {/* Rainbow line */}
-            <div style={{position: 'absolute', top: 0, left: 0, right: 0, height: '1.5px', background: 'linear-gradient(90deg,#ef4444,#f97316,#fbbf24,#10b981,#00ffff,#6366f1)'}}/>
-            {/* Corner brackets */}
-            <div style={{position: 'absolute', top: '8px', right: '8px', width: '12px', height: '12px', borderTop: '1.5px solid rgba(0,255,255,0.4)', borderRight: '1.5px solid rgba(0,255,255,0.4)'}}/>
-            <div style={{position: 'absolute', bottom: '8px', left: '8px', width: '12px', height: '12px', borderBottom: '1.5px solid rgba(239,68,68,0.3)', borderLeft: '1.5px solid rgba(239,68,68,0.3)'}}/>
-
-            <div style={{padding: '16px', borderBottom: '1px solid rgba(239,68,68,0.08)'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px'}}>
-                <div style={{width: '4px', height: '4px', background: '#ef4444', borderRadius: '50%', boxShadow: '0 0 6px #ef4444'}}/>
-                <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '9px', fontWeight: '900', color: 'rgba(239,68,68,0.6)', letterSpacing: '3px'}}>//  JOB DETAILS</span>
-              </div>
-              {(() => {
-                const config = getConfig(selectedJob.job_type);
-                return (
-                  <>
-                    <div style={{
-                      width: '100%', height: '80px', borderRadius: '10px',
-                      background: config.gradient,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '36px', marginBottom: '12px',
-                      boxShadow: `0 0 20px ${config.color}40`,
-                      position: 'relative', overflow: 'hidden'
-                    }}>
-                      <div style={{position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.1) 2px,rgba(0,0,0,0.1) 4px)'}}/>
-                      {config.icon}
-                    </div>
-                    <h2 style={{fontFamily: "'Rajdhani', sans-serif", fontWeight: '900', fontSize: '15px', color: 'white', letterSpacing: '1px', margin: '0 0 4px'}}>{selectedJob.title}</h2>
-                    <p style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: '#4b5563', marginBottom: '10px'}}>BY {selectedJob.users?.name?.toUpperCase() || 'ANONYMOUS'}</p>
-                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
-                      <span style={{background: 'rgba(239,68,68,0.08)', color: '#f87171', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.2)', fontFamily: "'Orbitron', sans-serif", fontWeight: '700'}}>{selectedJob.game}</span>
-                      <span style={{background: config.color + '15', color: config.color, fontSize: '10px', padding: '2px 8px', borderRadius: '4px', border: `1px solid ${config.color}30`, fontFamily: "'Orbitron', sans-serif", fontWeight: '700'}}>{selectedJob.job_type.replace('_', ' ').toUpperCase()}</span>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-
-            <div style={{padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px'}}>
-              <div>
-                <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px'}}>
-                  <div style={{width: '3px', height: '3px', background: '#ef4444', borderRadius: '50%'}}/>
-                  <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '8px', fontWeight: '900', color: 'rgba(239,68,68,0.6)', letterSpacing: '3px'}}>//  DESCRIPTION</span>
-                </div>
-                <p style={{fontFamily: "'Rajdhani', sans-serif", fontSize: '12px', color: '#9ca3af', lineHeight: '1.6'}}>{selectedJob.description}</p>
-              </div>
-              {selectedJob.requirements && (
-                <div>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px'}}>
-                    <div style={{width: '3px', height: '3px', background: '#00ffff', borderRadius: '50%'}}/>
-                    <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '8px', fontWeight: '900', color: 'rgba(0,255,255,0.5)', letterSpacing: '3px'}}>//  REQUIREMENTS</span>
-                  </div>
-                  <p style={{fontFamily: "'Rajdhani', sans-serif", fontSize: '12px', color: '#9ca3af', lineHeight: '1.6'}}>{selectedJob.requirements}</p>
-                </div>
-              )}
-              <div>
-                <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px'}}>
-                  <div style={{width: '3px', height: '3px', background: '#a78bfa', borderRadius: '50%'}}/>
-                  <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '8px', fontWeight: '900', color: 'rgba(167,139,250,0.5)', letterSpacing: '3px'}}>//  INFO</span>
-                </div>
-                {[
-                  { label: 'GAME', value: selectedJob.game },
-                  { label: 'ROLE', value: selectedJob.job_type.replace('_', ' ').toUpperCase() },
-                  { label: 'COMPENSATION', value: selectedJob.budget_type?.toUpperCase() || 'N/A' },
-                  { label: 'EXPERIENCE', value: selectedJob.experience_level?.toUpperCase() || 'N/A' },
-                  { label: 'APPLICANTS', value: `${selectedJob.applications_count || 0} PLAYERS` },
-                  { label: 'POSTED', value: new Date(selectedJob.created_at).toLocaleDateString() },
-                ].map(({ label, value }) => (
-                  <div key={label} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.03)'}}>
-                    <span style={{fontFamily: "'Share Tech Mono', monospace", fontSize: '9px', color: '#374151', letterSpacing: '1px'}}>{label}</span>
-                    <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '10px', color: 'white', fontWeight: '700'}}>{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{padding: '16px', borderTop: '1px solid rgba(239,68,68,0.08)'}}>
-              <Link href={`/marketplace/jobs/${selectedJob.id}`}>
-                <button style={{
-                  width: '100%',
-                  background: 'linear-gradient(135deg,#ef4444,#dc2626)',
-                  border: 'none', borderRadius: '10px', color: 'white',
-                  padding: '13px', fontFamily: "'Orbitron', sans-serif",
-                  fontWeight: '900', fontSize: '12px', letterSpacing: '3px',
-                  cursor: 'pointer', boxShadow: '0 0 25px rgba(239,68,68,0.5)',
-                  marginBottom: '8px', animation: 'glowPulse 3s infinite'
-                }}>⚡ APPLY NOW</button>
-              </Link>
-              <p style={{textAlign: 'center', fontFamily: "'Share Tech Mono', monospace", fontSize: '10px', color: '#374151'}}>{selectedJob.applications_count || 0} players already applied</p>
-            </div>
-          </div>
-        )}
+        {/* ── RIGHT DETAIL PANEL ── */}
+        {selectedJob && <DetailPanel job={selectedJob} />}
       </div>
     </div>
   );

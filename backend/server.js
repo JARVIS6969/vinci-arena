@@ -726,6 +726,301 @@ app.delete('/api/squads/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete squad' });
   }
 });
+// ============================
+// SQUAD JOIN REQUEST ROUTES
+// Add these BEFORE the "404 & ERROR HANDLERS" section in server.js
+// ============================
+
+// Get all members of a squad
+app.get('/api/squads/:id/members', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('squad_members')
+      .select('*, users(id, name, email)')
+      .eq('squad_id', req.params.id)
+      .eq('is_active', true);
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Get squad members error:', err);
+    res.status(500).json({ error: 'Failed to fetch members' });
+  }
+});
+
+// Send a join request to a squad
+app.post('/api/squads/:id/request', authenticateToken, async (req, res) => {
+  try {
+    const squadId = req.params.id;
+    const userId = String(req.user.userId);
+    const { message } = req.body;
+
+    // Check squad exists
+    const { data: squad } = await supabase
+      .from('squads')
+      .select('id, name, status')
+      .eq('id', squadId)
+      .single();
+    if (!squad) return res.status(404).json({ error: 'Squad not found' });
+    if (squad.status === 'closed') return res.status(400).json({ error: 'Squad is closed for new members' });
+
+    // Check not already a member
+    const { data: existing } = await supabase
+      .from('squad_members')
+      .select('id')
+      .eq('squad_id', squadId)
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (existing) return res.status(400).json({ error: 'You are already a member of this squad' });
+
+    // Check not already requested
+    const { data: existingReq } = await supabase
+      .from('squad_join_requests')
+      .select('id, status')
+      .eq('squad_id', squadId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (existingReq && existingReq.status === 'pending') return res.status(400).json({ error: 'You already have a pending request for this squad' });
+
+    // Check max 7 members
+    const { data: members } = await supabase
+      .from('squad_members')
+      .select('id')
+      .eq('squad_id', squadId)
+      .eq('is_active', true);
+    if (members && members.length >= 7) return res.status(400).json({ error: 'Squad is full (max 7 members)' });
+
+    // Upsert the request (re-request if previously rejected)
+    const { data, error } = await supabase
+      .from('squad_join_requests')
+      .upsert(
+        { squad_id: squadId, user_id: userId, message: message || '', status: 'pending', source: 'direct' },
+        { onConflict: 'squad_id,user_id' }
+      )
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json({ success: true, request: data });
+  } catch (err) {
+    console.error('Join request error:', err);
+    res.status(500).json({ error: 'Failed to send join request' });
+  }
+});
+
+// Get all join requests for a squad (leader only)
+app.get('/api/squads/:id/requests', authenticateToken, async (req, res) => {
+  try {
+    const squadId = req.params.id;
+    const userId = String(req.user.userId);
+
+    // Check leader
+    const { data: member } = await supabase
+      .from('squad_members')
+      .select('role')
+      .eq('squad_id', squadId)
+      .eq('user_id', userId)
+      .eq('role', 'leader')
+      .single();
+    if (!member) return res.status(403).json({ error: 'Only squad leader can view requests' });
+
+    const { data, error } = await supabase
+      .from('squad_join_requests')
+      .select('*, users(id, name, email)')
+      .eq('squad_id', squadId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Get requests error:', err);
+    res.status(500).json({ error: 'Failed to fetch requests' });
+  }
+});
+
+// Accept or reject a join request (leader only)
+app.patch('/api/squads/:id/requests/:reqId', authenticateToken, async (req, res) => {
+  try {
+    const { id: squadId, reqId } = req.params;
+    const userId = String(req.user.userId);
+    const { status } = req.body; // 'accepted' or 'rejected'
+
+    if (!['accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be accepted or rejected' });
+    }
+
+    // Check leader
+    const { data: leader } = await supabase
+      .from('squad_members')
+      .select('role')
+      .eq('squad_id', squadId)
+      .eq('user_id', userId)
+      .eq('role', 'leader')
+      .single();
+    if (!leader) return res.status(403).json({ error: 'Only squad leader can accept/reject requests' });
+
+    // Get the request
+    const { data: request } = await supabase
+      .from('squad_join_requests')
+      .select('*')
+      .eq('id', reqId)
+      .eq('squad_id', squadId)
+      .single();
+    if (!request) return res.status(404).json({ error: 'Request not found' });
+
+    // Update request status
+    await supabase
+      .from('squad_join_requests')
+      .update({ status })
+      .eq('id', reqId);
+
+    // If accepted — add to squad_members
+    if (status === 'accepted') {
+      // Check still under 7
+      const { data: members } = await supabase
+        .from('squad_members')
+        .select('id')
+        .eq('squad_id', squadId)
+        .eq('is_active', true);
+      if (members && members.length >= 7) {
+        return res.status(400).json({ error: 'Squad is now full' });
+      }
+
+      const { error: memberError } = await supabase
+        .from('squad_members')
+        .upsert(
+          { squad_id: squadId, user_id: request.user_id, role: 'member', is_active: true, joined_at: new Date().toISOString() },
+          { onConflict: 'squad_id,user_id' }
+        );
+      if (memberError) throw memberError;
+
+      // Auto-add to squad group chat if exists
+      const { data: squad } = await supabase
+        .from('squads')
+        .select('linked_group_id, name')
+        .eq('id', squadId)
+        .single();
+
+      if (squad?.linked_group_id) {
+        await supabase
+          .from('group_chat_members')
+          .upsert(
+            { group_id: squad.linked_group_id, user_id: request.user_id, role: 'member' },
+            { onConflict: 'group_id,user_id' }
+          );
+      }
+    }
+
+    res.json({ success: true, status });
+  } catch (err) {
+    console.error('Update request error:', err);
+    res.status(500).json({ error: 'Failed to update request' });
+  }
+});
+
+// Leave a squad
+app.post('/api/squads/:id/leave', authenticateToken, async (req, res) => {
+  try {
+    const squadId = req.params.id;
+    const userId = String(req.user.userId);
+
+    const { data: member } = await supabase
+      .from('squad_members')
+      .select('role')
+      .eq('squad_id', squadId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!member) return res.status(400).json({ error: 'You are not in this squad' });
+    if (member.role === 'leader') return res.status(400).json({ error: 'Leader cannot leave. Delete the squad or transfer leadership first.' });
+
+    const { error } = await supabase
+      .from('squad_members')
+      .update({ is_active: false })
+      .eq('squad_id', squadId)
+      .eq('user_id', userId);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Leave squad error:', err);
+    res.status(500).json({ error: 'Failed to leave squad' });
+  }
+});
+
+// Kick a member (leader only)
+app.delete('/api/squads/:id/members/:memberId', authenticateToken, async (req, res) => {
+  try {
+    const { id: squadId, memberId } = req.params;
+    const userId = String(req.user.userId);
+
+    const { data: leader } = await supabase
+      .from('squad_members')
+      .select('role')
+      .eq('squad_id', squadId)
+      .eq('user_id', userId)
+      .eq('role', 'leader')
+      .single();
+    if (!leader) return res.status(403).json({ error: 'Only squad leader can kick members' });
+
+    const { error } = await supabase
+      .from('squad_members')
+      .update({ is_active: false })
+      .eq('squad_id', squadId)
+      .eq('user_id', memberId);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Kick member error:', err);
+    res.status(500).json({ error: 'Failed to kick member' });
+  }
+});
+
+// Update member role (leader only)
+app.patch('/api/squads/:id/members/:memberId/role', authenticateToken, async (req, res) => {
+  try {
+    const { id: squadId, memberId } = req.params;
+    const userId = String(req.user.userId);
+    const { role } = req.body;
+
+    const { data: leader } = await supabase
+      .from('squad_members')
+      .select('role')
+      .eq('squad_id', squadId)
+      .eq('user_id', userId)
+      .eq('role', 'leader')
+      .single();
+    if (!leader) return res.status(403).json({ error: 'Only squad leader can change roles' });
+
+    const { data, error } = await supabase
+      .from('squad_members')
+      .update({ role })
+      .eq('squad_id', squadId)
+      .eq('user_id', memberId)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('Update role error:', err);
+    res.status(500).json({ error: 'Failed to update role' });
+  }
+});
+
+// Get squads by member userId (for profile page squad card)
+app.get('/api/squads/user/:userId', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('squad_members')
+      .select('squads(*, squad_members(id, role, is_active, user_id, in_game_name, users(name)))')
+      .eq('user_id', req.params.userId)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (error) throw error;
+    res.json(data?.squads || null);
+  } catch (err) {
+    console.error('Get user squad error:', err);
+    res.status(500).json({ error: 'Failed to fetch user squad' });
+  }
+});
 
 // ============================
 // 404 & ERROR HANDLERS

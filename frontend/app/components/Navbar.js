@@ -153,7 +153,7 @@ export default function Navbar() {
                     LOGIN
                   </button>
                 </Link>
-                <Link href="/signup">
+                <Link href="/register">
                   <button className="bg-red-600 hover:bg-red-500 text-white text-xs font-black tracking-wider px-4 py-1.5 rounded-lg transition" style={{fontFamily: "'Rajdhani', sans-serif", boxShadow: '0 0 15px rgba(239,68,68,0.4)'}}>
                     SIGN UP
                   </button>
