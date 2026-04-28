@@ -66,7 +66,7 @@ export default function GroupInfoPage() {
       paddingTop: '44px'
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
+       
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulseGlow {
           0%,100% { box-shadow: 0 0 20px rgba(168,85,247,0.3); }

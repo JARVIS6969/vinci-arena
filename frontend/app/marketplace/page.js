@@ -3,10 +3,6 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 
-/* ─── THEME — VINCI ARENA PRO PALETTE ─────────────────────────
-   Psychology: Red = urgency/action, Cyan = trust/tech,
-   Purple = prestige, Green = success, Amber = reward/premium
-──────────────────────────────────────────────────────────────── */
 const T = {
   bg:        '#000000',
   surface:   '#020202',
@@ -52,7 +48,6 @@ const T = {
   textDim:   '#374151',
 };
 
-/* ─── CONSTANTS ──────────────────────────────────────────────── */
 const GAMES = [
   { id: 'all',       label: 'All Games',  icon: '🎮' },
   { id: 'Free Fire', label: 'Free Fire',  icon: '🔥' },
@@ -85,7 +80,9 @@ const ROLE_META = {
   analyst:         { icon: '◇', color: T.amber,  dim: T.amberDim,  glow: T.amberGlow,  label: 'Analyst'         },
 };
 
-/* ─── HELPERS ────────────────────────────────────────────────── */
+// 6 unique neon colors — card 1=red, 2=cyan, 3=purple, 4=green, 5=amber, 6=pink
+const GLOW_COLORS = [T.red, T.cyan, T.purple, T.green, T.amber, T.pink];
+
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000);
   if (s < 60)    return 'just now';
@@ -98,7 +95,6 @@ function getRoleMeta(type) {
   return ROLE_META[type] || { icon: '◈', color: T.cyan, dim: T.cyanDim, glow: T.cyanGlow, label: type || 'Unknown' };
 }
 
-/* ─── NEON TAG ───────────────────────────────────────────────── */
 function NeonTag({ children, color, dim, glow }) {
   return (
     <span style={{
@@ -118,7 +114,6 @@ function NeonTag({ children, color, dim, glow }) {
   );
 }
 
-/* ─── SIDEBAR BUTTON ─────────────────────────────────────────── */
 function SideBtn({ active, onClick, icon, label, count, color }) {
   const accent = color || T.red;
   const [hovered, setHovered] = useState(false);
@@ -158,7 +153,6 @@ function SideBtn({ active, onClick, icon, label, count, color }) {
   );
 }
 
-/* ─── PROFILE LINK — reusable clickable name ─────────────────── */
 function ProfileLink({ userId, name }) {
   return (
     <Link href={`/profile/${userId}`} className="profile-link">
@@ -168,9 +162,12 @@ function ProfileLink({ userId, name }) {
 }
 
 /* ─── JOB CARD ───────────────────────────────────────────────── */
-function JobCard({ job, selected, onClick }) {
+function JobCard({ job, selected, onClick, index = 0 }) {
   const m = getRoleMeta(job.job_type);
   const [hovered, setHovered] = useState(false);
+
+  // Tight top-left corner aurora — only covers ~25% of card, rest stays black
+  const cardGlow = GLOW_COLORS[index % GLOW_COLORS.length];
 
   return (
     <div
@@ -179,17 +176,23 @@ function JobCard({ job, selected, onClick }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         background: selected
-  ? `linear-gradient(135deg, ${m.color}06 0%, #0a0a0a 70%, #070707 100%)`
-  : hovered ? T.cardHover : T.card,
+          ? `radial-gradient(ellipse at 0% 0%, ${m.color}40 0%, ${m.color}10 28%, #000 55%)`
+          : hovered
+          ? `radial-gradient(ellipse at 0% 0%, ${cardGlow}32 0%, ${cardGlow}08 26%, #000 52%)`
+          : `radial-gradient(ellipse at 0% 0%, ${cardGlow}22 0%, ${cardGlow}05 22%, #000 48%)`,
         border: selected
-          ? `1px solid ${m.color}60`
-          : hovered ? `1px solid ${T.borderHi}` : `1px solid ${T.border}`,
+          ? `1px solid ${m.color}90`
+          : hovered
+          ? `1px solid ${cardGlow}60`
+          : `1px solid ${cardGlow}30`,
         borderRadius: 14, padding: '14px 16px',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         boxShadow: selected
-          ? `0 0 32px ${m.color}22, 0 0 0 1px ${m.color}15 inset`
-          : hovered ? `0 6px 24px rgba(0,0,0,0.5)` : 'none',
+          ? `0 0 28px ${m.color}20, inset 0 0 18px ${m.color}06`
+          : hovered
+          ? `0 0 20px ${cardGlow}14`
+          : `none`,
         position: 'relative', overflow: 'hidden',
       }}
     >
@@ -213,14 +216,16 @@ function JobCard({ job, selected, onClick }) {
         }} />
       )}
 
-      {/* Left accent bar */}
+      {/* Left accent bar — uses unique cardGlow color */}
       <div style={{
         position: 'absolute', left: 0, top: '12%', bottom: '12%',
-        width: selected ? 3 : hovered ? 2 : 0,
-        background: `linear-gradient(180deg, ${m.color}, ${T.purple})`,
+        width: selected ? 3 : hovered ? 2 : 1,
+        background: selected
+          ? `linear-gradient(180deg, ${m.color}, ${T.purple})`
+          : `linear-gradient(180deg, ${cardGlow}cc, ${cardGlow}33)`,
         borderRadius: '0 3px 3px 0',
         transition: 'width 0.2s',
-        boxShadow: selected ? `0 0 10px ${m.color}` : 'none',
+        boxShadow: selected ? `0 0 10px ${m.color}` : `0 0 6px ${cardGlow}50`,
       }} />
 
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
@@ -323,27 +328,24 @@ function DetailPanel({ job }) {
   return (
     <div style={{
       width: 290, flexShrink: 0,
-      background: T.surface,
+      background: `radial-gradient(ellipse at 80% 10%, ${m.color}12 0%, #000 50%), radial-gradient(ellipse at 20% 90%, ${T.purple}0c 0%, transparent 55%), #000`,
       borderLeft: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
       overflowY: 'auto',
       position: 'relative',
     }}>
-      {/* Animated color stripe */}
       <div className="panel-stripe" style={{
         height: 3, flexShrink: 0,
         backgroundImage: `linear-gradient(90deg, ${m.color}, ${T.purple}, ${T.cyan}, ${m.color})`,
         backgroundSize: '200% 100%',
       }} />
 
-      {/* Background glow */}
       <div style={{
         position: 'absolute', top: 0, right: 0, width: 240, height: 240,
-        background: `radial-gradient(circle at 80% 0%, ${m.color}10 0%, transparent 70%)`,
+        background: `radial-gradient(circle at 80% 0%, ${m.color}12 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
 
-      {/* Header */}
       <div style={{ padding: '20px 18px 16px', borderBottom: `1px solid ${T.border}`, position: 'relative' }}>
         <div style={{
           width: 58, height: 58, borderRadius: 15, marginBottom: 16,
@@ -407,7 +409,6 @@ function DetailPanel({ job }) {
         </p>
       </div>
 
-      {/* Body */}
       <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div>
           <SectionLabel>// Description</SectionLabel>
@@ -428,7 +429,7 @@ function DetailPanel({ job }) {
         <div>
           <SectionLabel>// Details</SectionLabel>
           <div style={{
-            background: T.card,
+            background: 'rgba(255,255,255,0.02)',
             border: `1px solid ${T.border}`,
             borderRadius: 11, overflow: 'hidden',
           }}>
@@ -453,7 +454,6 @@ function DetailPanel({ job }) {
   );
 }
 
-/* ─── SECTION LABEL ──────────────────────────────────────────── */
 function SectionLabel({ children }) {
   return (
     <div style={{
@@ -471,35 +471,37 @@ function SectionLabel({ children }) {
   );
 }
 
-/* ─── SKELETON ───────────────────────────────────────────────── */
 function Skeleton() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {[1, 2, 3, 4].map(i => (
-        <div key={i} className="sk-pulse" style={{
-          background: T.card, border: `1px solid ${T.border}`,
-          borderRadius: 14, padding: '14px 16px',
-        }}>
-          <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: T.surface }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ height: 13, background: T.surface, borderRadius: 4, marginBottom: 7, width: '62%' }} />
-              <div style={{ height: 11, background: T.surface, borderRadius: 4, width: '38%' }} />
+      {[0, 1, 2, 3].map(i => {
+        const skGlow = GLOW_COLORS[i % GLOW_COLORS.length];
+        return (
+          <div key={i} className="sk-pulse" style={{
+            background: `radial-gradient(ellipse at 0% 0%, ${skGlow}18 0%, ${skGlow}04 22%, #000 48%)`,
+            border: `1px solid ${skGlow}25`,
+            borderRadius: 14, padding: '14px 16px',
+          }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.04)' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ height: 13, background: 'rgba(255,255,255,0.05)', borderRadius: 4, marginBottom: 7, width: '62%' }} />
+                <div style={{ height: 11, background: 'rgba(255,255,255,0.04)', borderRadius: 4, width: '38%' }} />
+              </div>
+            </div>
+            <div style={{ height: 11, background: 'rgba(255,255,255,0.04)', borderRadius: 4, marginBottom: 5 }} />
+            <div style={{ height: 11, background: 'rgba(255,255,255,0.03)', borderRadius: 4, width: '72%', marginBottom: 12 }} />
+            <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ height: 20, width: 60, background: 'rgba(255,255,255,0.04)', borderRadius: 20 }} />
+              <div style={{ height: 20, width: 72, background: 'rgba(255,255,255,0.04)', borderRadius: 20 }} />
             </div>
           </div>
-          <div style={{ height: 11, background: T.surface, borderRadius: 4, marginBottom: 5 }} />
-          <div style={{ height: 11, background: T.surface, borderRadius: 4, width: '72%', marginBottom: 12 }} />
-          <div style={{ display: 'flex', gap: 6 }}>
-            <div style={{ height: 20, width: 60, background: T.surface, borderRadius: 20 }} />
-            <div style={{ height: 20, width: 72, background: T.surface, borderRadius: 20 }} />
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
-/* ─── LIVE BADGE ─────────────────────────────────────────────── */
 function LiveBadge({ count }) {
   return (
     <div style={{
@@ -524,7 +526,6 @@ function LiveBadge({ count }) {
   );
 }
 
-/* ─── MAIN PAGE ──────────────────────────────────────────────── */
 export default function MarketplacePage() {
   const [jobs, setJobs]               = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -667,7 +668,6 @@ export default function MarketplacePage() {
         flexShrink: 0,
         boxShadow: `0 1px 0 ${T.border}, 0 6px 28px rgba(0,0,0,0.7)`,
       }}>
-        {/* Brand */}
         <div style={{ marginRight: 4 }}>
           <div style={{
             fontFamily: "'Barlow Condensed', sans-serif",
@@ -687,7 +687,6 @@ export default function MarketplacePage() {
 
         <div style={{ width: 1, height: 30, background: T.border }} />
 
-        {/* Search */}
         <div style={{ position: 'relative', flex: 1, maxWidth: 400 }}>
           <span style={{
             position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
@@ -746,7 +745,7 @@ export default function MarketplacePage() {
         {/* ── LEFT SIDEBAR ── */}
         <div style={{
           width: 204, flexShrink: 0,
-          background: T.surface,
+          background: `radial-gradient(ellipse at 50% 0%, ${T.cyan}08 0%, #000 50%), #000`,
           borderRight: `1px solid ${T.border}`,
           padding: '14px 9px',
           display: 'flex', flexDirection: 'column', gap: 2,
@@ -891,6 +890,7 @@ export default function MarketplacePage() {
                     job={job}
                     selected={selectedJob?.id === job.id}
                     onClick={() => setSelectedJob(job)}
+                    index={i}
                   />
                 </div>
               ))
